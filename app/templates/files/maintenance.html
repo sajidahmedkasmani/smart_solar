@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Maintenance & Support - SolarEase{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-5 py-10">
+    <h3 class="font-display font-bold text-2xl mb-8">
+        <i class="fa-solid fa-screwdriver-wrench mr-2" style="color: var(--gold-dark);"></i>Maintenance &amp; Support
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <!-- Request Form -->
+        <div class="md:col-span-2">
+            <div class="card-panel h-full">
+                <h4 class="font-display font-bold text-lg mb-4" style="color: var(--gold-dark);">
+                    <i class="fa-solid fa-wrench mr-2"></i>Request Service / Repair
+                </h4>
+                <form action="{{ url_for('maintenance.list_requests') }}" method="POST">
+                    <div class="mb-4">
+                        <label class="form-label">Service Category</label>
+                        <select name="issue_type" class="form-input" required>
+                            <option value="Solar Panel Cleaning">Solar Panel Cleaning</option>
+                            <option value="Low Power Generation">Low Power Generation</option>
+                            <option value="Inverter Error / Red Light">Inverter Error / Red Light</option>
+                            <option value="Battery Backup Issue">Battery Backup Issue</option>
+                            <option value="General Inspection / AMC">General Inspection / Annual Maintenance</option>
+                        </select>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label">Describe Problem</label>
+                        <textarea name="description" class="form-input" rows="4" placeholder="Provide details about the issue..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-solar w-full py-3 text-sm">
+                        <i class="fa-solid fa-paper-plane mr-2"></i>Submit Request
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tickets List -->
+        <div class="md:col-span-3">
+            <div class="card-panel h-full">
+                <h4 class="font-display font-bold text-lg mb-4">Your Maintenance Tickets</h4>
+                <div class="overflow-x-auto">
+                    <table class="table-solar">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Submitted Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in maintenance_requests %}
+                            <tr>
+                                <td class="font-bold" style="color: var(--leaf);">#MNT-{{ req.id }}</td>
+                                <td>{{ req.service_type }}</td>
+                                <td>
+                                    {% if 'admin' in session.get('roles', [session.get('role')]) or 'technician' in session.get('roles', [session.get('role')]) or 'engineer' in session.get('roles', [session.get('role')]) %}
+                                    <form action="{{ url_for('maintenance.update_status', request_id=req.id) }}" method="POST" class="flex gap-2">
+                                        <select name="status" class="form-input" style="width:150px; padding: 6px 10px; font-size: .75rem;">
+                                            {% for st in ['Open','Request Submitted','Support Review','Technician Assigned','Visit Scheduled','Inspection Completed','Repair In Progress','Resolved','Customer Confirmation'] %}
+                                            <option value="{{ st }}" {% if req.status==st %}selected{% endif %}>{{ st }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="btn-outline px-3 py-1.5 text-xs">Save</button>
+                                    </form>
+                                    {% else %}
+                                    <span class="badge-pill {% if req.status=='Resolved' %}badge-leaf{% else %}badge-gold{% endif %}">
+                                        {{ req.status }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-xs" style="color: var(--ink-soft);">{{ req.created_at }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-10" style="color: var(--ink-soft);">
+                                    <i class="fa-solid fa-inbox text-2xl mb-2 block opacity-50"></i>
+                                    No service requests submitted yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{{ q.quotation_number }}</title>
+<style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #142033; background: #fff; }
+    .brand { display:flex; align-items:center; gap:10px; margin-bottom: 4px; }
+    .brand .mark { width:28px; height:28px; border-radius:8px; background: conic-gradient(from -90deg, #F0A93B, #C9821F, #F0A93B); position:relative; }
+    .brand .mark::after { content:""; position:absolute; inset:6px; border-radius:50%; background:#142033; }
+    .brand span { font-size: 20px; font-weight: 700; }
+    h3 { color:#4A5670; font-weight:600; margin-top: 4px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 24px; }
+    td { padding: 12px 10px; border-bottom: 1px solid #E4E0D3; font-size: 14px; }
+    td:first-child { color: #4A5670; width: 40%; }
+    tr:last-of-type td { color: #C9821F; font-size: 16px; }
+</style>
+</head>
+<body>
+    <div class="brand"><div class="mark"></div><span>Solar<span style="color:#C9821F;">Ease</span></span></div>
+    <h3>Quotation {{ q.quotation_number }}</h3>
+    <table>
+        <tr><td>System</td><td>{{ q.system_capacity_kw }} kW {{ q.system_type }}</td></tr>
+        <tr><td>Equipment Cost</td><td>PKR {{ '{:,.0f}'.format(q.equipment_cost) }}</td></tr>
+        <tr><td>Installation</td><td>PKR {{ '{:,.0f}'.format(q.installation_cost) }}</td></tr>
+        <tr><td>Transport</td><td>PKR {{ '{:,.0f}'.format(q.transport_cost) }}</td></tr>
+        <tr><td>Tax</td><td>PKR {{ '{:,.0f}'.format(q.tax) }}</td></tr>
+        <tr><td>Discount</td><td>PKR {{ '{:,.0f}'.format(q.discount) }}</td></tr>
+        <tr><td><strong>Final Amount</strong></td><td><strong>PKR {{ '{:,.0f}'.format(q.final_amount) }}</strong></td></tr>
+        <tr><td>Payment Terms</td><td>{{ q.payment_terms }}</td></tr>
+        <tr><td>Warranty</td><td>{{ q.warranty_terms }}</td></tr>
+    </table>
+</body>
+</html>

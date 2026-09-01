@@ -1,0 +1,60 @@
+{% extends 'landing_page/layout/base.html' %}
+{% block title %}Customer Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-5 py-10">
+    <h3 class="font-display font-bold text-2xl mb-8">Welcome back, {{ session.get('user_name', 'Customer') }}!</h3>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="stat-tile">
+            <span class="text-xs" style="color: var(--ink-soft);">Calculated Load</span>
+            <h3 class="font-display font-bold text-2xl mt-1" style="color: var(--sky-dark);">{{ latest_req.recommended_kw if latest_req else '0' }} kW</h3>
+        </div>
+        <div class="stat-tile" style="border-left-color: var(--leaf);">
+            <span class="text-xs" style="color: var(--ink-soft);">Survey Status</span>
+            <h4 class="font-display font-bold text-xl mt-1" style="color: var(--leaf);">{{ latest_survey.status if latest_survey else 'Not Booked' }}</h4>
+        </div>
+        <div class="stat-tile">
+            <span class="text-xs" style="color: var(--ink-soft);">Quotations</span>
+            <h3 class="font-display font-bold text-2xl mt-1" style="color: var(--gold-dark);">{{ quotations|length if quotations else 0 }}</h3>
+        </div>
+        <div class="stat-tile" style="border-left-color: var(--sky);">
+            <span class="text-xs" style="color: var(--ink-soft);">Active Projects</span>
+            <h3 class="font-display font-bold text-2xl mt-1" style="color: var(--sky-dark);">{{ projects|length if projects else 0 }}</h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card-panel">
+            <h5 class="font-display font-bold text-lg mb-4"><i class="fa-solid fa-list-check mr-2" style="color: var(--leaf);"></i>Quick Actions</h5>
+            <div class="flex flex-col gap-2">
+                <a href="{{ url_for('quotations.calculator') }}" class="btn-outline text-left justify-start px-4 py-3 text-sm"><i class="fa-solid fa-calculator mr-2" style="color: var(--sky);"></i> Calculate Solar Capacity Requirement</a>
+                <a href="{{ url_for('surveys.index') }}" class="btn-outline text-left justify-start px-4 py-3 text-sm"><i class="fa-solid fa-calendar-plus mr-2" style="color: var(--leaf);"></i> Book Technical Site Survey</a>
+                <a href="{{ url_for('quotations.list_quotations') }}" class="btn-outline text-left justify-start px-4 py-3 text-sm"><i class="fa-solid fa-file-invoice mr-2" style="color: var(--gold-dark);"></i> Review &amp; Approve Quotations</a>
+                <a href="{{ url_for('installations.list_installations') }}" class="btn-outline text-left justify-start px-4 py-3 text-sm"><i class="fa-solid fa-bars-progress mr-2" style="color: var(--sky-dark);"></i> Track Installation Progress</a>
+            </div>
+        </div>
+
+        <div class="card-panel">
+            <h5 class="font-display font-bold text-lg mb-4"><i class="fa-solid fa-clock-rotate-left mr-2" style="color: var(--leaf);"></i>Recent Activity</h5>
+            <ul class="divide-y" style="border-color: var(--line);">
+                {% if latest_survey %}
+                <li class="flex justify-between items-center py-3 text-sm">
+                    Survey requested for {{ latest_survey.preferred_date }}
+                    <span class="badge-pill badge-neutral">{{ latest_survey.status }}</span>
+                </li>
+                {% endif %}
+                {% if latest_req %}
+                <li class="flex justify-between items-center py-3 text-sm">
+                    Calculated {{ latest_req.recommended_kw }} kW requirement
+                    <span class="badge-pill badge-sky">Completed</span>
+                </li>
+                {% endif %}
+                {% if not latest_survey and not latest_req %}
+                <li class="py-3 text-sm" style="color: var(--ink-soft);">No recent activities found. Start by calculating your load!</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

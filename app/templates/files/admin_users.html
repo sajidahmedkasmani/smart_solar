@@ -1,0 +1,61 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Users & Access - SolarEase{% endblock %}
+{% block page_heading %}Users & Access{% endblock %}
+{% block dashboard_content %}
+<div class="space-y-6">
+  <div class="dashboard-dark-card">
+    <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+      <div><h3 class="font-bold text-slate-900">Create Staff Account</h3><p class="text-xs dashboard-muted-text mt-1">Only the Administrator can create worker accounts and choose their initial access.</p></div>
+      <span class="dashboard-pill">Admin Controlled</span>
+    </div>
+    <form action="{{ url_for('admin.create_staff') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <input class="dashboard-input" name="full_name" required placeholder="Full name">
+      <input class="dashboard-input" type="email" name="email" required placeholder="staff@example.com">
+      <input class="dashboard-input" type="password" name="password" required placeholder="Temporary password">
+      <div class="flex flex-wrap gap-2 items-center">
+        {% for r in staff_roles %}<label class="inline-flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" name="roles" value="{{ r }}">{{ label_for(r) }}</label>{% endfor %}
+      </div>
+      <button class="dashboard-action justify-center md:col-span-2">Create Staff Account</button>
+    </form>
+  </div>
+
+  <div class="dashboard-dark-card">
+    <div class="flex items-center justify-between gap-3 mb-4">
+      <div><h3 class="font-bold text-slate-900">Staff Users</h3><p class="text-xs dashboard-muted-text mt-1">Customer accounts are kept in the separate customer profile table and are not listed here.</p></div>
+      <span class="dashboard-pill">{{ users|length }} Staff</span>
+    </div>
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Current Access</th><th>Change Access</th></tr></thead>
+        <tbody>
+        {% for u in users %}
+          {% set assigned = user_roles.get(u.id, []) %}
+          <tr class="dashboard-searchable">
+            <td><strong>{{ u.full_name }}</strong></td>
+            <td>{{ u.email }}</td>
+            <td>{% for r in assigned %}<span class="dashboard-pill mr-1">{{ label_for(r) }}</span>{% endfor %}</td>
+            <td>
+              {% if u.email == 'admin@solarease.pk' %}
+                <span class="dashboard-pill" style="background:#fee2e2;color:#b91c1c;">Administrator — protected</span>
+              {% else %}
+                <form action="{{ url_for('admin.update_role', user_id=u.id) }}" method="POST" class="flex items-center gap-2">
+                  <details class="role-access-dropdown">
+                    <summary><span>Choose access</span><i class="fa-solid fa-chevron-down text-slate-400"></i></summary>
+                    <div class="role-access-menu">
+                      {% for r in staff_roles %}
+                      <label class="role-access-option"><input type="checkbox" name="roles" value="{{ r }}" {% if r in assigned %}checked{% endif %}> <span>{{ label_for(r) }}</span></label>
+                      {% endfor %}
+                    </div>
+                  </details>
+                  <button class="dashboard-action">Save</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}<tr><td colspan="4" class="text-center dashboard-muted-text py-4">No staff accounts yet.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

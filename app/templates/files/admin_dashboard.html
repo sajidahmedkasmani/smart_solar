@@ -1,0 +1,18 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Admin Dashboard - SolarEase{% endblock %}
+{% block page_heading %}Admin Dashboard{% endblock %}
+{% block dashboard_content %}
+<div class="space-y-6">
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    {% for label,value in [('Registered Users',total_users),('Survey Requests',total_surveys),('Quotations',total_quotations),('Installations',total_projects)] %}<div class="dashboard-dark-card"><p class="text-[10px] text-slate-400 uppercase font-bold">{{ label }}</p><p class="text-2xl font-extrabold text-purple-700 mt-2">{{ value }}</p></div>{% endfor %}
+  </div>
+  <div class="dashboard-dark-card">
+    <div class="flex flex-wrap gap-2 justify-between items-center mb-4"><h3 class="font-bold text-slate-900">All Site Survey Requests</h3><a class="dashboard-action" href="{{ url_for('admin.users') }}"><i class="fa-solid fa-users-gear"></i> Manage Access</a></div>
+    <div class="dashboard-table-wrap"><table class="dashboard-table"><thead><tr><th>Customer ID</th><th>Address</th><th>Date & Time</th><th>Status</th><th>Action</th></tr></thead><tbody>
+    {% for s in surveys %}<tr class="dashboard-searchable"><td>User #{{ s.user_id }}</td><td>{{ s.address }}</td><td>{{ s.preferred_date }} ({{ s.preferred_time }})</td><td><span class="dashboard-pill">{{ s.status }}</span></td><td><form action="{{ url_for('quotations.generate_quotation', survey_id=s.id) }}" method="POST"><button class="dashboard-action" type="submit"><i class="fa-solid fa-paper-plane"></i> Issue Quote</button></form></td></tr>{% else %}<tr><td colspan="5">No survey requests found.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+  <div class="dashboard-dark-card"><h3 class="font-bold text-slate-900 mb-3">Inventory Alerts</h3><div class="grid md:grid-cols-2 gap-2">{% for item in inventory if item.quantity <= item.minimum_stock %}<div class="dashboard-searchable flex justify-between p-3 rounded-xl bg-purple-50 text-xs"><span>{{ item.item_name }}</span><strong>{{ item.quantity }} left</strong></div>{% else %}<p class="text-xs text-slate-400">No low-stock products.</p>{% endfor %}</div></div>
+</div>
+{% endblock %}
+{% block dashboard_sidebar %}<div class="dashboard-dark-card"><h3 class="font-bold text-slate-900 mb-3">Administration</h3><div class="space-y-2 text-xs"><a class="dashboard-action w-full justify-center" href="{{ url_for('admin.users') }}"><i class="fa-solid fa-user-lock"></i> Users & Role Access</a><p class="text-slate-400">Open Users & Access to assign any combination of roles to one email.</p><p><strong>Open maintenance:</strong> {{ complaints_open }}</p></div></div>{% endblock %}

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Staff Login - SolarEase</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      min-height: 100vh;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    .header {
+      height: 76px;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6%;
+      position: relative;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 7px 18px rgba(126, 34, 206, 0.20);
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .brand-subtitle {
+      font-size: 9px;
+      font-weight: 700;
+      color: #a855f7;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .secure-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      color: #7e22ce;
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .secure-badge i {
+      font-size: 10px;
+    }
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    .main {
+      min-height: calc(100vh - 76px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 45px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Soft background decorations */
+
+    .glow-one {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      background: rgba(168, 85, 247, 0.07);
+      border-radius: 50%;
+      top: -130px;
+      left: -130px;
+      filter: blur(10px);
+    }
+
+    .glow-two {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: rgba(126, 34, 206, 0.05);
+      border-radius: 50%;
+      bottom: -140px;
+      right: -120px;
+      filter: blur(10px);
+    }
+
+    /* =========================
+       LOGIN CARD
+    ========================= */
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 430px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid #e2e8f0;
+      border-radius: 28px;
+      padding: 38px;
+      box-shadow:
+        0 20px 60px rgba(15, 23, 42, 0.08),
+        0 5px 20px rgba(126, 34, 206, 0.04);
+    }
+
+    /* Icon */
+
+    .login-icon {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 20px;
+      border-radius: 21px;
+      background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 25px;
+      box-shadow: 0 12px 25px rgba(126, 34, 206, 0.22);
+    }
+
+    .login-heading {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-heading .eyebrow {
+      color: #a855f7;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .login-heading h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 7px;
+    }
+
+    .login-heading p {
+      color: #94a3b8;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    /* =========================
+       FORM
+    ========================= */
+
+    .form-group {
+      margin-bottom: 19px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 47px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: #f8fafc;
+      padding: 0 15px 0 42px;
+      color: #1e293b;
+      font-family: inherit;
+      font-size: 12px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input::placeholder {
+      color: #94a3b8;
+    }
+
+    .form-input:focus {
+      background: #ffffff;
+      border-color: #a855f7;
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.10);
+    }
+
+    /* =========================
+       LOGIN BUTTON
+    ========================= */
+
+    .login-button {
+      width: 100%;
+      height: 48px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+      color: white;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 9px 22px rgba(126, 34, 206, 0.20);
+      transition: all 0.2s ease;
+      margin-top: 3px;
+    }
+
+    .login-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 27px rgba(126, 34, 206, 0.28);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+    }
+
+    .login-button i {
+      margin-right: 8px;
+      font-size: 11px;
+    }
+
+    /* =========================
+       SECURITY BOX
+    ========================= */
+
+    .security-box {
+      margin-top: 23px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+    }
+
+    .security-icon {
+      width: 35px;
+      height: 35px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      background: #ede9fe;
+      color: #7e22ce;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .security-content h4 {
+      color: #334155;
+      font-size: 10px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .security-content p {
+      color: #64748b;
+      font-size: 9px;
+      line-height: 1.6;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    .footer {
+      text-align: center;
+      margin-top: 22px;
+    }
+
+    .footer span {
+      color: #94a3b8;
+      font-size: 9px;
+    }
+
+    .footer i {
+      margin-right: 5px;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 600px) {
+
+      .header {
+        height: 68px;
+        padding: 0 20px;
+      }
+
+      .brand-icon {
+        width: 38px;
+        height: 38px;
+      }
+
+      .brand-name {
+        font-size: 15px;
+      }
+
+      .secure-badge {
+        padding: 7px 9px;
+      }
+
+      .secure-badge span {
+        display: none;
+      }
+
+      .main {
+        min-height: calc(100vh - 68px);
+        padding: 25px 15px;
+      }
+
+      .login-card {
+        padding: 30px 22px;
+        border-radius: 23px;
+      }
+
+      .login-heading h1 {
+        font-size: 23px;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+       HEADER
+  ========================== -->
+
+  <header class="header">
+
+    <a href="#" class="brand">
+
+      <div class="brand-icon">
+        <i class="fa-solid fa-sun"></i>
+      </div>
+
+      <div class="brand-text">
+        <span class="brand-name">SolarEase</span>
+        <span class="brand-subtitle">Solar Management</span>
+      </div>
+
+    </a>
+
+    <div class="header-right">
+
+      <div class="secure-badge">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Secure Staff Portal</span>
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- =========================
+       MAIN
+  ========================== -->
+
+  <main class="main">
+
+    <div class="glow-one"></div>
+    <div class="glow-two"></div>
+
+
+    <div class="login-wrapper">
+
+      <div class="login-card">
+
+        <!-- Login Icon -->
+
+        <div class="login-icon">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+
+
+        <!-- Heading -->
+
+        <div class="login-heading">
+
+          <div class="eyebrow">
+            Administrator Portal
+          </div>
+
+          <h1>
+            Staff Login
+          </h1>
+
+          <p>
+            Sign in to access your SolarEase staff dashboard.
+          </p>
+
+        </div>
+
+
+        <!-- Form -->
+
+        <form action="{{ url_for('admin.login') }}" method="POST">
+
+          <!-- Email -->
+
+          <div class="form-group">
+
+            <label class="form-label">
+              Staff Email
+            </label>
+
+            <div class="input-wrapper">
+
+              <i class="fa-regular fa-envelope input-icon"></i>
+
+              <input
+                type="email"
+                name="email"
+                class="form-input"
+                placeholder="staff@example.com"
+                required
+              >
+
+            </div>
+
+          </div>
+
+
+          <!-- Password -->
+
+          <div class="form-group">
+
+            <label class="form-label">
+              Password
+            </label>
+
+            <div class="input-wrapper">
+
+              <i class="fa-solid fa-lock input-icon"></i>
+
+              <input
+                type="password"
+                name="password"
+                class="form-input"
+                placeholder="Enter your password"
+                required
+              >
+
+            </div>
+
+          </div>
+
+
+          <!-- Login -->
+
+          <button type="submit" class="login-button">
+
+            <i class="fa-solid fa-right-to-bracket"></i>
+
+            Login to Staff Dashboard
+
+          </button>
+
+        </form>
+
+
+        <!-- Security Notice -->
+
+        <div class="security-box">
+
+          <div class="security-icon">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+
+          <div class="security-content">
+
+            <h4>
+              Administrator-Created Accounts Only
+            </h4>
+
+            <p>
+              Staff accounts are created and assigned roles
+              by the Administrator. Unauthorized users cannot
+              access the staff portal.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- Footer -->
+
+        <div class="footer">
+
+          <span>
+            <i class="fa-solid fa-lock"></i>
+            Secure SolarEase Staff Portal
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</body>
+</html>
+```

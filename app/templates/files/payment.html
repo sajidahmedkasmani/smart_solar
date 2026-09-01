@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Payment Gateway - SolarEase{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-5 py-10">
+    <div class="card-panel">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style="background: rgba(240,169,59,.15); color: var(--gold-dark);">
+                <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <div>
+                <h3 class="font-display font-bold text-xl mb-0">Solar Installation Payment</h3>
+                <p class="text-xs" style="color: var(--ink-soft);">Secure booking deposit &amp; invoice settlement</p>
+            </div>
+        </div>
+
+        <p class="text-sm mb-6" style="color: var(--ink-soft);">
+            Make your advance payment (30%) or full payment to initiate equipment allocation and team dispatch.
+        </p>
+
+        {% if project %}
+        <!-- Summary Box -->
+        <div class="rounded-xl p-4 mb-6" style="background: var(--amber-soft); border: 1px solid rgba(240,169,59,.4);">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-semibold uppercase" style="color: var(--ink-soft);">Quotation ID</span>
+                <span class="badge-pill badge-gold">#QTN-{{ project.id }}</span>
+            </div>
+            <div class="flex justify-between items-center mb-2 text-sm">
+                <span>Total System Cost:</span>
+                <strong>PKR {{ "{:,}".format(project.final_amount) }}</strong>
+            </div>
+            <div class="divider-line my-2"></div>
+            <div class="flex justify-between items-center">
+                <span class="font-bold text-sm" style="color: var(--gold-dark);">30% Advance Required:</span>
+                <h4 class="font-display font-bold text-xl mb-0" style="color: var(--gold-dark);">PKR {{ "{:,}".format((project.final_amount * 0.30)|int) }}</h4>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form action="{{ url_for('payments.process_payment', project_id=project.id) }}" method="POST">
+            <input type="hidden" name="quotation_id" value="{{ project.id }}">
+            <div class="mb-4">
+                <label class="form-label">Select Payment Method</label>
+                <select name="payment_method" class="form-input" required>
+                    <option value="Bank Transfer">Bank Transfer / IBFT</option>
+                    <option value="Credit / Debit Card">Credit / Debit Card</option>
+                    <option value="Cash / Cheque">Cash / Cheque Deposit</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Payment Type</label>
+                <select name="payment_type" class="form-input" required>
+                    <option value="30% Advance Payment">30% Advance Payment</option>
+                    <option value="100% Full Payment">100% Full Payment</option>
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label class="form-label">Transaction Reference / Slip Code</label>
+                <input type="text" name="trx_ref" class="form-input" placeholder="e.g. TRX-98234723" required>
+                <div class="form-hint">Provide the IBFT reference number or deposit slip receipt ID.</div>
+            </div>
+
+            <button type="submit" class="btn-solar w-full py-3.5 text-sm">
+                <i class="fa-solid fa-lock mr-2"></i>Submit Payment Record
+            </button>
+        </form>
+        {% else %}
+        <div class="rounded-xl p-6 text-sm" style="background: var(--sky-soft); color: var(--sky-dark); border: 1px solid rgba(29,110,140,.25);">
+            <i class="fa-solid fa-info-circle mr-2"></i> No approved quotation found yet. Please get a quotation approved first before making a payment.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

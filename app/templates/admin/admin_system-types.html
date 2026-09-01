@@ -1,0 +1,164 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Manage System Types - SolarEase Admin{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Top Bar -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+            <h2 class="font-bold text-2xl text-slate-900">Solar System Types</h2>
+            <p class="text-sm text-slate-500">Configure On-Grid, Off-Grid, Hybrid system specifications</p>
+        </div>
+        <button type="button" id="openTypeModal" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 transition shadow-sm">
+            <i class="fa-solid fa-plus"></i> Add System Type
+        </button>
+    </div>
+
+    <!-- Single Unified Form -->
+    <form action="{{ url_for('admin.system_types') }}" method="POST">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                        <tr>
+                            <th class="p-4 w-1/5">Type Name</th>
+                            <th class="p-4 w-2/5">Tagline</th>
+                            <th class="p-4 text-center">Grid Connected</th>
+                            <th class="p-4 text-center">Battery Required</th>
+                            <th class="p-4 text-center">Net-Metering</th>
+                            <th class="p-4 text-center">Backup Support</th>
+                            <th class="p-4 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for t in types %}
+                        <tr class="hover:bg-slate-50/50">
+                            <!-- Editable Name Title -->
+                            <td class="p-4">
+                                <input type="text" 
+                                       name="name_{{ t.id }}" 
+                                       value="{{ t.name }}" 
+                                       required
+                                       class="w-full p-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:border-amber-500 outline-none transition">
+                            </td>
+
+                            <!-- Editable Tagline -->
+                            <td class="p-4">
+                                <input type="text" 
+                                       name="tagline_{{ t.id }}" 
+                                       value="{{ t.tagline or '' }}" 
+                                       class="w-full p-2 border border-slate-200 rounded-lg text-xs bg-slate-50 focus:bg-white focus:border-amber-500 outline-none transition">
+                            </td>
+
+                            <!-- Checkboxes -->
+                            <td class="p-4 text-center">
+                                <input type="checkbox" 
+                                       name="has_grid_{{ t.id }}" 
+                                       {% if t.has_grid %}checked{% endif %} 
+                                       class="w-4 h-4 accent-amber-500 cursor-pointer rounded">
+                            </td>
+                            <td class="p-4 text-center">
+                                <input type="checkbox" 
+                                       name="requires_battery_{{ t.id }}" 
+                                       {% if t.requires_battery %}checked{% endif %} 
+                                       class="w-4 h-4 accent-amber-500 cursor-pointer rounded">
+                            </td>
+                            <td class="p-4 text-center">
+                                <input type="checkbox" 
+                                       name="supports_net_metering_{{ t.id }}" 
+                                       {% if t.supports_net_metering %}checked{% endif %} 
+                                       class="w-4 h-4 accent-amber-500 cursor-pointer rounded">
+                            </td>
+                            <td class="p-4 text-center">
+                                <input type="checkbox" 
+                                       name="provides_backup_{{ t.id }}" 
+                                       {% if t.provides_backup %}checked{% endif %} 
+                                       class="w-4 h-4 accent-amber-500 cursor-pointer rounded">
+                            </td>
+
+                            <!-- Active / Inactive Status Toggle Button -->
+                            <td class="p-4 text-center">
+                                <input type="hidden" name="is_active_{{ t.id }}" id="status_input_{{ t.id }}" value="{{ 'true' if t.is_active else 'false' }}">
+                                <button type="button" 
+                                        onclick="toggleStatus('{{ t.id }}')" 
+                                        id="status_btn_{{ t.id }}"
+                                        class="px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer flex items-center justify-center gap-1.5 mx-auto {% if t.is_active %}bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100{% else %}bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200{% endif %}">
+                                    <span id="status_dot_{{ t.id }}" class="w-1.5 h-1.5 rounded-full {% if t.is_active %}bg-emerald-500{% else %}bg-slate-400{% endif %}"></span>
+                                    <span id="status_text_{{ t.id }}">{{ 'Active' if t.is_active else 'Inactive' }}</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Bottom Save Button Bar -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+                <span class="text-xs text-slate-500">Edit titles, taglines, features, or status above, then click save.</span>
+                <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Save All Changes
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Add Modal -->
+<div id="typeModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100">
+        <h3 class="font-bold text-lg mb-4 text-slate-800">Add New System Type</h3>
+        <form action="{{ url_for('admin.system_types') }}" method="POST" class="space-y-4">
+            <input type="hidden" name="action_type" value="create">
+            <div>
+                <label class="block text-xs font-semibold mb-1">System Name</label>
+                <input type="text" name="name" placeholder="e.g. Hybrid System" required class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1">Tagline</label>
+                <input type="text" name="tagline" placeholder="e.g. Connected to grid with battery backup" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1">Description</label>
+                <textarea name="description" rows="2" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white outline-none"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-medium bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="has_grid" class="accent-amber-500"> Grid Connected</label>
+                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="requires_battery" class="accent-amber-500"> Battery Required</label>
+                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="provides_backup" class="accent-amber-500"> Backup Support</label>
+                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="supports_net_metering" class="accent-amber-500"> Net-Metering</label>
+            </div>
+            <div class="flex justify-end gap-3 pt-3">
+                <button type="button" id="closeTypeModal" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50">Cancel</button>
+                <button type="submit" class="px-4 py-2 text-sm bg-amber-500 text-slate-900 font-bold rounded-lg hover:bg-amber-600">Save Type</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('typeModal');
+    document.getElementById('openTypeModal').onclick = () => modal.classList.remove('hidden');
+    document.getElementById('closeTypeModal').onclick = () => modal.classList.add('hidden');
+
+    function toggleStatus(id) {
+        const input = document.getElementById(`status_input_${id}`);
+        const btn = document.getElementById(`status_btn_${id}`);
+        const dot = document.getElementById(`status_dot_${id}`);
+        const text = document.getElementById(`status_text_${id}`);
+
+        if (input.value === 'true') {
+            input.value = 'false';
+            text.innerText = 'Inactive';
+            btn.className = 'px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer flex items-center justify-center gap-1.5 mx-auto bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200';
+            dot.className = 'w-1.5 h-1.5 rounded-full bg-slate-400';
+        } else {
+            input.value = 'true';
+            text.innerText = 'Active';
+            btn.className = 'px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer flex items-center justify-center gap-1.5 mx-auto bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
+            dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,28 @@
+<footer class="app-footer py-10 mt-10">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="brand-mark"></div>
+                <span class="font-display font-bold text-white">{{ APP_NAME }}</span>
+            </div>
+            <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for(dashboard_for(session.get('role'))) }}">My Dashboard</a>
+                {% endif %}
+                {% if not session.get('user_id') or 'customer' in session.get('roles', [session.get('role')]) %}
+                <a href="{{ url_for('quotations.calculator') }}">Load Calculator</a>
+                <a href="{{ url_for('surveys.index') }}">Book Site Visit</a>
+                <a href="{{ url_for('sales.packages') }}">Packages</a>
+                {% endif %}
+            </div>
+            <div class="flex gap-4 text-lg">
+                <i class="fa-brands fa-facebook hover:text-white cursor-pointer"></i>
+                <i class="fa-brands fa-instagram hover:text-white cursor-pointer"></i>
+                <i class="fa-brands fa-whatsapp hover:text-white cursor-pointer"></i>
+            </div>
+        </div>
+        <div class="text-center text-xs mt-8" style="color: rgba(255,255,255,.4);">
+            &copy; 2026 {{ APP_NAME }}. Karachi, Sindh, Pakistan &nbsp;•&nbsp; {{ COMPANY_EMAIL }}
+        </div>
+    </div>
+</footer>

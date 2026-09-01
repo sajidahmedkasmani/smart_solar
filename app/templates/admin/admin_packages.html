@@ -1,0 +1,298 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Solar Packages - SolarEase Admin{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    :root {
+        --ink: #142033;
+        --ink-soft: #4A5670;
+        --paper: #F7F5EF;
+        --panel: #FFFFFF;
+        --line: #E4E0D3;
+        --gold: #F0A93B;
+        --gold-dark: #C9821F;
+        --leaf: #3E7D53;
+        --amber-soft: #FBEBD2;
+        --font-display: 'Space Grotesk', sans-serif;
+        --font-body: 'Inter', sans-serif;
+        --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body { font-family: var(--font-body); background: var(--paper); color: var(--ink); }
+
+    .font-display { font-family: var(--font-display); }
+    .font-mono { font-family: var(--font-mono); }
+
+    /* Buttons */
+    .btn-solar {
+        background: var(--gold);
+        color: var(--ink);
+        font-weight: 700;
+        border-radius: 10px;
+        transition: all .2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .btn-solar:hover {
+        background: var(--gold-dark);
+        color: #fff;
+        box-shadow: 0 8px 20px -6px rgba(240, 169, 59, .5);
+    }
+
+    .btn-outline {
+        border: 1.5px solid var(--line);
+        color: var(--ink);
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all .2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .btn-outline:hover {
+        border-color: var(--ink);
+        background: var(--ink);
+        color: #fff;
+    }
+
+    /* Admin Cards */
+    .pkg-admin-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 24px;
+        transition: all .25s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    .pkg-admin-card:hover {
+        border-color: var(--gold);
+        box-shadow: 0 12px 28px -10px rgba(20, 32, 51, .12);
+    }
+
+    .spec-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px dashed var(--line);
+        font-size: 0.85rem;
+    }
+    .spec-item:last-child { border-bottom: none; }
+
+    /* Modal Layout Fix */
+    .modal-overlay {
+        background: rgba(20, 32, 51, 0.65);
+        backdrop-filter: blur(4px);
+    }
+    .modal-content-box {
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .modal-body-scroll {
+        overflow-y: auto;
+        max-height: calc(90vh - 140px);
+    }
+    .form-input {
+        width: 100%;
+        padding: 0.6rem 0.85rem;
+        border: 1.5px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+        color: var(--ink);
+        font-size: 0.875rem;
+        outline: none;
+    }
+    .form-input:focus { border-color: var(--gold-dark); background: #FFF; }
+</style>
+
+<div class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Top Action Header -->
+    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8 bg-white p-6 rounded-2xl border border-[var(--line)] shadow-sm">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--amber-soft)] text-[var(--gold-dark)]">Admin Management</span>
+            </div>
+            <h2 class="font-display font-bold text-2xl mt-1 text-[var(--ink)]">Solar Packages Catalog</h2>
+            <p class="text-sm text-[var(--ink-soft)]">Manage standard system configurations, pricing, and specs</p>
+        </div>
+
+        <button id="openPackageModal" type="button" class="btn-solar px-5 py-3 text-sm">
+            <i class="fa-solid fa-plus mr-2"></i> Add New Package
+        </button>
+    </div>
+
+    <!-- Package Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for pkg in packages %}
+        <div class="pkg-admin-card">
+            <!-- Title & Type -->
+            <div class="flex justify-between items-start mb-3">
+                <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                    {{ pkg.system_type if pkg.system_type else 'Hybrid' }}
+                </span>
+                <span class="text-xs text-[var(--ink-soft)] font-mono">
+                    <i class="fa-solid fa-shield-halved text-[var(--gold-dark)] mr-1"></i>{{ pkg.warranty_years }} Yrs Warranty
+                </span>
+            </div>
+
+            <h3 class="font-display font-bold text-lg text-[var(--ink)] mb-2">{{ pkg.name }}</h3>
+
+            <div class="bg-[var(--paper)] p-3 rounded-xl mb-4 border border-[var(--line)]">
+                <span class="text-xs uppercase font-bold tracking-wider text-[var(--ink-soft)] block">Estimated Price</span>
+                <span class="font-mono font-bold text-xl text-[var(--gold-dark)]">
+                    PKR {{ "{:,}".format(pkg.price) if pkg.price else '1,250,000' }}
+                </span>
+            </div>
+
+            <!-- Detailed Specifications List -->
+            <div class="space-y-1 mb-6 flex-grow">
+                <div class="spec-item">
+                    <span class="text-[var(--ink-soft)]"><i class="fa-solid fa-solar-panel text-[var(--gold-dark)] w-5"></i> Solar Panels:</span>
+                    <span class="font-medium text-[var(--ink)] font-mono">{{ pkg.panels_info }}</span>
+                </div>
+                <div class="spec-item">
+                    <span class="text-[var(--ink-soft)]"><i class="fa-solid fa-bolt text-[var(--gold-dark)] w-5"></i> Inverter:</span>
+                    <span class="font-medium text-[var(--ink)] font-mono">{{ pkg.inverter_info }}</span>
+                </div>
+                <div class="spec-item">
+                    <span class="text-[var(--ink-soft)]"><i class="fa-solid fa-battery-three-quarters text-[var(--gold-dark)] w-5"></i> Battery:</span>
+                    <span class="font-medium text-[var(--ink)] font-mono">{{ pkg.battery_info if pkg.battery_info else 'N/A' }}</span>
+                </div>
+                <div class="spec-item">
+                    <span class="text-[var(--ink-soft)]"><i class="fa-solid fa-check text-[var(--leaf)] w-5"></i> Structure:</span>
+                    <span class="text-xs font-bold text-[var(--leaf)]">Included</span>
+                </div>
+                <div class="spec-item">
+                    <span class="text-[var(--ink-soft)]"><i class="fa-solid fa-check text-[var(--leaf)] w-5"></i> Cables:</span>
+                    <span class="text-xs font-bold text-[var(--leaf)]">Included</span>
+                </div>
+                <div class="spec-item">
+                    <span class="text-[var(--ink-soft)]"><i class="fa-solid fa-check text-[var(--leaf)] w-5"></i> Installation:</span>
+                    <span class="text-xs font-bold text-[var(--leaf)]">Included</span>
+                </div>
+            </div>
+
+            <!-- Admin Actions -->
+            <div class="pt-3 border-t border-[var(--line)] flex gap-2">
+                <a href="{{ url_for('surveys.index', package_id=pkg.id) }}" class="btn-outline w-full py-2 text-xs">
+                    <i class="fa-solid fa-eye mr-1.5"></i> Preview View
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Dialog -->
+<div id="addPackageModal" class="hidden fixed inset-0 z-[999] modal-overlay flex items-center justify-center p-4 sm:p-6">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 relative modal-content-box">
+        
+        <div class="flex justify-between items-center pb-4 border-b border-gray-100 shrink-0">
+            <h3 class="font-display font-bold text-lg text-[var(--ink)] flex items-center">
+                <i class="fa-solid fa-box-open mr-2 text-[var(--gold-dark)]"></i> Add New Package
+            </h3>
+            <button type="button" id="closePackageModal" class="text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Modal Form -->
+<form action="{{ url_for('sales.packages') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
+    <div class="modal-body-scroll mt-4 space-y-3.5 pr-1">
+        
+        <div>
+            <label class="block text-xs font-semibold mb-1" style="color: var(--ink);">Package Name</label>
+            <input type="text" name="name" required value="Residential 5 kW Hybrid System" class="form-input">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--ink);">System Type</label>
+                <select name="system_type" class="form-input" required>
+                    <option value="Hybrid" selected>Hybrid</option>
+                    <option value="On-Grid">On-Grid</option>
+                    <option value="Off-Grid">Off-Grid</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--ink);">Capacity (kW)</label>
+                <input type="number" step="0.1" name="capacity_kw" required value="5.0" class="form-input">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--ink);">Solar Panels</label>
+                <input type="text" name="panels_info" required value="10 × 550 W" class="form-input">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--ink);">Inverter</label>
+                <input type="text" name="inverter_info" required value="5 kW Hybrid Inverter" class="form-input">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--ink);">Battery</label>
+                <input type="text" name="battery_info" required value="2 × Lithium Batteries" class="form-input">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--ink);">Warranty (Years)</label>
+                <input type="number" name="warranty_years" required value="10" class="form-input">
+            </div>
+        </div>
+
+        <!-- Inclusions Checkboxes -->
+        <div class="p-3 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-between text-xs font-medium">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" name="has_structure" checked class="accent-amber-500 rounded"> Structure: Included
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" name="has_cables" checked class="accent-amber-500 rounded"> Cables: Included
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" name="has_installation" checked class="accent-amber-500 rounded"> Installation: Included
+            </label>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold mb-1" style="color: var(--ink);">Estimated Price (PKR)</label>
+            <input type="number" name="price" required value="1250000" class="form-input font-bold text-amber-600">
+        </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="pt-4 mt-2 border-t border-gray-100 flex justify-end gap-3 shrink-0">
+        <button type="button" id="cancelPackageModal" class="btn-outline px-4 py-2 text-sm">Cancel</button>
+        <button type="submit" class="btn-solar px-5 py-2 text-sm">Save Package</button>
+    </div>
+</form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('addPackageModal');
+        const openBtn = document.getElementById('openPackageModal');
+        const closeBtn = document.getElementById('closePackageModal');
+        const cancelBtn = document.getElementById('cancelPackageModal');
+
+        const toggleModal = (show) => modal.classList.toggle('hidden', !show);
+
+        if (openBtn) openBtn.addEventListener('click', () => toggleModal(true));
+        if (closeBtn) closeBtn.addEventListener('click', () => toggleModal(false));
+        if (cancelBtn) cancelBtn.addEventListener('click', () => toggleModal(false));
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) toggleModal(false);
+        });
+    });
+</script>
+{% endblock %}

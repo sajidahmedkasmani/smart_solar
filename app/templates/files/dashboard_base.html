@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SolarEase Dashboard{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .purple-gradient { background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); }
+    .sidebar-bg { background-color: #120e1e; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #475569 transparent; }
+    .dashboard-table-wrap { overflow-x: auto; }
+    .dashboard-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .dashboard-table th { text-align: left; color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; padding: 10px 12px; white-space: nowrap; }
+    .dashboard-table td { padding: 12px; border-top: 1px solid #e2e8f0; color: #1e293b; vertical-align: middle; }
+    .dashboard-dark-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 18px; box-shadow: 0 4px 16px rgba(15,23,42,.05); }
+    .dashboard-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:999px; background:#f3e8ff; color:#7e22ce; font-size:10px; font-weight:700; }
+    .dashboard-action { display:inline-flex; align-items:center; gap:7px; padding:8px 12px; border-radius:999px; background:#7e22ce; color:#fff; font-size:11px; font-weight:700; text-decoration:none; border:0; }
+    .dashboard-action:hover { background:#6b21a8; color:#fff; }
+    .dashboard-input { width:100%; padding:9px 12px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; font-size:11px; outline:none; }
+    .dashboard-input:focus { border-color:#a855f7; box-shadow:0 0 0 3px rgba(168,85,247,.12); }
+    /* Keep the supplied UI palette, but guarantee readable text on the light dashboard surface. */
+    .dashboard-surface-text { color:#0f172a !important; }
+    .dashboard-muted-text { color:#475569 !important; }
+    .dashboard-table a { color:#6b21a8; }
+    .dashboard-table a:hover { color:#581c87; }
+    .role-access-dropdown { position:relative; }
+    .role-access-dropdown summary { list-style:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:space-between; gap:10px; min-width:240px; padding:9px 12px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; color:#334155; font-size:11px; font-weight:700; }
+    .role-access-dropdown summary::-webkit-details-marker { display:none; }
+    .role-access-menu { position:absolute; right:0; top:44px; z-index:80; width:270px; padding:10px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 15px 35px rgba(15,23,42,.15); }
+    .role-access-option { display:flex; align-items:center; gap:8px; padding:8px; border-radius:9px; color:#334155; font-size:11px; }
+    .role-access-option:hover { background:#f8fafc; }
+
+    /* =========================================
+   SolarEase Floating Control Center
+   ========================================= */
+
+.control-center-card {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+
+  width: 320px;
+  padding: 16px;
+
+  z-index: 40;
+
+  /* Light purple glass */
+  background: rgba(168, 85, 247, 0.10);
+
+  /* Keep background content visible */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(216, 180, 254, 0.28);
+  border-radius: 24px;
+
+  box-shadow:
+      0 20px 45px rgba(0, 0, 0, 0.35),
+      0 0 30px rgba(168, 85, 247, 0.08);
+
+  color: #ffffff;
+}
+
+
+/* Header */
+
+.control-center-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.control-center-header h4 {
+  margin: 0;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+.control-center-header p {
+  margin: 3px 0 0;
+
+  font-size: 10px;
+
+  color: rgba(233, 213, 255, 0.70);
+}
+
+
+/* Buttons container */
+
+.control-center-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+}
+
+
+/* All three buttons */
+
+.control-btn {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #6516af7a;
+
+  border: 1px solid #d8b4fe66;
+
+  color: #f5eaff;
+
+  text-decoration: none;
+
+  box-shadow:
+      0 6px 18px rgba(88, 28, 135, 0.20);
+
+  transition:
+      background 0.2s ease,
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+}
+
+
+/* Main / Center button */
+
+.control-btn-main {
+  width: 42px;
+  height: 42px;
+
+  background: rgba(93, 18, 163, 0.747);
+
+  border-color: rgba(233, 213, 255, 0.55);
+
+  box-shadow:
+      0 8px 22px rgba(88, 28, 135, 0.30);
+}
+
+
+/* Hover */
+
+.control-btn:hover {
+  background: rgba(93, 18, 163, 0.747);
+
+  border-color: rgba(233, 213, 255, 0.65);
+
+  color: #ffffff;
+
+  transform: scale(1.06);
+
+  box-shadow:
+      0 8px 24px rgba(126, 34, 206, 0.30);
+}
+
+
+/* Center button hover */
+
+.control-btn-main:hover {
+  background: rgba(93, 18, 163, 0.747);
+
+  transform: scale(1.08);
+}
+
+
+/* Desktop only */
+
+@media (max-width: 1279px) {
+  .control-center-card {
+      display: none;
+  }
+}
+  </style>
+</head>
+<body class="dashboard-role-surface bg-[#f8fafc] text-slate-800 antialiased h-screen w-screen overflow-hidden flex">
+  <aside class="w-64 sidebar-bg text-slate-300 p-6 flex flex-col justify-between shrink-0 h-screen min-h-0 overflow-y-auto custom-scrollbar">
+    <div>
+      <div class="flex items-center gap-3 mb-8">
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" class="w-11 h-11 rounded-2xl object-cover ring-2 ring-purple-500/50" alt="User Avatar" />
+        <div>
+          <span class="text-[10px] font-extrabold uppercase text-purple-400 tracking-wider block">SolarEase</span>
+          <h4 class="text-sm font-bold text-white leading-tight truncate max-w-[145px]">{{ session.get('user_name', 'User') }}</h4>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div>
+          <p class="text-[11px] font-semibold text-slate-500 mb-3 tracking-wider uppercase">Menu</p>
+          <ul class="space-y-1.5 text-xs font-medium">
+            {% set roles = session.get('roles', [session.get('role','customer')]) %}
+
+            <li><a href="{{ url_for('index') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-house text-slate-400"></i> Home</a></li>
+
+            {# Staff/Admin dashboard only: customer-facing pages intentionally do NOT appear here. #}
+            {% if 'admin' in roles %}
+            <li class="pt-2"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Administration</p></li>
+            <li><a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-user-shield text-purple-400"></i> Admin Dashboard</a></li>
+            <li><a href="{{ url_for('admin.users') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-users-gear text-slate-400"></i> Users & Access</a></li>
+            {% endif %}
+
+            {% if 'sales' in roles or 'admin' in roles %}
+            <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Sales</p></li>
+            <li><a href="{{ url_for('sales.dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-handshake text-slate-400"></i> Sales Dashboard</a></li>
+            <li><a href="{{ url_for('admin.packages') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-solar-panel text-slate-400"></i> Solar Packages</a></li>
+            <li><a href="{{ url_for('admin.system_types') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-layer-group text-slate-400"></i> System Types</a></li>
+            {% endif %}
+
+            {% if 'engineer' in roles or 'admin' in roles %}
+            <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Engineering</p></li>
+            <li><a href="{{ url_for('surveys.engineer_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-helmet-safety text-slate-400"></i> Survey & Technical Work</a></li>
+            {% endif %}
+
+            {% if 'technician' in roles or 'admin' in roles %}
+            <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Installation</p></li>
+            <li><a href="{{ url_for('installations.technician_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-screwdriver-wrench text-slate-400"></i> Technician Work</a></li>
+            {% endif %}
+
+            {% if 'inventory_manager' in roles or 'admin' in roles %}
+            <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Inventory</p></li>
+            <li><a href="{{ url_for('inventory.stock') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-warehouse text-slate-400"></i> Stock Management</a></li>
+            <li><a href="{{ url_for('inventory.add_item') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-plus text-slate-400"></i> Add Equipment</a></li>
+            {% endif %}
+
+            {% if 'finance' in roles or 'admin' in roles %}
+            <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Finance</p></li>
+            <li><a href="{{ url_for('payments.finance_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-sack-dollar text-slate-400"></i> Finance Dashboard</a></li>
+            {% endif %}
+
+            <li class="pt-3"><a href="{{ url_for('auth.logout') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-right-from-bracket text-slate-400"></i> Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="bg-purple-950/40 border border-purple-500/20 rounded-2xl p-3 text-white backdrop-blur-md">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 rounded-xl bg-purple-600/30 flex items-center justify-center"><i class="fa-solid fa-sun text-purple-300"></i></div>
+        <div class="overflow-hidden"><h5 class="text-xs font-bold truncate">SolarEase</h5><p class="text-[10px] text-slate-400 truncate">Solar Management Platform</p></div>
+      </div>
+      <div class="text-[10px] text-slate-400 pt-2 border-t border-white/10">{% for r in roles %}{{ label_for(r) }}{% if not loop.last %} • {% endif %}{% else %}Customer{% endfor %}</div>
+    </div>
+  </aside>
+
+  <main class="flex-1 h-full overflow-y-auto custom-scrollbar p-6 md:p-8 relative bg-[#f8fafc]">
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <h1 class="text-2xl font-bold text-slate-900">{% block page_heading %}Dashboard{% endblock %}</h1>
+      <div class="flex items-center gap-4">
+        <button id="notificationBtn" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-600 hover:bg-slate-100 border border-slate-200" type="button" title="Notifications"><i class="fa-regular fa-bell text-sm"></i></button>
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input id="dashboardSearch" type="text" placeholder="Type here to search" class="pl-9 pr-4 py-2.5 text-xs bg-white rounded-full shadow-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 w-64" />
+        </div>
+      </div>
+    </div>
+
+    <div id="dashboardAlerts" class="space-y-2 mb-4">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="bg-white border border-purple-200 rounded-2xl px-4 py-3 text-xs shadow-sm">{{ message }}</div>
+      {% endfor %}
+      {% endwith %}
+    </div>
+
+    <!-- Same visual dashboard composition as the supplied UI: purple hero, cards, lists and right column. -->
+    <!-- <div class="purple-gradient rounded-3xl p-8 text-white relative overflow-hidden flex items-center justify-between shadow-xl shadow-purple-500/10 min-h-[190px] mb-8">
+      <div class="max-w-md space-y-3 relative z-10">
+        <span class="text-[10px] font-bold tracking-widest uppercase bg-white/20 px-2.5 py-1 rounded-md backdrop-blur-sm">Solar Management Platform</span>
+        <h2 class="text-2xl md:text-3xl font-extrabold leading-tight">Manage your SolarEase workflow from one dashboard</h2>
+        <p class="text-[11px] text-purple-100 font-light leading-relaxed">Your assigned modules, projects, customer work and operational actions are available through the same dashboard interface.</p>
+      </div>
+      <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=400" class="w-64 h-full object-cover absolute right-0 bottom-0 opacity-80 mix-blend-overlay hidden sm:block" alt="Dashboard Graphic" />
+    </div> -->
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-12 space-y-6">
+        {% block dashboard_content %}{% endblock %}
+      </div>
+      <!-- <div class="lg:col-span-4 space-y-6">
+        <div>
+          <h3 class="font-bold text-slate-900 text-base mb-3">Your Access</h3>
+          <div class="space-y-3">
+            {% for r in roles %}
+            <a href="{{ url_for(dashboard_for(r)) }}" class="flex items-center justify-between bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 no-underline hover:shadow transition">
+              <div class="flex items-center gap-3"><div class="w-11 h-11 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-layer-group"></i></div><div><h5 class="text-xs font-bold text-slate-900">{{ label_for(r) }}</h5><p class="text-[10px] dashboard-muted-text">Open role workspace</p></div></div>
+              <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% block dashboard_sidebar %}{% endblock %}
+      </div> -->
+    </div>
+
+    <!-- <div class="control-center-card">
+
+      <div class="control-center-header">
+          <h4 style="color:#120e1e;">SolarEase Control Center</h4>
+          <p style="color:#120e1e;">{{ session.get('user_name', 'User') }}</p>
+      </div>
+  
+      <div class="control-center-buttons">
+  
+          <a  href="{{ url_for('index') }}" class="control-btn">
+              <i class="fa-solid fa-house"></i>
+          </a>
+  
+          <button id="scrollTopBtn" class="control-btn control-btn-main" type="button">
+              <i class="fa-solid fa-arrow-up"></i>
+          </button>
+  
+          <a href="{{ url_for('auth.logout') }}" class="control-btn">
+              <i class="fa-solid fa-right-from-bracket"></i>
+          </a>
+  
+      </div>
+  
+  </div> -->
+  </main>
+  <script>
+    const search = document.getElementById('dashboardSearch');
+    if (search) search.addEventListener('input', () => {
+      const q = search.value.toLowerCase().trim();
+      document.querySelectorAll('.dashboard-searchable').forEach(el => {
+        el.style.display = !q || el.innerText.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('notificationBtn')?.addEventListener('click', () => document.getElementById('dashboardAlerts')?.scrollIntoView({behavior:'smooth', block:'start'}));
+    document.getElementById('scrollTopBtn')?.addEventListener('click', () => document.querySelector('main')?.scrollTo({top:0, behavior:'smooth'}));
+  </script>
+</body>
+</html>

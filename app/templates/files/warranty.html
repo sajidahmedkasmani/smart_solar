@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Warranty Management - SolarEase{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-5 py-10">
+    <div class="flex justify-between items-center mb-8 flex-wrap gap-3">
+        <div>
+            <h3 class="font-display font-bold text-2xl mb-1">
+                <i class="fa-solid fa-shield-halved mr-2" style="color: var(--gold-dark);"></i>Warranty &amp; Serial Certificates
+            </h3>
+            <p class="text-sm" style="color: var(--ink-soft);">Track registered equipment serial numbers and active warranty terms</p>
+        </div>
+        <a href="{{ url_for('maintenance.list_requests') }}" class="btn-outline px-4 py-2.5 text-sm">
+            <i class="fa-solid fa-wrench mr-1"></i> Request Claim / Service
+        </a>
+    </div>
+
+    <div class="card-panel">
+        <div class="overflow-x-auto">
+            <table class="table-solar">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Brand / Serial No.</th>
+                        <th>Warranty Term</th>
+                        <th>Start Date</th>
+                        <th>Status</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for w in warranties %}
+                    <tr>
+                        <td class="font-bold">{{ w.component_name }}</td>
+                        <td><code>{{ w.serial_number }}</code></td>
+                        <td>{{ w.warranty_years }} Years</td>
+                        <td class="text-xs" style="color: var(--ink-soft);">{{ w.start_date }}</td>
+                        <td><span class="badge-pill badge-leaf">Active</span></td>
+                        <td class="text-right">
+                            <a href="{{ url_for('maintenance.list_requests') }}" class="btn-outline px-3 py-1.5 text-xs">
+                                <i class="fa-solid fa-wrench mr-1"></i> Claim / Service
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-12" style="color: var(--ink-soft);">
+                            <i class="fa-solid fa-shield-cat text-2xl mb-2 block opacity-50" style="color: var(--gold);"></i>
+                            No warranties active yet. Complete an installation to activate product warranties.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

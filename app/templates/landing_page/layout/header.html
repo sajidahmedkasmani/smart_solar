@@ -1,0 +1,111 @@
+<header class="app-navbar">
+    <div class="max-w-7xl mx-auto px-5 md:px-6 py-3 flex items-center justify-between gap-4">
+        <a href="{{ url_for('index') }}" class="flex items-center gap-2 shrink-0">
+            <div class="brand-mark"></div>
+            <!-- <span class="font-display font-bold text-lg">Solar<span style="color: var(--gold-dark);">Ease</span></span> -->
+            <span class="font-display font-bold text-lg">{{ APP_NAME }}</span>
+        </a>
+
+        <button id="navToggle" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center border" style="border-color: var(--line);">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        {% set role = session.get('role') %}{% set roles = session.get('roles', [role]) %}
+        <div id="navLinks" class="hidden md:flex flex-1 flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            {% if session.get('user_id') %}
+            <a class="app-nav-link" href="{{ url_for(dashboard_for(role)) }}"><i class="fa-solid fa-house me-1"></i> My Dashboard</a>
+            {% endif %}
+
+            {% if not session.get('user_id') or (roles|length == 1 and 'customer' in roles) %}
+            <a class="app-nav-link" href="{{ url_for('quotations.calculator') }}"><i class="fa-solid fa-calculator me-1"></i> Load Calculator</a>
+            <a class="app-nav-link" href="{{ url_for('surveys.index') }}"><i class="fa-solid fa-calendar-check me-1"></i> Book Survey</a>
+            <a class="app-nav-link" href="{{ url_for('sales.packages') }}"><i class="fa-solid fa-box me-1"></i> Packages</a>
+            {% endif %}
+
+            {% if 'sales' in roles or 'admin' in roles %}
+            <a class="app-nav-link" href="{{ url_for('sales.packages') }}"><i class="fa-solid fa-box me-1"></i> Packages</a>
+            {% endif %}
+
+            {% if 'engineer' in roles or 'admin' in roles %}
+            <a class="app-nav-link" href="{{ url_for('surveys.engineer_dashboard') }}"><i class="fa-solid fa-clipboard-list me-1"></i> Survey Requests</a>
+            {% endif %}
+
+            {% if 'technician' in roles or 'admin' in roles %}
+            <a class="app-nav-link" href="{{ url_for('installations.technician_dashboard') }}"><i class="fa-solid fa-bars-progress me-1"></i> My Installations</a>
+            {% endif %}
+
+            {% if 'inventory_manager' in roles or 'admin' in roles %}
+            <a class="app-nav-link" href="{{ url_for('inventory.stock') }}"><i class="fa-solid fa-box-open me-1"></i> Inventory</a>
+            <a class="app-nav-link" href="{{ url_for('inventory.add_item') }}"><i class="fa-solid fa-plus me-1"></i> Add Equipment</a>
+            {% endif %}
+
+            {% if 'finance' in roles or 'admin' in roles %}
+            <a class="app-nav-link" href="{{ url_for('payments.finance_dashboard') }}"><i class="fa-solid fa-sack-dollar me-1"></i> Payments</a>
+            {% endif %}
+
+            {% if 'admin' in roles %}
+            <a class="app-nav-link" href="{{ url_for('inventory.stock') }}"><i class="fa-solid fa-box-open me-1"></i> Inventory</a>
+            <a class="app-nav-link" href="{{ url_for('admin.users') }}"><i class="fa-solid fa-users-gear me-1"></i> Users</a>
+            {% endif %}
+
+            {% if 'customer' in roles or 'admin' in roles %}
+            <a class="app-nav-link" href="{{ url_for('maintenance.maintenance') }}"><i class="fa-solid fa-screwdriver-wrench me-1"></i> Maintenance</a>
+            {% endif %}
+        </div>
+
+        <div class="hidden md:flex items-center gap-2 shrink-0">
+            {% if session.get('user_id') %}
+                <span class="text-sm mr-1" style="color: var(--ink-soft);">Hi, {{ session.get('user_name') }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn-danger-solar px-4 py-2 text-xs">Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn-outline px-4 py-2 text-xs">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn-solar px-4 py-2 text-xs">Register</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="navLinksMobile" class="hidden md:hidden border-t px-5 py-4 flex flex-col gap-3" style="border-color: var(--line); background: var(--paper);">
+        {% if session.get('user_id') %}
+        <a class="app-nav-link" href="{{ url_for(dashboard_for(role)) }}"><i class="fa-solid fa-house me-1"></i> My Dashboard</a>
+        {% endif %}
+        {% if not session.get('user_id') or (roles|length == 1 and 'customer' in roles) %}
+        <a class="app-nav-link" href="{{ url_for('quotations.calculator') }}"><i class="fa-solid fa-calculator me-1"></i> Load Calculator</a>
+        <a class="app-nav-link" href="{{ url_for('surveys.index') }}"><i class="fa-solid fa-calendar-check me-1"></i> Book Survey</a>
+        <a class="app-nav-link" href="{{ url_for('sales.packages') }}"><i class="fa-solid fa-box me-1"></i> Packages</a>
+        {% endif %}
+        {% if 'sales' in roles or 'admin' in roles %}
+        <a class="app-nav-link" href="{{ url_for('sales.packages') }}"><i class="fa-solid fa-box me-1"></i> Packages</a>
+        {% endif %}
+        {% if 'engineer' in roles or 'admin' in roles %}
+        <a class="app-nav-link" href="{{ url_for('surveys.engineer_dashboard') }}"><i class="fa-solid fa-clipboard-list me-1"></i> Survey Requests</a>
+        {% endif %}
+        {% if 'technician' in roles or 'admin' in roles %}
+        <a class="app-nav-link" href="{{ url_for('installations.technician_dashboard') }}"><i class="fa-solid fa-bars-progress me-1"></i> My Installations</a>
+        {% endif %}
+        {% if 'inventory_manager' in roles or 'admin' in roles %}
+        <a class="app-nav-link" href="{{ url_for('inventory.stock') }}"><i class="fa-solid fa-box-open me-1"></i> Inventory</a>
+        <a class="app-nav-link" href="{{ url_for('inventory.add_item') }}"><i class="fa-solid fa-plus me-1"></i> Add Equipment</a>
+        {% endif %}
+        {% if 'finance' in roles or 'admin' in roles %}
+        <a class="app-nav-link" href="{{ url_for('payments.finance_dashboard') }}"><i class="fa-solid fa-sack-dollar me-1"></i> Payments</a>
+        {% endif %}
+        {% if 'admin' in roles %}
+        <a class="app-nav-link" href="{{ url_for('inventory.stock') }}"><i class="fa-solid fa-box-open me-1"></i> Inventory</a>
+        <a class="app-nav-link" href="{{ url_for('admin.users') }}"><i class="fa-solid fa-users-gear me-1"></i> Users</a>
+        {% endif %}
+        {% if 'customer' in roles or 'admin' in roles %}
+        <a class="app-nav-link" href="{{ url_for('maintenance.maintenance') }}"><i class="fa-solid fa-screwdriver-wrench me-1"></i> Maintenance</a>
+        {% endif %}
+
+        <div class="pt-3 border-t flex items-center gap-2" style="border-color: var(--line);">
+            {% if session.get('user_id') %}
+                <span class="text-sm mr-1" style="color: var(--ink-soft);">Hi, {{ session.get('user_name') }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn-danger-solar px-4 py-2 text-xs">Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn-outline px-4 py-2 text-xs">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn-solar px-4 py-2 text-xs">Register</a>
+            {% endif %}
+        </div>
+    </div>
+</header>

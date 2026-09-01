@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Book Site Survey - SolarEase{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-5 py-10">
+    <div class="card-panel">
+        <h3 class="font-display font-bold text-2xl mb-2">
+            <i class="fa-solid fa-calendar-plus mr-2" style="color: var(--gold-dark);"></i>Book Site Survey
+        </h3>
+        <p class="text-sm mb-6" style="color: var(--ink-soft);">Schedule an engineering site survey to check roof orientation, shading conditions, and electrical setup.</p>
+
+        <!-- <form action="{{ url_for('surveys.index') }}" method="POST">
+            <div class="mb-4">
+                <label class="form-label">Full Address for Inspection</label>
+                <textarea name="address" class="form-input" rows="2" placeholder="Street, Sector, City" required></textarea>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="form-label">Preferred Date</label>
+                    <input type="date" name="preferred_date" class="form-input" required>
+                </div>
+                <div>
+                    <label class="form-label">Preferred Time Slot</label>
+                    <select name="preferred_time" class="form-input" required>
+                        <option value="Morning (10:00 AM - 01:00 PM)">Morning (10:00 AM - 01:00 PM)</option>
+                        <option value="Afternoon (02:00 PM - 05:00 PM)">Afternoon (02:00 PM - 05:00 PM)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-6">
+                <label class="form-label">Special Notes / Instructions</label>
+                <input type="text" name="notes" class="form-input" placeholder="e.g. Call before arrival, key with guard">
+            </div>
+
+            <button type="submit" class="btn-solar w-full py-3.5 text-sm">
+                <i class="fa-solid fa-check-circle mr-2"></i>Confirm Survey Request
+            </button>
+        </form> -->
+
+        <form action="" method="POST" class="space-y-4">
+            <!-- Property & Contact Info -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Contact Person</label>
+                    <input type="text" name="contact_person" value="" required class="w-full p-2.5 border rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Property Type</label>
+                    <select name="property_type" class="w-full p-2.5 border rounded-lg text-sm">
+                        <option value="Residential - Double Storey">Residential (Double Storey)</option>
+                        <option value="Residential - Single Storey">Residential (Single Storey)</option>
+                        <option value="Commercial Roof">Commercial Roof</option>
+                        <option value="Agricultural Field">Agricultural Field</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Date & Time Slot Selection -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Preferred Date</label>
+                    <input type="date" name="preferred_date" id="survey_date" required class="w-full p-2.5 border rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Available Time Slot</label>
+                    <select name="time_slot" class="w-full p-2.5 border rounded-lg text-sm">
+                        <option value=" Morning (09:00 AM - 12:00 PM)">Morning (09:00 AM - 12:00 PM)</option>
+                        <option value="Afternoon (12:00 PM - 03:00 PM)">Afternoon (12:00 PM - 03:00 PM)</option>
+                        <option value="Evening (03:00 PM - 06:00 PM)">Evening (03:00 PM - 06:00 PM)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Full Address & Instructions -->
+            <div>
+                <label class="block text-xs font-semibold mb-1">Site Address</label>
+                <textarea name="address" rows="2" placeholder="House/Plot #, Street, Area, City" required class="w-full p-2.5 border rounded-lg text-sm"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold mb-1">Special Instructions (Optional)</label>
+                <input type="text" name="special_instructions" placeholder="e.g. Call before arrival / Roof access via side stairs" class="w-full p-2.5 border rounded-lg text-sm">
+            </div>
+
+            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl shadow-md transition">
+                Confirm & Book Survey Request
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    const dateInput = document.getElementById('survey_date');
+
+    // 1. Min attribute set karein (Past dates disable karne ke liye)
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    dateInput.setAttribute('min', todayStr);
+
+    // 2. Value set karein (Next Day/Kal ki date auto-select karne ke liye)
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1); // 1 din add kar diya
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    
+    // Default selected value = Tomorrow
+    dateInput.value = tomorrowStr;
+
+    // Direct Aaj ki date auto-select karni ho to neeche wali line uncomment kar lein:
+    dateInput.value = todayStr;
+
+    // Extra Front-end Check (Agar user manual change kare)
+    dateInput.addEventListener('change', function() {
+        if (this.value < todayStr) {
+            alert('Past dates allowed nahi hain!');
+            this.value = tomorrowStr;
+        }
+    });
+</script>
+{% endblock %}

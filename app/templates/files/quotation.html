@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Quotations - SolarEase{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-5 py-10">
+    <h3 class="font-display font-bold text-2xl mb-8"><i class="fa-solid fa-file-invoice mr-2" style="color: var(--gold-dark);"></i>Your Solar Quotations</h3>
+
+    {% if quotations %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for q in quotations %}
+            <div class="card-panel" style="border-left: 4px solid var(--sky);">
+                <div class="flex justify-between items-center mb-2">
+                    <h5 class="font-display font-bold text-lg mb-0">{{ q.quotation_number }}</h5>
+                    <span class="badge-pill {% if q.status=='Approved' %}badge-leaf{% elif q.status=='Pending' %}badge-gold{% else %}badge-neutral{% endif %}">{{ q.status }}</span>
+                </div>
+                <p class="text-xs mb-4" style="color: var(--ink-soft);">Generated Date: {{ q.created_at }}</p>
+
+                <div class="rounded-xl p-4 mb-4" style="background: var(--paper); border: 1px solid var(--line);">
+                    <div class="flex justify-between py-1 text-sm"><span>System Capacity:</span> <strong>{{ q.system_capacity_kw }} kW</strong></div>
+                    <div class="flex justify-between py-1 text-sm"><span>Equipment Cost:</span> <span>PKR {{ "{:,}".format(q.equipment_cost) if q.equipment_cost else '0' }}</span></div>
+                    <div class="flex justify-between py-1 text-sm"><span>Installation &amp; Labor:</span> <span>PKR {{ "{:,}".format(q.installation_cost) if q.installation_cost else '0' }}</span></div>
+                    <div class="flex justify-between py-1 text-sm" style="color: var(--danger);"><span>Discount:</span> <span>- PKR {{ "{:,}".format(q.discount) if q.discount else '0' }}</span></div>
+                    <div class="divider-line my-2"></div>
+                    <div class="flex justify-between pt-1 font-bold text-lg" style="color: var(--gold-dark);"><span>Final Total:</span> <span>PKR {{ "{:,}".format(q.final_amount) if q.final_amount else '0' }}</span></div>
+                </div>
+
+                {% if q.status == 'Pending' %}
+                <form action="{{ url_for('quotations.approve', quotation_id=q.id) }}" method="POST">
+                    <button type="submit" class="btn-solar w-full py-3 text-sm"><i class="fa-solid fa-check mr-1"></i> Approve Quotation &amp; Proceed to Payment</button>
+                </form>
+                {% else %}
+                <a href="{{ url_for('payments.history') }}" class="btn-outline w-full py-3 text-sm block text-center"><i class="fa-solid fa-credit-card mr-1"></i> View Payment Details</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-xl p-6 text-sm" style="background: var(--sky-soft); color: var(--sky-dark); border: 1px solid rgba(29,110,140,.25);">
+            <i class="fa-solid fa-info-circle mr-2"></i> No active quotations found. Please book a site survey first so our engineers can issue your customized quotation.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SolarEase - Complete Project Documentation</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7f6;
+            color: #222;
+            line-height: 1.7;
+        }
+
+        header {
+            background: #0b2b28;
+            color: white;
+            padding: 45px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0 0 10px;
+            font-size: 38px;
+        }
+
+        header p {
+            margin: 5px 0;
+            color: #d9eee7;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #123b36;
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 18px;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            max-width: 1150px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.06);
+        }
+
+        h2 {
+            color: #0b2b28;
+            border-bottom: 2px solid #12a566;
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            color: #0c7a4c;
+            margin-top: 25px;
+        }
+
+        h4 {
+            color: #123b36;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e4f5ec;
+            color: #0c7a4c;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin: 3px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: #f7faf9;
+            border-left: 4px solid #12a566;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+        }
+
+        ul {
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 7px;
+        }
+
+        code {
+            background: #eef2f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+
+        pre {
+            background: #111;
+            color: #eee;
+            padding: 20px;
+            overflow-x: auto;
+            border-radius: 8px;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+        }
+
+        .flow {
+            background: #eef8f3;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+        }
+
+        .warning {
+            background: #fff7df;
+            border-left: 5px solid #d49a00;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background: #e8f7ee;
+            border-left: 5px solid #12a566;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .error {
+            background: #fff0f0;
+            border-left: 5px solid #d33;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #0b2b28;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f7f7f7;
+        }
+
+        .module-number {
+            background: #0b2b28;
+            color: white;
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+
+        footer {
+            background: #0b2b28;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 700px) {
+            header h1 {
+                font-size: 28px;
+            }
+
+            section {
+                padding: 20px;
+            }
+
+            nav a {
+                display: inline-block;
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>SolarEase</h1>
+    <p>Solar Installation & Management Platform</p>
+    <p>Complete Project Documentation & Presentation Guide</p>
+</header>
+
+<nav>
+    <a href="#overview">Overview</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#modules">Modules</a>
+    <a href="#database">Database</a>
+    <a href="#routes">Routes</a>
+    <a href="#errors">Errors & Fixes</a>
+    <a href="#presentation">Presentation</a>
+</nav>
+
+<main>
+
+<!-- ====================================================== -->
+<!-- PROJECT OVERVIEW -->
+<!-- ====================================================== -->
+
+<section id="overview">
+
+    <h2>1. Project Overview</h2>
+
+    <p>
+        <strong>SolarEase</strong> is a Flask-based solar installation
+        management platform. The system is designed to manage the complete
+        workflow of a solar installation company.
+    </p>
+
+    <p>
+        The application connects customers, surveys, quotations, inventory,
+        installations, payments, maintenance and warranty management into
+        one system.
+    </p>
+
+    <h3>Main Objectives</h3>
+
+    <ul>
+        <li>Manage customer information.</li>
+        <li>Allow customers to register and log in.</li>
+        <li>Manage solar installation requirements.</li>
+        <li>Schedule and manage site surveys.</li>
+        <li>Generate solar quotations.</li>
+        <li>Manage solar packages.</li>
+        <li>Manage inventory and stock.</li>
+        <li>Track installations.</li>
+        <li>Record customer payments.</li>
+        <li>Manage maintenance requests.</li>
+        <li>Manage warranties.</li>
+        <li>Provide administrator functionality.</li>
+        <li>Provide API endpoints for system data.</li>
+    </ul>
+
+    <h3>Technology Stack</h3>
+
+    <span class="badge">Python</span>
+    <span class="badge">Flask</span>
+    <span class="badge">Flask-SQLAlchemy</span>
+    <span class="badge">SQLite</span>
+    <span class="badge">Jinja2</span>
+    <span class="badge">HTML</span>
+    <span class="badge">CSS</span>
+    <span class="badge">JavaScript</span>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- ARCHITECTURE -->
+<!-- ====================================================== -->
+
+<section id="architecture">
+
+    <h2>2. Project Architecture</h2>
+
+    <p>
+        The project follows a modular Flask architecture using Blueprints.
+        Each major business functionality has its own module.
+    </p>
+
+    <div class="flow">
+Browser
+   ↓
+Flask Application
+   ↓
+Blueprint / Route
+   ↓
+Business Logic
+   ↓
+SQLAlchemy Model
+   ↓
+SQLite Database
+   ↓
+Response / HTML Template
+    </div>
+
+    <h3>Basic Folder Architecture</h3>
+
+<pre>
+solar_ease121212/
+│
+├── app.py
+├── run.py
+├── config.py
+│
+├── instance/
+│   └── solarease.db
+│
+├── app/
+│   ├── __init__.py
+│   ├── models.py
+│   │
+│   ├── auth/
+│   │   └── routes.py
+│   │
+│   ├── customers/
+│   │   └── routes.py
+│   │
+│   ├── sales/
+│   │   └── routes.py
+│   │
+│   ├── surveys/
+│   │   └── routes.py
+│   │
+│   ├── quotations/
+│   │   └── routes.py
+│   │
+│   ├── inventory/
+│   │   └── routes.py
+│   │
+│   ├── installations/
+│   │   └── routes.py
+│   │
+│   ├── payments/
+│   │   └── routes.py
+│   │
+│   ├── maintenance/
+│   │   └── routes.py
+│   │
+│   ├── warranties/
+│   │   └── routes.py
+│   │
+│   ├── admin/
+│   │   └── routes.py
+│   │
+│   └── api/
+│       └── routes.py
+│
+└── templates/
+    ├── admin_dashboard.html
+    ├── base.html
+    ├── index.html
+    ├── installation_tracking.html
+    ├── login.html
+    ├── maintenance.html
+    ├── packages.html
+    ├── payment.html
+    ├── quotation.html
+    ├── register.html
+    ├── requirement_form.html
+    ├── survey_booking.html
+    ├── user_dashboard.html
+    └── warranty.html
+</pre>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- APPLICATION INITIALIZATION -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>3. Application Initialization</h2>
+
+    <p>
+        The main Flask application is created through the
+        <code>create_app()</code> application factory.
+    </p>
+
+    <h3>What create_app() Does</h3>
+
+    <ul>
+        <li>Creates the Flask application.</li>
+        <li>Loads configuration.</li>
+        <li>Initializes SQLAlchemy.</li>
+        <li>Imports application Blueprints.</li>
+        <li>Registers all Blueprints.</li>
+        <li>Creates database tables.</li>
+        <li>Seeds initial data.</li>
+    </ul>
+
+    <h3>Application Flow</h3>
+
+    <div class="flow">
+run.py
+   ↓
+create_app()
+   ↓
+Flask Application
+   ↓
+Configuration
+   ↓
+Database
+   ↓
+Blueprint Registration
+   ↓
+db.create_all()
+   ↓
+seed_data()
+   ↓
+Application Ready
+    </div>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- CONFIG -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>4. Configuration & Database Setup</h2>
+
+    <p>
+        The <code>config.py</code> file contains the application
+        configuration.
+    </p>
+
+    <h3>Database Configuration</h3>
+
+<pre>
+import os
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
+
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+
+class Config:
+
+    SECRET_KEY = os.environ.get(
+        'SECRET_KEY',
+        'solarease-secret-key-2026'
+    )
+
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get('DATABASE_URL')
+        or 'sqlite:///' +
+        os.path.join(INSTANCE_DIR, 'solarease.db')
+    )
+
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+</pre>
+
+    <h3>Why instance/ is Important</h3>
+
+    <p>
+        SQLite stores the database as a file. The application uses:
+    </p>
+
+<pre>
+instance/solarease.db
+</pre>
+
+    <div class="warning">
+        If the <code>instance</code> folder does not exist, SQLite may
+        produce:
+        <br><br>
+        <strong>sqlite3.OperationalError: unable to open database file</strong>
+    </div>
+
+    <p>
+        Therefore the folder should exist before the database is created,
+        or the application can create it automatically using
+        <code>os.makedirs()</code>.
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- MODULES -->
+<!-- ====================================================== -->
+
+<section id="modules">
+
+    <h2>5. Module-by-Module Explanation</h2>
+
+    <p>
+        SolarEase is divided into multiple independent but connected
+        modules. Each module has its own Blueprint and routes.
+    </p>
+
+
+    <!-- AUTH -->
+
+    <div class="card">
+        <span class="module-number">Module 01</span>
+
+        <h3>Authentication Module</h3>
+
+        <p>
+            The Authentication module manages user registration and login.
+        </p>
+
+        <h4>Main Functions</h4>
+
+        <ul>
+            <li>User registration.</li>
+            <li>User login.</li>
+            <li>User logout.</li>
+            <li>User role management.</li>
+            <li>Admin authentication.</li>
+        </ul>
+
+        <h4>Blueprint</h4>
+
+<pre>
+auth_bp = Blueprint('auth', __name__)
+</pre>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/auth
+</pre>
+
+        <h4>Presentation Explanation</h4>
+
+        <p>
+            "Authentication module is responsible for controlling who can
+            access the system. Users can register and log in, while
+            administrators have separate administrative access."
+        </p>
+    </div>
+
+
+    <!-- CUSTOMERS -->
+
+    <div class="card">
+        <span class="module-number">Module 02</span>
+
+        <h3>Customer Management Module</h3>
+
+        <p>
+            This module stores and manages customer information.
+        </p>
+
+        <h4>Customer Data</h4>
+
+        <ul>
+            <li>Customer name.</li>
+            <li>Phone number.</li>
+            <li>Email/user information.</li>
+            <li>Address.</li>
+            <li>City.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/customer
+</pre>
+
+        <h4>Purpose</h4>
+
+        <p>
+            It provides a central place for managing customers who want
+            solar installation services.
+        </p>
+    </div>
+
+
+    <!-- SALES -->
+
+    <div class="card">
+        <span class="module-number">Module 03</span>
+
+        <h3>Sales Module</h3>
+
+        <p>
+            The Sales module handles the sales-side workflow of solar
+            products and packages.
+        </p>
+
+        <h4>Responsibilities</h4>
+
+        <ul>
+            <li>Manage sales information.</li>
+            <li>Connect customers with solar packages.</li>
+            <li>Support the quotation-to-sale workflow.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/sales
+</pre>
+    </div>
+
+
+    <!-- SURVEY -->
+
+    <div class="card">
+        <span class="module-number">Module 04</span>
+
+        <h3>Site Survey Module</h3>
+
+        <p>
+            The Survey module records customer requirements and site survey
+            requests before installation.
+        </p>
+
+        <h4>Typical Information</h4>
+
+        <ul>
+            <li>Customer name.</li>
+            <li>Phone number.</li>
+            <li>City.</li>
+            <li>Address.</li>
+            <li>Monthly electricity bill.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/surveys
+</pre>
+
+        <h4>Workflow</h4>
+
+        <div class="flow">
+Customer
+   ↓
+Survey Request
+   ↓
+Customer Requirements
+   ↓
+Monthly Bill
+   ↓
+Quotation Generation
+        </div>
+
+        <h4>Presentation Explanation</h4>
+
+        <p>
+            "The survey module collects the customer's electricity
+            requirements. The monthly electricity bill can then be used
+            to estimate the required solar system capacity."
+        </p>
+    </div>
+
+
+    <!-- SOLAR SYSTEM TYPES -->
+
+    <div class="card">
+        <span class="module-number">Module 05</span>
+
+        <h3>Solar System Types Module</h3>
+
+        <p>
+            This module is responsible for distinguishing between different
+            types of solar systems.
+        </p>
+
+        <h4>System Types</h4>
+
+        <ul>
+            <li><strong>On-Grid:</strong> Connected to the electricity grid.</li>
+            <li><strong>Off-Grid:</strong> Works independently from the grid.</li>
+            <li><strong>Hybrid:</strong> Grid-connected system with battery backup.</li>
+        </ul>
+
+        <h4>On-Grid</h4>
+
+        <p>
+            An on-grid system normally operates with the electricity grid
+            and is primarily used for reducing electricity bills.
+        </p>
+
+        <h4>Off-Grid</h4>
+
+        <p>
+            An off-grid system operates independently and requires energy
+            storage such as batteries.
+        </p>
+
+        <h4>Hybrid</h4>
+
+        <p>
+            A hybrid system combines grid connection with battery backup,
+            allowing the system to provide power during outages.
+        </p>
+
+        <h4>Comparison</h4>
+
+        <table>
+            <tr>
+                <th>System</th>
+                <th>Grid Connected</th>
+                <th>Battery</th>
+                <th>Backup</th>
+            </tr>
+
+            <tr>
+                <td>On-Grid</td>
+                <td>Yes</td>
+                <td>Normally No</td>
+                <td>Limited</td>
+            </tr>
+
+            <tr>
+                <td>Off-Grid</td>
+                <td>No</td>
+                <td>Required</td>
+                <td>Yes</td>
+            </tr>
+
+            <tr>
+                <td>Hybrid</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+            </tr>
+        </table>
+    </div>
+
+
+    <!-- QUOTATIONS -->
+
+    <div class="card">
+        <span class="module-number">Module 06</span>
+
+        <h3>Quotation Module</h3>
+
+        <p>
+            The quotation module generates an estimated solar system
+            quotation based on survey information.
+        </p>
+
+        <h4>Calculation Logic</h4>
+
+<pre>
+estimated_units = monthly_bill / 60
+
+daily_units = estimated_units / 30
+
+recommended_kw =
+    round((daily_units / 5) * 1.2, 1)
+
+minimum recommended size = 3 kW
+
+panel_count =
+    ceil((recommended_kw * 1000) / 550)
+
+total_cost =
+    recommended_kw * 220000
+</pre>
+
+        <h4>Example</h4>
+
+        <p>
+            The system takes the monthly electricity bill, estimates
+            electricity consumption and then calculates an approximate
+            recommended solar capacity.
+        </p>
+
+        <h4>Quotation Data</h4>
+
+        <ul>
+            <li>Survey ID.</li>
+            <li>Recommended system capacity.</li>
+            <li>Panel count.</li>
+            <li>Total estimated cost.</li>
+            <li>Quotation status.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/quotations
+</pre>
+
+        <h4>Presentation Explanation</h4>
+
+        <p>
+            "The quotation module converts survey information into an
+            estimated solar system recommendation. It calculates system
+            size, panel quantity and estimated price."
+        </p>
+    </div>
+
+
+    <!-- INVENTORY -->
+
+    <div class="card">
+        <span class="module-number">Module 07</span>
+
+        <h3>Inventory Management Module</h3>
+
+        <p>
+            Inventory manages the physical solar products and components
+            available in company stock.
+        </p>
+
+        <h4>Inventory Examples</h4>
+
+        <ul>
+            <li>Solar panels.</li>
+            <li>Inverters.</li>
+            <li>Lithium batteries.</li>
+            <li>DC cables.</li>
+        </ul>
+
+        <h4>Stored Information</h4>
+
+        <ul>
+            <li>Item name.</li>
+            <li>Category.</li>
+            <li>Brand.</li>
+            <li>Model.</li>
+            <li>Quantity.</li>
+            <li>Purchase price.</li>
+            <li>Selling price.</li>
+            <li>Minimum stock level.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/inventory
+</pre>
+
+        <h4>Important Endpoint</h4>
+
+<pre>
+inventory.list_inventory
+</pre>
+
+        <p>
+            This is important because the template should reference the
+            endpoint that actually exists in the routes file.
+        </p>
+    </div>
+
+
+    <!-- INSTALLATIONS -->
+
+    <div class="card">
+        <span class="module-number">Module 08</span>
+
+        <h3>Installation Management Module</h3>
+
+        <p>
+            This module manages the installation process after a customer
+            has moved forward with the solar project.
+        </p>
+
+        <h4>Responsibilities</h4>
+
+        <ul>
+            <li>Track installation records.</li>
+            <li>Track installation status.</li>
+            <li>Connect installation with customer/project information.</li>
+            <li>Provide installation progress information.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/installations
+</pre>
+    </div>
+
+
+    <!-- PAYMENTS -->
+
+    <div class="card">
+        <span class="module-number">Module 09</span>
+
+        <h3>Payment Module</h3>
+
+        <p>
+            The Payment module records financial transactions related to
+            solar projects.
+        </p>
+
+        <h4>Responsibilities</h4>
+
+        <ul>
+            <li>Record customer payments.</li>
+            <li>Track payment amounts.</li>
+            <li>Track payment status.</li>
+            <li>Connect payments to quotations/projects.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/payments
+</pre>
+    </div>
+
+
+    <!-- MAINTENANCE -->
+
+    <div class="card">
+        <span class="module-number">Module 10</span>
+
+        <h3>Maintenance Module</h3>
+
+        <p>
+            Maintenance handles service and maintenance requests after
+            installation.
+        </p>
+
+        <h4>Responsibilities</h4>
+
+        <ul>
+            <li>Create maintenance requests.</li>
+            <li>Track maintenance status.</li>
+            <li>Record service information.</li>
+            <li>Manage post-installation support.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/maintenance
+</pre>
+    </div>
+
+
+    <!-- WARRANTY -->
+
+    <div class="card">
+        <span class="module-number">Module 11</span>
+
+        <h3>Warranty Module</h3>
+
+        <p>
+            The Warranty module manages warranty-related information for
+            installed solar products.
+        </p>
+
+        <h4>Responsibilities</h4>
+
+        <ul>
+            <li>Store warranty information.</li>
+            <li>Track warranty status.</li>
+            <li>Connect warranty information with installations.</li>
+            <li>Support customer warranty management.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/warranties
+</pre>
+    </div>
+
+
+    <!-- ADMIN -->
+
+    <div class="card">
+        <span class="module-number">Module 12</span>
+
+        <h3>Admin Module</h3>
+
+        <p>
+            The Admin module provides administrative control over the
+            SolarEase platform.
+        </p>
+
+        <h4>Responsibilities</h4>
+
+        <ul>
+            <li>View system information.</li>
+            <li>Manage operational records.</li>
+            <li>Access administrative dashboard.</li>
+            <li>Monitor different modules.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/admin
+</pre>
+    </div>
+
+
+    <!-- API -->
+
+    <div class="card">
+        <span class="module-number">Module 13</span>
+
+        <h3>API Module</h3>
+
+        <p>
+            The API module provides programmatic access to application data.
+        </p>
+
+        <h4>Purpose</h4>
+
+        <ul>
+            <li>Return data in JSON format.</li>
+            <li>Allow frontend/API clients to communicate with Flask.</li>
+            <li>Provide machine-readable responses.</li>
+        </ul>
+
+        <h4>URL Prefix</h4>
+
+<pre>
+/api
+</pre>
+
+        <h4>Presentation Explanation</h4>
+
+        <p>
+            "The API layer allows external clients or frontend applications
+            to communicate with the Flask backend using structured JSON
+            responses."
+        </p>
+    </div>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- SOLAR PACKAGES -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>6. Solar Packages</h2>
+
+    <p>
+        The application contains predefined solar packages through the
+        seed data function.
+    </p>
+
+    <table>
+
+        <tr>
+            <th>Package</th>
+            <th>Type</th>
+            <th>Capacity</th>
+            <th>Price</th>
+        </tr>
+
+        <tr>
+            <td>3 kW Residential On-Grid</td>
+            <td>On-Grid</td>
+            <td>3 kW</td>
+            <td>525,000</td>
+        </tr>
+
+        <tr>
+            <td>5 kW Residential Hybrid</td>
+            <td>Hybrid</td>
+            <td>5 kW</td>
+            <td>1,250,000</td>
+        </tr>
+
+        <tr>
+            <td>8 kW Hybrid System</td>
+            <td>Hybrid</td>
+            <td>8 kW</td>
+            <td>1,650,000</td>
+        </tr>
+
+        <tr>
+            <td>10 kW Commercial</td>
+            <td>On-Grid</td>
+            <td>10 kW</td>
+            <td>1,750,000</td>
+        </tr>
+
+        <tr>
+            <td>20 kW Commercial Hybrid</td>
+            <td>Hybrid</td>
+            <td>20 kW</td>
+            <td>3,400,000</td>
+        </tr>
+
+        <tr>
+            <td>50 kW Industrial</td>
+            <td>On-Grid</td>
+            <td>50 kW</td>
+            <td>7,500,000</td>
+        </tr>
+
+        <tr>
+            <td>Agricultural Tube-Well System</td>
+            <td>Off-Grid</td>
+            <td>15 kW</td>
+            <td>2,500,000</td>
+        </tr>
+
+    </table>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- DATABASE -->
+<!-- ====================================================== -->
+
+<section id="database">
+
+    <h2>7. Database System</h2>
+
+    <p>
+        SolarEase uses <strong>SQLite</strong> with
+        <strong>SQLAlchemy</strong> as the ORM.
+    </p>
+
+    <h3>Why SQLAlchemy?</h3>
+
+    <ul>
+        <li>Allows Python classes to represent database tables.</li>
+        <li>Reduces the need to write raw SQL for normal operations.</li>
+        <li>Makes database queries easier to manage.</li>
+        <li>Works well with Flask through Flask-SQLAlchemy.</li>
+    </ul>
+
+    <h3>Database Creation</h3>
+
+<pre>
+with app.app_context():
+    db.create_all()
+    seed_data()
+</pre>
+
+    <p>
+        <code>db.create_all()</code> creates database tables based on the
+        SQLAlchemy models.
+    </p>
+
+    <p>
+        <code>seed_data()</code> inserts initial records such as solar
+        packages, inventory items and the administrator account.
+    </p>
+
+    <h3>Seeded Inventory</h3>
+
+    <ul>
+        <li>550W Mono Solar Panel</li>
+        <li>5kW Hybrid Inverter</li>
+        <li>Lithium Battery 5kWh</li>
+        <li>DC Cable 6mm</li>
+    </ul>
+
+    <h3>Default Admin</h3>
+
+<pre>
+Username:
+admin
+
+Email:
+admin@solarease.pk
+
+Role:
+admin
+</pre>
+
+    <div class="warning">
+        The default password used in the current seed code is intended for
+        a development/demo environment and should be changed for a real
+        deployment.
+    </div>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- ROUTING -->
+<!-- ====================================================== -->
+
+<section id="routes">
+
+    <h2>8. Blueprint & Routing System</h2>
+
+    <p>
+        Flask Blueprints keep the project modular. Every module defines
+        its own routes and the main application registers those Blueprints.
+    </p>
+
+    <table>
+
+        <tr>
+            <th>Module</th>
+            <th>Blueprint</th>
+            <th>URL Prefix</th>
+        </tr>
+
+        <tr>
+            <td>Authentication</td>
+            <td>auth</td>
+            <td>/auth</td>
+        </tr>
+
+        <tr>
+            <td>Customers</td>
+            <td>customers</td>
+            <td>/customer</td>
+        </tr>
+
+        <tr>
+            <td>Sales</td>
+            <td>sales</td>
+            <td>/sales</td>
+        </tr>
+
+        <tr>
+            <td>Surveys</td>
+            <td>surveys</td>
+            <td>/surveys</td>
+        </tr>
+
+        <tr>
+            <td>Quotations</td>
+            <td>quotations</td>
+            <td>/quotations</td>
+        </tr>
+
+        <tr>
+            <td>Inventory</td>
+            <td>inventory</td>
+            <td>/inventory</td>
+        </tr>
+
+        <tr>
+            <td>Installations</td>
+            <td>installations</td>
+            <td>/installations</td>
+        </tr>
+
+        <tr>
+            <td>Payments</td>
+            <td>payments</td>
+            <td>/payments</td>
+        </tr>
+
+        <tr>
+            <td>Maintenance</td>
+            <td>maintenance</td>
+            <td>/maintenance</td>
+        </tr>
+
+        <tr>
+            <td>Warranties</td>
+            <td>warranties</td>
+            <td>/warranties</td>
+        </tr>
+
+        <tr>
+            <td>Admin</td>
+            <td>admin</td>
+            <td>/admin</td>
+        </tr>
+
+        <tr>
+            <td>API</td>
+            <td>api</td>
+            <td>/api</td>
+        </tr>
+
+    </table>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- URL FOR -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>9. Understanding url_for()</h2>
+
+    <p>
+        Flask's <code>url_for()</code> generates URLs using endpoint names.
+    </p>
+
+    <p>
+        The endpoint normally follows:
+    </p>
+
+<pre>
+blueprint_name.function_name
+</pre>
+
+    <h3>Example</h3>
+
+<pre>
+@inventory_bp.route('/')
+def list_inventory():
+    ...
+</pre>
+
+    <p>
+        The endpoint is:
+    </p>
+
+<pre>
+inventory.list_inventory
+</pre>
+
+    <p>
+        Therefore a template should use:
+    </p>
+
+<pre>
+{{ url_for('inventory.list_inventory') }}
+</pre>
+
+    <div class="error">
+        If a template uses:
+        <br><br>
+
+        <code>url_for('inventory.stock')</code>
+
+        <br><br>
+
+        but there is no function named <code>stock</code>, Flask raises:
+        <br><br>
+
+        <strong>
+            BuildError: Could not build url for endpoint
+            'inventory.stock'
+        </strong>
+    </div>
+
+    <h3>Same Problem With Surveys</h3>
+
+<pre>
+Wrong:
+url_for('surveys.index')
+
+Actual endpoint:
+surveys.list_surveys
+
+Correct:
+url_for('surveys.list_surveys')
+</pre>
+
+    <h3>Same Problem With Quotations</h3>
+
+<pre>
+Wrong:
+url_for('quotations.calculator')
+
+Available endpoint:
+quotations.list_quotations
+</pre>
+
+    <p>
+        The important concept is that <strong>the endpoint name must match
+        the Python route function name</strong>.
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- TEMPLATES -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>10. Template Structure</h2>
+
+    <p>
+        The current template structure is centralized rather than having
+        separate template folders for every module.
+    </p>
+
+    <h3>Current Templates</h3>
+
+<pre>
+templates/
+│
+├── admin_dashboard.html
+├── base.html
+├── index.html
+├── installation_tracking.html
+├── login.html
+├── maintenance.html
+├── packages.html
+├── payment.html
+├── quotation.html
+├── register.html
+├── requirement_form.html
+├── survey_booking.html
+├── user_dashboard.html
+└── warranty.html
+</pre>
+
+    <h3>base.html</h3>
+
+    <p>
+        <code>base.html</code> acts as the common layout for other pages.
+        It can contain the navigation bar, common CSS, common JavaScript
+        and shared page structure.
+    </p>
+
+    <h3>index.html</h3>
+
+    <p>
+        This is the main landing/home page.
+    </p>
+
+    <h3>Other Templates</h3>
+
+    <table>
+
+        <tr>
+            <th>Template</th>
+            <th>Purpose</th>
+        </tr>
+
+        <tr>
+            <td>login.html</td>
+            <td>User login interface</td>
+        </tr>
+
+        <tr>
+            <td>register.html</td>
+            <td>User registration interface</td>
+        </tr>
+
+        <tr>
+            <td>packages.html</td>
+            <td>Solar package display</td>
+        </tr>
+
+        <tr>
+            <td>quotation.html</td>
+            <td>Quotation information</td>
+        </tr>
+
+        <tr>
+            <td>survey_booking.html</td>
+            <td>Survey booking interface</td>
+        </tr>
+
+        <tr>
+            <td>requirement_form.html</td>
+            <td>Customer requirement form</td>
+        </tr>
+
+        <tr>
+            <td>payment.html</td>
+            <td>Payment interface</td>
+        </tr>
+
+        <tr>
+            <td>installation_tracking.html</td>
+            <td>Installation tracking</td>
+        </tr>
+
+        <tr>
+            <td>maintenance.html</td>
+            <td>Maintenance interface</td>
+        </tr>
+
+        <tr>
+            <td>warranty.html</td>
+            <td>Warranty information</td>
+        </tr>
+
+        <tr>
+            <td>admin_dashboard.html</td>
+            <td>Administrator dashboard</td>
+        </tr>
+
+        <tr>
+            <td>user_dashboard.html</td>
+            <td>Customer/user dashboard</td>
+        </tr>
+
+    </table>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- COMPLETE CUSTOMER FLOW -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>11. Complete Customer Workflow</h2>
+
+    <p>
+        The main business flow of SolarEase can be explained as follows:
+    </p>
+
+    <div class="flow">
+1. Customer visits SolarEase
+            ↓
+2. Customer registers / logs in
+            ↓
+3. Customer submits solar requirements
+            ↓
+4. Site survey is registered
+            ↓
+5. Monthly electricity bill is analyzed
+            ↓
+6. Recommended solar capacity is calculated
+            ↓
+7. Quotation is generated
+            ↓
+8. Customer reviews quotation
+            ↓
+9. Solar package / system is selected
+            ↓
+10. Payment is recorded
+            ↓
+11. Installation is scheduled
+            ↓
+12. Installation progress is tracked
+            ↓
+13. Warranty information is maintained
+            ↓
+14. Maintenance requests can be handled
+    </div>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- DATA FLOW -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>12. Data Flow Between Modules</h2>
+
+    <div class="flow">
+Customer
+   │
+   ├── Authentication
+   │
+   ├── Customer Profile
+   │
+   └── Survey
+          │
+          ↓
+     Quotation
+          │
+          ↓
+       Sales
+          │
+          ↓
+       Payment
+          │
+          ↓
+    Installation
+       /       \
+      ↓         ↓
+ Warranty    Maintenance
+      │
+      ↓
+ Customer Support
+    </div>
+
+    <p>
+        Inventory works alongside the installation process by maintaining
+        information about available solar components.
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- ERRORS -->
+<!-- ====================================================== -->
+
+<section id="errors">
+
+    <h2>13. Important Errors Encountered & Their Meaning</h2>
+
+    <h3>Error 1 — TemplateNotFound</h3>
+
+<pre>
+jinja2.exceptions.TemplateNotFound:
+index.html
+</pre>
+
+    <p>
+        This occurs when Flask cannot find the requested template in its
+        configured templates directory.
+    </p>
+
+    <h3>Error 2 — BuildError: Quotations</h3>
+
+<pre>
+Could not build url for endpoint
+'quotations.calculator'
+</pre>
+
+    <p>
+        The template requested an endpoint named
+        <code>quotations.calculator</code>, but the routes file did not
+        define a function called <code>calculator</code>.
+    </p>
+
+    <h3>Error 3 — BuildError: Inventory</h3>
+
+<pre>
+Could not build url for endpoint
+'inventory.stock'
+
+Did you mean:
+'inventory.list_inventory'?
+</pre>
+
+    <p>
+        The inventory routes contain <code>list_inventory()</code>, not
+        <code>stock()</code>.
+    </p>
+
+    <h3>Error 4 — BuildError: Surveys</h3>
+
+<pre>
+Could not build url for endpoint
+'surveys.index'
+
+Did you mean:
+'surveys.new_survey'?
+</pre>
+
+    <p>
+        The route function available for listing surveys is
+        <code>list_surveys()</code>, so its endpoint is:
+    </p>
+
+<pre>
+surveys.list_surveys
+</pre>
+
+    <h3>Error 5 — SQLite Database Error</h3>
+
+<pre>
+sqlite3.OperationalError:
+unable to open database file
+</pre>
+
+    <p>
+        This indicates that SQLite could not open or create the database
+        at the configured path.
+    </p>
+
+    <p>
+        In this project the database is intended to be located at:
+    </p>
+
+<pre>
+instance/solarease.db
+</pre>
+
+    <p>
+        The <code>instance</code> directory must exist or be created by
+        the application.
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- RUNNING PROJECT -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>14. How To Run The Project</h2>
+
+    <h3>Step 1 — Activate Virtual Environment</h3>
+
+<pre>
+venv\Scripts\activate
+</pre>
+
+    <h3>Step 2 — Run Application</h3>
+
+<pre>
+python run.py
+</pre>
+
+    <p>
+        The project can also have an <code>app.py</code> entry point,
+        depending on how the project is configured.
+    </p>
+
+    <h3>Step 3 — Database</h3>
+
+    <p>
+        When the application factory executes:
+    </p>
+
+<pre>
+db.create_all()
+seed_data()
+</pre>
+
+    <p>
+        SQLAlchemy creates the required tables and the seed function
+        inserts initial demo data.
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- MAIN APP CODE -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>15. Main Application Registration</h2>
+
+    <p>
+        The application registers all major Blueprints.
+    </p>
+
+<pre>
+app.register_blueprint(auth_bp,
+    url_prefix='/auth')
+
+app.register_blueprint(customers_bp,
+    url_prefix='/customer')
+
+app.register_blueprint(sales_bp,
+    url_prefix='/sales')
+
+app.register_blueprint(surveys_bp,
+    url_prefix='/surveys')
+
+app.register_blueprint(quotations_bp,
+    url_prefix='/quotations')
+
+app.register_blueprint(inventory_bp,
+    url_prefix='/inventory')
+
+app.register_blueprint(installations_bp,
+    url_prefix='/installations')
+
+app.register_blueprint(payments_bp,
+    url_prefix='/payments')
+
+app.register_blueprint(maintenance_bp,
+    url_prefix='/maintenance')
+
+app.register_blueprint(warranties_bp,
+    url_prefix='/warranties')
+
+app.register_blueprint(admin_bp,
+    url_prefix='/admin')
+
+app.register_blueprint(api_bp,
+    url_prefix='/api')
+</pre>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- QUOTATION CODE -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>16. Quotation Calculation Logic</h2>
+
+    <p>
+        The quotation module uses the survey's monthly electricity bill
+        to calculate an estimated system size.
+    </p>
+
+<pre>
+estimated_units = survey.monthly_bill / 60.0
+
+daily_units = estimated_units / 30.0
+
+recommended_kw = round(
+    (daily_units / 5.0) * 1.2,
+    1
+)
+
+if recommended_kw &lt; 3.0:
+    recommended_kw = 3.0
+
+panel_count = math.ceil(
+    (recommended_kw * 1000) / 550
+)
+
+total_cost = recommended_kw * 220000.0
+</pre>
+
+    <h3>Why math.ceil()?</h3>
+
+    <p>
+        Solar panels cannot normally be purchased as a fraction of a panel.
+        Therefore the calculation rounds the required number of panels
+        upward.
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- INVENTORY ROUTE -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>17. Inventory Route Example</h2>
+
+<pre>
+from flask import Blueprint, render_template
+
+from app import db
+from app.models import Inventory
+
+inventory_bp = Blueprint(
+    'inventory',
+    __name__
+)
+
+@inventory_bp.route('/')
+def list_inventory():
+
+    items = Inventory.query.all()
+
+    return render_template(
+        'inventory/list.html',
+        items=items
+    )
+</pre>
+
+    <p>
+        This route retrieves all inventory records and passes them to the
+        template.
+    </p>
+
+    <p>
+        The function name is <code>list_inventory</code>, therefore the
+        endpoint is:
+    </p>
+
+<pre>
+inventory.list_inventory
+</pre>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- SURVEY ROUTE -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>18. Survey Route Example</h2>
+
+<pre>
+@surveys_bp.route('/', methods=['GET'])
+def list_surveys():
+
+    all_surveys = Survey.query.all()
+
+    return render_template(
+        'surveys/list.html',
+        surveys=all_surveys
+    )
+</pre>
+
+    <p>
+        The endpoint is:
+    </p>
+
+<pre>
+surveys.list_surveys
+</pre>
+
+    <p>
+        A new survey is handled through:
+    </p>
+
+<pre>
+@surveys_bp.route(
+    '/new',
+    methods=['GET', 'POST']
+)
+def new_survey():
+    ...
+</pre>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- SECURITY -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>19. Security & Authentication Concept</h2>
+
+    <p>
+        The application contains authentication and role concepts,
+        including an administrator role.
+    </p>
+
+    <h3>Role Example</h3>
+
+<pre>
+role = 'admin'
+</pre>
+
+    <p>
+        In a production system, passwords should be stored using secure
+        password hashing rather than plain text.
+    </p>
+
+    <p>
+        Similarly, the default development administrator credentials
+        should not be retained in a production deployment.
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- TESTING -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>20. Project Testing Checklist</h2>
+
+    <h3>Application Startup</h3>
+
+    <ul>
+        <li>Run <code>python run.py</code>.</li>
+        <li>Confirm Flask starts without database errors.</li>
+        <li>Confirm <code>instance/solarease.db</code> exists.</li>
+    </ul>
+
+    <h3>Home Page</h3>
+
+    <ul>
+        <li>Open the home page.</li>
+        <li>Check navigation links.</li>
+        <li>Check that no BuildError occurs.</li>
+    </ul>
+
+    <h3>Authentication</h3>
+
+    <ul>
+        <li>Open registration page.</li>
+        <li>Create a user.</li>
+        <li>Try login.</li>
+        <li>Check logout.</li>
+    </ul>
+
+    <h3>Survey</h3>
+
+    <ul>
+        <li>Create survey.</li>
+        <li>Check database record.</li>
+        <li>Open survey listing.</li>
+    </ul>
+
+    <h3>Quotation</h3>
+
+    <ul>
+        <li>Select a survey.</li>
+        <li>Generate quotation.</li>
+        <li>Check recommended kW.</li>
+        <li>Check panel count.</li>
+        <li>Check estimated price.</li>
+    </ul>
+
+    <h3>Inventory</h3>
+
+    <ul>
+        <li>Open inventory page.</li>
+        <li>View seeded inventory.</li>
+        <li>Add an inventory item.</li>
+        <li>Confirm it appears in database.</li>
+    </ul>
+
+    <h3>Other Modules</h3>
+
+    <ul>
+        <li>Installation tracking.</li>
+        <li>Payments.</li>
+        <li>Maintenance.</li>
+        <li>Warranty.</li>
+        <li>Admin dashboard.</li>
+        <li>API endpoints.</li>
+    </ul>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- PRESENTATION -->
+<!-- ====================================================== -->
+
+<section id="presentation">
+
+    <h2>21. Presentation Explanation</h2>
+
+    <h3>Opening</h3>
+
+    <p>
+        "My project is SolarEase, a Flask-based solar installation and
+        management platform. The main purpose of this system is to manage
+        the complete solar installation workflow, starting from customer
+        registration and requirements collection and continuing through
+        survey, quotation, payment, installation, warranty and
+        maintenance."
+    </p>
+
+    <h3>Architecture</h3>
+
+    <p>
+        "I used Flask Blueprints to divide the application into separate
+        modules. This makes the project easier to maintain because each
+        business functionality has its own routes."
+    </p>
+
+    <h3>Database</h3>
+
+    <p>
+        "For the database I used SQLite with Flask-SQLAlchemy. SQLAlchemy
+        provides an ORM, so database tables can be represented using
+        Python models instead of writing SQL for every operation."
+    </p>
+
+    <h3>Customer Flow</h3>
+
+    <p>
+        "A customer first registers and submits their solar requirements.
+        The survey module records information such as the monthly
+        electricity bill. The quotation module then uses this information
+        to estimate the required solar capacity, number of panels and
+        approximate cost."
+    </p>
+
+    <h3>Inventory</h3>
+
+    <p>
+        "The inventory module manages the solar components available in
+        stock, such as solar panels, inverters, batteries and cables."
+    </p>
+
+    <h3>Installation</h3>
+
+    <p>
+        "After the sales and payment stages, the installation module
+        manages the installation process and allows its progress to be
+        tracked."
+    </p>
+
+    <h3>Maintenance & Warranty</h3>
+
+    <p>
+        "After installation, the warranty and maintenance modules provide
+        post-installation support."
+    </p>
+
+    <h3>Admin</h3>
+
+    <p>
+        "The administrator can access the administrative part of the
+        application to manage and monitor the system."
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- VIVA QUESTIONS -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>22. Viva Questions & Answers</h2>
+
+    <h3>Q1. Why did you use Flask?</h3>
+
+    <p>
+        Flask is lightweight, flexible and suitable for building modular
+        web applications using Python.
+    </p>
+
+    <h3>Q2. What is a Blueprint?</h3>
+
+    <p>
+        A Blueprint is a way to organize Flask routes and related
+        functionality into separate modules.
+    </p>
+
+    <h3>Q3. What is SQLAlchemy?</h3>
+
+    <p>
+        SQLAlchemy is a Python SQL toolkit and ORM. In this project it is
+        used through Flask-SQLAlchemy to communicate with the database.
+    </p>
+
+    <h3>Q4. Why SQLite?</h3>
+
+    <p>
+        SQLite is lightweight and does not require a separate database
+        server, making it convenient for a small academic project and
+        demonstration.
+    </p>
+
+    <h3>Q5. What does db.create_all() do?</h3>
+
+    <p>
+        It creates database tables defined by the SQLAlchemy models if
+        they do not already exist.
+    </p>
+
+    <h3>Q6. What is seed_data()?</h3>
+
+    <p>
+        It inserts initial demo records into the database, such as solar
+        packages, inventory and an administrator account.
+    </p>
+
+    <h3>Q7. What is Jinja2?</h3>
+
+    <p>
+        Jinja2 is the template engine used by Flask to generate dynamic
+        HTML pages.
+    </p>
+
+    <h3>Q8. What is url_for()?</h3>
+
+    <p>
+        <code>url_for()</code> generates a URL based on a Flask endpoint
+        name.
+    </p>
+
+    <h3>Q9. Why does BuildError happen?</h3>
+
+    <p>
+        BuildError occurs when <code>url_for()</code> references an
+        endpoint that does not exist or when required route parameters
+        are missing.
+    </p>
+
+    <h3>Q10. What is an ORM?</h3>
+
+    <p>
+        ORM means Object Relational Mapping. It allows application code to
+        work with database records through objects and classes.
+    </p>
+
+</section>
+
+
+<!-- ====================================================== -->
+<!-- FINAL -->
+<!-- ====================================================== -->
+
+<section>
+
+    <h2>23. Final Project Summary</h2>
+
+    <div class="success">
+
+        <strong>SolarEase provides a complete conceptual workflow for a
+        solar installation company:</strong>
+
+        <br><br>
+
+        Authentication →
+        Customer →
+        Survey →
+        Solar System →
+        Quotation →
+        Sales →
+        Payment →
+        Installation →
+        Warranty →
+        Maintenance
+
+        <br><br>
+
+        Inventory operates alongside the installation workflow, while
+        Administration and API functionality provide management and
+        programmatic access.
+    </div>
+
+    <p>
+        The most important technical concepts demonstrated by this project
+        are Flask application factories, Blueprints, routing, Jinja2
+        templates, SQLAlchemy ORM, SQLite database management, CRUD-style
+        operations, seed data and modular application architecture.
+    </p>
+    <div class="card bg-dark text-white p-3 mt-3 shadow-lg border border-secondary rounded-4">
+        <p class="text-muted small mb-2 fw-bold"><i class="fa-solid fa-circle-info me-1"></i>Demo staff accounts (password shown next to each):</p>
+        <ul class="list-unstyled small text-muted mb-0" style="line-height: 1.9;">
+            <li><span class="text-success">Administrator:</span> admin@solarease.pk / admin123</li>
+            <li><span class="text-success">Sales Representative:</span> sales@solarease.pk / sales123</li>
+            <li><span class="text-success">Solar Engineer:</span> engineer@solarease.pk / engineer123</li>
+            <li><span class="text-success">Installation Technician:</span> technician@solarease.pk / technician123</li>
+            <li><span class="text-success">Inventory Manager:</span> inventory@solarease.pk / inventory123</li>
+            <li><span class="text-success">Finance Officer:</span> finance@solarease.pk / finance123</li>
+        </ul>
+    </div>
+
+</section>
+
+</main>
+
+<footer>
+    <p>SolarEase — Solar Installation & Management Platform</p>
+    <p>Project Documentation</p>
+</footer>
+
+</body>
+</html>

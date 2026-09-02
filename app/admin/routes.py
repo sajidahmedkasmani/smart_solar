@@ -4,6 +4,7 @@ from app.models import User, Customer, SolarPackage, SystemType, UserRole, Staff
 from app.auth.decorators import role_required
 from app.roles import ROLES, STAFF_ROLES, label_for, get_user_roles, sync_user_roles, dashboard_for
 from werkzeug.security import generate_password_hash, check_password_hash
+from app.utils.email import send_survey_email
 
 admin_bp = Blueprint('admin', __name__)
 ADMIN_EMAIL = 'admin@solarease.pk'
@@ -53,7 +54,7 @@ def users():
     # Admin's Users table is a staff-access table. Customer profiles live separately.
     staff_users = [u for u in User.query.order_by(User.id.desc()).all() if set(get_user_roles(u)).intersection(STAFF_ROLES)]
     return render_template(
-        'admin_users.html',
+        'admin/admin_users.html',
         users=staff_users,
         roles=STAFF_ROLES,
         staff_roles=STAFF_ROLES,
@@ -169,3 +170,103 @@ def system_types():
 # def compare_systems():
 #     types = SystemType.query.all()
 #     return render_template('system_types_compare.html', types=types)
+
+
+
+# @admin_bp.route('/surveys')
+# @role_required('admin')
+# def surveys():
+#     unassigned = Survey.query.filter(Survey.engineer == 'Unassigned').order_by(Survey.id.desc()).all()
+#     my_name = session.get('user_name')
+#     my_surveys = Survey.query.filter_by(engineer=my_name).order_by(Survey.id.desc()).all()
+#     completed = [s for s in my_surveys if s.status in ('Survey Completed', 'Report Submitted')]
+#     return render_template('admin/admin_surveys.html', unassigned=unassigned, my_surveys=my_surveys, completed=completed,
+#                            engineers=User.query.join(UserRole, UserRole.user_id == User.id).filter(UserRole.role == 'engineer').all())
+
+
+
+@admin_bp.route('/surveys')
+@role_required('admin')
+def surveys():
+    unassigned = Survey.query.filter_by(engineer_id=None).all()
+    # my_surveys = Survey.query.filter_by(engineer_id=current_user.id).all()
+    completed = Survey.query.filter_by(status='Completed').all()
+    
+    # Active Engineers load karein dropdown ke liye
+    engineers = User.query.filter_by(role='engineer', status=1).all()
+
+    return render_template(
+        'admin/admin_surveys.html',
+        unassigned=unassigned,
+        # my_surveys=my_surveys,
+        completed=completed,
+        engineers=engineers
+    )
+
+
+@admin_bp.route('/surveys/<int:survey_id>/assign', methods=['POST'])
+@role_required('admin')
+def assign_survey(survey_id):
+    survey = Survey.query.get_or_404(survey_id)
+    
+    engineer_id = request.form.get('engineer_id', type=int)
+    new_date = request.form.get('preferred_date')
+    new_time = request.form.get('preferred_time')
+    
+    engineer = User.query.get(engineer_id)
+    if not engineer:
+        flash('Invalid Engineer selected.', 'danger')
+        return redirect(url_for('admin.surveys'))
+
+    # Check if Admin modified date or time
+    date_changed = (survey.preferred_date != new_date)
+    time_changed = (survey.preferred_time != new_time)
+    
+    survey.engineer_id = engineer_id
+    
+    if date_changed or time_changed:
+        # CASE A: Date/Time Changed -> Needs Customer Approval
+        survey.preferred_date = new_date
+        survey.preferred_time = new_time
+        survey.status = 0  # Pending Approval
+        survey.rescheduled_by_admin = True
+        
+        db.session.commit()
+        
+        # Email ONLY to Customer
+        approval_link = url_for('surveys.approve_reschedule', survey_id=survey.id, _external=True)
+        customer_email_body = f"""
+        <h3>Hello {survey.customer_name},</h3>
+        <p>Your survey request date/time has been modified by the admin.</p>
+        <p><strong>New Schedule:</strong> {new_date} at {new_time}</p>
+        <p>Please review and confirm if this schedule works for you:</p>
+        <a href="{approval_link}" style="padding:10px 15px; background:purple; color:white; text-decoration:none; border-radius:5px;">Approve New Schedule</a>
+        """
+        send_survey_email(survey.customer.email, "Action Required: Survey Schedule Change", customer_email_body)
+        
+        flash('Survey rescheduled! Sent approval request email to customer. Engineer will be notified upon acceptance.', 'warning')
+        
+    else:
+        # CASE B: No Schedule Change -> Immediate Assignment
+        survey.status = 1  # Assigned
+        survey.rescheduled_by_admin = False
+        
+        db.session.commit()
+        
+        # Email to Customer
+        send_survey_email(
+            survey.customer.email,
+            "Survey Confirmed & Engineer Assigned",
+            f"<h3>Survey Confirmed</h3><p>Engineer <strong>{engineer.name}</strong> has been assigned to your survey on {survey.preferred_date} ({survey.preferred_time}).</p>"
+        )
+        
+        # Email to Engineer
+        send_survey_email(
+            engineer.email,
+            "New Survey Task Assigned",
+            f"<h3>New Assignment</h3><p>You have been assigned to survey <strong>SUR-{survey.id}</strong> at {survey.address} on {survey.preferred_date} ({survey.preferred_time}).</p>"
+        )
+        
+        flash('Survey assigned successfully and notifications sent.', 'success')
+
+    return redirect(url_for('admin.surveys'))

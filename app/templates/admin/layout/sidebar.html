@@ -1,0 +1,68 @@
+<aside class="w-64 sidebar-bg text-slate-300 p-6 flex flex-col justify-between shrink-0 h-screen min-h-0 overflow-y-auto custom-scrollbar">
+      <div>
+        <div class="flex items-center gap-3 mb-8">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" class="w-11 h-11 rounded-2xl object-cover ring-2 ring-purple-500/50" alt="User Avatar" />
+          <div>
+            <span class="text-[10px] font-extrabold uppercase text-purple-400 tracking-wider block">SolarEase</span>
+            <h4 class="text-sm font-bold text-white leading-tight truncate max-w-[145px]">{{ session.get('user_name', 'User') }}</h4>
+          </div>
+        </div>
+        <div class="space-y-6">
+          <div>
+            <p class="text-[11px] font-semibold text-slate-500 mb-3 tracking-wider uppercase">Menu</p>
+            <ul class="space-y-1.5 text-xs font-medium">
+              {% set roles = session.get('roles', [session.get('role','customer')]) %}
+
+              <li><a href="{{ url_for('index') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-house text-slate-400"></i> Home</a></li>
+
+              {# Staff/Admin dashboard only: customer-facing pages intentionally do NOT appear here. #}
+              {% if 'admin' in roles %}
+              <li class="pt-2"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Administration</p></li>
+              <li><a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-user-shield text-purple-400"></i> Admin Dashboard</a></li>
+              <li><a href="{{ url_for('admin.users') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-users-gear text-slate-400"></i> Users & Access</a></li>
+              {% endif %}
+
+              {% if 'sales' in roles or 'admin' in roles %}
+              <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Sales</p></li>
+              <li><a href="{{ url_for('sales.dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-handshake text-slate-400"></i> Sales Dashboard</a></li>
+              <li><a href="{{ url_for('admin.packages') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-solar-panel text-slate-400"></i> Solar Packages</a></li>
+              <li><a href="{{ url_for('admin.system_types') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-layer-group text-slate-400"></i> System Types</a></li>
+              
+              <li><a href="{{ url_for('admin.surveys') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-helmet-safety text-slate-400"></i> Surveys</a></li>
+
+              {% endif %}
+
+              {% if 'engineer' in roles or 'admin' in roles %}
+              <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Engineering</p></li>
+              <li><a href="{{ url_for('surveys.engineer_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-helmet-safety text-slate-400"></i> Survey & Technical Work</a></li>
+              {% endif %}
+
+              {% if 'technician' in roles or 'admin' in roles %}
+              <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Installation</p></li>
+              <li><a href="{{ url_for('installations.technician_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-screwdriver-wrench text-slate-400"></i> Technician Work</a></li>
+              {% endif %}
+
+              {% if 'inventory_manager' in roles or 'admin' in roles %}
+              <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Inventory</p></li>
+              <li><a href="{{ url_for('inventory.stock') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-warehouse text-slate-400"></i> Stock Management</a></li>
+              <li><a href="{{ url_for('inventory.add_item') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-plus text-slate-400"></i> Add Equipment</a></li>
+              {% endif %}
+
+              {% if 'finance' in roles or 'admin' in roles %}
+              <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Finance</p></li>
+              <li><a href="{{ url_for('payments.finance_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-sack-dollar text-slate-400"></i> Finance Dashboard</a></li>
+              {% endif %}
+
+              <li class="pt-3"><a href="{{ url_for('auth.logout') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-right-from-bracket text-slate-400"></i> Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="bg-purple-950/40 border border-purple-500/20 rounded-2xl p-3 text-white backdrop-blur-md">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-xl bg-purple-600/30 flex items-center justify-center"><i class="fa-solid fa-sun text-purple-300"></i></div>
+          <div class="overflow-hidden"><h5 class="text-xs font-bold truncate">SolarEase</h5><p class="text-[10px] text-slate-400 truncate">Solar Management Platform</p></div>
+        </div>
+        <div class="text-[10px] text-slate-400 pt-2 border-t border-white/10">{% for r in roles %}{{ label_for(r) }}{% if not loop.last %} • {% endif %}{% else %}Customer{% endfor %}</div>
+      </div>
+    </aside>

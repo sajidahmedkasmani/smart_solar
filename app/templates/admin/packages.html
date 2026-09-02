@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Solar Packages - SolarEase{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-5 py-10">
+    <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+        <div>
+            <h3 class="font-display font-bold text-2xl mb-1">
+                <i class="fa-solid fa-boxes-packing mr-2" style="color: var(--gold-dark);"></i>Available Solar Packages
+            </h3>
+            <p class="text-sm" style="color: var(--ink-soft);">Pre-configured turnkey solar systems tailored for homes and businesses</p>
+        </div>
+        {% if 'customer' in session.get('roles', [session.get('role')]) or not session.get('user_id') %}
+        <a href="{{ url_for('quotations.calculator') }}" class="btn-outline px-4 py-2.5 text-sm">
+            <i class="fa-solid fa-calculator mr-1"></i> Not sure? Calculate load first
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for pkg in packages %}
+        <div class="card-panel flex flex-col" style="border-left: 4px solid var(--gold);">
+            <div class="flex justify-between items-start mb-3">
+                <span class="badge-pill badge-gold">{{ pkg.system_type }}</span>
+                <span class="badge-pill badge-neutral"><i class="fa-solid fa-shield-halved mr-1"></i>{{ pkg.warranty_years }} Yrs</span>
+            </div>
+
+            <h4 class="font-display font-bold text-xl mt-1 mb-1">{{ pkg.name }}</h4>
+            <div class="font-display font-bold text-2xl my-2" style="color: var(--gold-dark);">PKR {{ "{:,}".format(pkg.price) if pkg.price else 'N/A' }}</div>
+
+            <div class="divider-line my-4"></div>
+
+            <ul class="text-sm mb-4 flex-grow space-y-2.5" style="color: var(--ink-soft);">
+                <li class="flex items-center"><i class="fa-solid fa-solar-panel w-5" style="color: var(--leaf);"></i><span><strong style="color: var(--ink);">Capacity:</strong> {{ pkg.capacity_kw }} kW</span></li>
+                <li class="flex items-center"><i class="fa-solid fa-plug w-5" style="color: var(--leaf);"></i><span><strong style="color: var(--ink);">Panels:</strong> {{ pkg.panels_info }}</span></li>
+                <li class="flex items-center"><i class="fa-solid fa-bolt w-5" style="color: var(--leaf);"></i><span><strong style="color: var(--ink);">Inverter:</strong> {{ pkg.inverter_info }}</span></li>
+                <li class="flex items-center"><i class="fa-solid fa-battery-three-quarters w-5" style="color: var(--leaf);"></i><span><strong style="color: var(--ink);">Battery:</strong> {{ pkg.battery_info }}</span></li>
+            </ul>
+
+            <p class="text-sm mb-5" style="color: var(--ink-soft);">{{ pkg.description }}</p>
+
+            <div class="mt-auto">
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('surveys.index', package_id=pkg.id) }}" class="btn-solar w-full py-3 text-sm">Select &amp; Book Survey</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn-outline w-full py-3 text-sm">Login to Book</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

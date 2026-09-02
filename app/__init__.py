@@ -3,6 +3,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect
 from config import Config
+from flask_mail import Mail
+
+mail = Mail()
 
 db = SQLAlchemy()
 
@@ -10,6 +13,8 @@ def create_app(config_class=Config):
     # Change this line: remove instance_relative_config=True
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    mail.init_app(app)
     
     # Ensure instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)

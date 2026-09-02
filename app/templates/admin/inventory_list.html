@@ -1,0 +1,49 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Inventory - SolarEase{% endblock %}
+{% block page_heading %}Equipment Inventory{% endblock %}
+{% block dashboard_content %}
+<div class="space-y-6">
+  <div class="grid grid-cols-3 gap-4">
+    {% for label,value in [('Total Items', items|length), ('Low Stock Items', low_stock|length), ('Total Stock Units', items|sum(attribute='quantity'))] %}
+    <div class="dashboard-dark-card">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">{{ label }}</p>
+      <p class="text-2xl font-extrabold text-purple-700 mt-2">{{ value }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="dashboard-dark-card">
+    <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+      <div><h3 class="font-bold text-slate-900">Stock Management</h3><p class="text-xs dashboard-muted-text mt-1">All solar equipment currently held in inventory.</p></div>
+      <a href="{{ url_for('inventory.add_item') }}" class="dashboard-action"><i class="fa-solid fa-plus"></i> Add Equipment</a>
+    </div>
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead><tr><th>Product</th><th>Category</th><th>Quantity</th><th>Unit Price</th><th>Supplier</th><th>Adjust Stock</th></tr></thead>
+        <tbody>
+        {% for item in items %}
+          <tr class="dashboard-searchable">
+            <td><strong>{{ item.item_name }}</strong></td>
+            <td>{{ item.category }}</td>
+            <td>
+              {{ item.quantity }}
+              {% if item.quantity <= item.minimum_stock %}<span class="dashboard-pill" style="background:#fee2e2;color:#b91c1c;">Low Stock</span>{% endif %}
+            </td>
+            <td>PKR {{ '{:,.0f}'.format(item.selling_price or 0) }}</td>
+            <td>{{ item.supplier or '—' }}</td>
+            <td>
+              <form action="{{ url_for('inventory.adjust_quantity', item_id=item.id) }}" method="POST" class="flex gap-2 items-center">
+                <input type="number" name="quantity" value="{{ item.quantity }}" class="dashboard-input" style="width:90px;">
+                <button class="dashboard-action">Save</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6" class="text-center dashboard-muted-text py-4">No inventory items yet.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

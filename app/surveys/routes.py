@@ -21,7 +21,7 @@ def index():
         db.session.commit()
         flash('Site survey request submitted successfully!', 'success')
         return redirect(url_for('surveys.index'))
-    return render_template('survey_booking.html')
+    return render_template('landing_page/survey_booking.html')
 
 
 @surveys_bp.route('/list')
@@ -43,7 +43,7 @@ def engineer_dashboard():
     my_name = session.get('user_name')
     my_surveys = Survey.query.filter_by(engineer=my_name).order_by(Survey.id.desc()).all()
     completed = [s for s in my_surveys if s.status in ('Survey Completed', 'Report Submitted')]
-    return render_template('engineer_dashboard.html', unassigned=unassigned, my_surveys=my_surveys, completed=completed,
+    return render_template('admin/engineer_dashboard.html', unassigned=unassigned, my_surveys=my_surveys, completed=completed,
                            engineers=User.query.join(UserRole, UserRole.user_id == User.id).filter(UserRole.role == 'engineer').all())
 
 

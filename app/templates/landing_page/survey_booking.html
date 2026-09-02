@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'landing_page/layout/base.html' %}
 {% block title %}Book Site Survey - SolarEase{% endblock %}
 
 {% block content %}
@@ -37,7 +37,7 @@
             </button>
         </form> -->
 
-        <form action="" method="POST" class="space-y-4">
+        <form action="{{ url_for('surveys.index') }}" method="POST" class="space-y-4">
             <!-- Property & Contact Info -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -63,7 +63,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold mb-1">Available Time Slot</label>
-                    <select name="time_slot" class="w-full p-2.5 border rounded-lg text-sm">
+                    <select name="preferred_time" class="w-full p-2.5 border rounded-lg text-sm">
                         <option value=" Morning (09:00 AM - 12:00 PM)">Morning (09:00 AM - 12:00 PM)</option>
                         <option value="Afternoon (12:00 PM - 03:00 PM)">Afternoon (12:00 PM - 03:00 PM)</option>
                         <option value="Evening (03:00 PM - 06:00 PM)">Evening (03:00 PM - 06:00 PM)</option>

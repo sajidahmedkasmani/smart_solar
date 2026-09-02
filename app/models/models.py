@@ -12,7 +12,7 @@ class User(db.Model):
     role = db.Column(db.String(30), default='customer', nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     assigned_roles = db.relationship('UserRole', backref='user', cascade='all, delete-orphan', lazy=True)
-
+    status = db.Column(db.Integer, default=1, nullable=False)
 
 
 
@@ -35,6 +35,8 @@ class Customer(db.Model):
     address = db.Column(db.Text, nullable=True)
     city = db.Column(db.String(80), default='Karachi')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.Integer, default=1, nullable=False)
+
 
 class UserRole(db.Model):
     __tablename__ = 'user_roles'
@@ -42,6 +44,7 @@ class UserRole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     role = db.Column(db.String(30), nullable=False, index=True)
+    status = db.Column(db.Integer, default=1, nullable=False)
 
 
 class StaffRoleRequest(db.Model):
@@ -96,12 +99,46 @@ class SolarPackage(db.Model):
     description = db.Column(db.Text, default='')
     warranty_years = db.Column(db.Integer, default=10)
     price = db.Column(db.Float, nullable=False)
+    status = db.Column(db.Integer, default=1, nullable=False)
 
+
+# class Survey(db.Model):
+#     __tablename__ = 'surveys'
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+#     customer_name = db.Column(db.String(120), nullable=False)
+#     phone = db.Column(db.String(30), nullable=False)
+#     address = db.Column(db.Text, nullable=False)
+#     city = db.Column(db.String(80), default='Karachi')
+#     preferred_date = db.Column(db.String(30), nullable=False)
+#     preferred_time = db.Column(db.String(80), nullable=False)
+#     property_type = db.Column(db.String(40), default='Residential')
+#     contact_person = db.Column(db.String(120), default='')
+#     notes = db.Column(db.Text, default='')
+#     status = db.Column(db.String(40), default='Requested')
+#     # engineer = db.Column(db.String(120), default='Unassigned')
+#     report_notes = db.Column(db.Text, default='')
+#     roof_area = db.Column(db.Float, default=0)
+#     roof_direction = db.Column(db.String(40), default='Not recorded')
+#     shading = db.Column(db.String(120), default='Not recorded')
+#     recommended_kw = db.Column(db.Float, default=0)
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+#     engineer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+#     # Relationship to easily access engineer object (e.g., survey.assigned_engineer.name)
+#     assigned_engineer = db.relationship('User', foreign_keys=[engineer_id], backref='assigned_surveys')
+
+
+from datetime import datetime
+from app import db  # Ya jahan se aapka db instance import hota hai
 
 class Survey(db.Model):
     __tablename__ = 'surveys'
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
     customer_name = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(30), nullable=False)
     address = db.Column(db.Text, nullable=False)
@@ -111,8 +148,18 @@ class Survey(db.Model):
     property_type = db.Column(db.String(40), default='Residential')
     contact_person = db.Column(db.String(120), default='')
     notes = db.Column(db.Text, default='')
-    status = db.Column(db.String(40), default='Requested')
-    engineer = db.Column(db.String(120), default='Unassigned')
+    
+    # INTEGER STATUS:
+    # 0 = Pending Customer Approval (Rescheduled)
+    # 1 = Assigned & Approved
+    # 2 = In Progress
+    # 3 = Completed
+    # 4 = Cancelled
+    status = db.Column(db.Integer, default=1, nullable=False)
+    
+    # Reschedule Flag
+    rescheduled_by_admin = db.Column(db.Boolean, default=False)
+
     report_notes = db.Column(db.Text, default='')
     roof_area = db.Column(db.Float, default=0)
     roof_direction = db.Column(db.String(40), default='Not recorded')
@@ -120,6 +167,12 @@ class Survey(db.Model):
     recommended_kw = db.Column(db.Float, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Foreign Key & Relationship for Engineer
+    engineer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    assigned_engineer = db.relationship('User', foreign_keys=[engineer_id], backref='assigned_surveys')
+
+    # Relationship for Customer
+    customer = db.relationship('User', foreign_keys=[user_id], backref='my_surveys')
 
 class Quotation(db.Model):
     __tablename__ = 'quotations'
@@ -223,6 +276,7 @@ class SystemType(db.Model):
     requires_battery = db.Column(db.Boolean, default=False)
     provides_backup = db.Column(db.Boolean, default=False)
     supports_net_metering = db.Column(db.Boolean, default=False)
+    status = db.Column(db.Integer, default=1, nullable=False)
 
     # Relationship with packages
     packages = db.relationship('SolarPackage', backref='system_type_obj', lazy=True)

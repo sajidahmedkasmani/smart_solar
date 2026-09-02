@@ -22,6 +22,14 @@ class Config:
     COMPANY_PHONE = os.getenv('COMPANY_PHONE', '')
 
     DATABASE_URL = os.getenv('DATABASE_URL')
+
+    # 
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'True').lower() in ['true', 'on', '1']
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
     
     # Google Auth Keys
     GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')

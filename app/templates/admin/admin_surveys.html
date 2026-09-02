@@ -1,0 +1,157 @@
+
+
+
+
+<!--  -->
+{% extends 'admin/layout/admin_base.html' %} 
+{% block title %}Surveys{% endblock %} 
+{% block page_heading %}Survey Bookings{% endblock %} 
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-3 gap-4">
+    <!-- {% for label,value in [('Unassigned',unassigned|length),('My Surveys',my_surveys|length),('Completed',completed|length)] %}
+    <div class="dashboard-dark-card">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">{{ label }}</p>
+      <p class="text-2xl font-extrabold text-purple-700 mt-2">{{ value }}</p>
+    </div>
+    {% endfor %} -->
+  </div>
+
+  <!-- Unassigned Surveys Table -->
+  <div class="dashboard-dark-card">
+    <h3 class="font-bold text-slate-900 mb-3">Unassigned Survey Requests</h3>
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table w-full text-left">
+        <thead>
+          <tr>
+            <th>Survey ID</th>
+            <th>Customer</th>
+            <th>Address</th>
+            <th>Date & Time</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in unassigned %}
+          <tr class="dashboard-searchable">
+            <td>SUR-{{ s.id }}</td>
+            <td>{{ s.customer_name }}</td>
+            <td>{{ s.address }}</td>
+            <td>{{ s.preferred_date }} ({{ s.preferred_time }})</td>
+            <td>
+              <button 
+                type="button"
+                onclick="openSurveyModal('{{ s.id }}', '{{ s.customer_name }}', '{{ s.phone }}', '{{ s.address }}', '{{ s.preferred_date }}', '{{ s.preferred_time }}')"
+                class="dashboard-action bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 rounded transition">
+                View Request
+              </button>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center py-4 text-slate-500">No unassigned requests.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SURVEY DETAILS & ASSIGN MODAL ================= -->
+<div id="surveyModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all">
+    
+    <!-- Modal Header -->
+    <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+      <h3 class="font-bold text-lg" id="modalSurveyTitle">Survey Details</h3>
+      <button onclick="closeSurveyModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+    </div>
+
+    <!-- Modal Form -->
+    <form id="assignForm" method="POST" action="" class="p-6 space-y-4">
+      
+      <!-- Customer Info Summary -->
+      <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm">
+        <div>
+          <p class="text-xs text-slate-400 font-semibold uppercase">Customer Name</p>
+          <p id="modalCustomerName" class="font-bold text-slate-800">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400 font-semibold uppercase">Contact Phone</p>
+          <p id="modalCustomerPhone" class="font-bold text-slate-800">-</p>
+        </div>
+        <div class="col-span-2">
+          <p class="text-xs text-slate-400 font-semibold uppercase">Address</p>
+          <p id="modalCustomerAddress" class="text-slate-700">-</p>
+        </div>
+      </div>
+
+      <!-- Reschedule Notice Banner -->
+      <div class="p-3 bg-amber-50 border-l-4 border-amber-500 rounded text-xs text-amber-800">
+        <strong>Notice:</strong> Changing the date or time slot will notify the customer regarding the updated schedule.
+      </div>
+
+      <!-- Date & Time Override Section -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Preferred Date</label>
+          <input type="date" id="modalDate" name="preferred_date" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-600 outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Preferred Time</label>
+          <select id="modalTime" name="preferred_time" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-600 outline-none">
+            <option value="Morning (9AM - 12PM)">Morning (9AM - 12PM)</option>
+            <option value="Afternoon (12PM - 3PM)">Afternoon (12PM - 3PM)</option>
+            <option value="Evening (3PM - 6PM)">Evening (3PM - 6PM)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Assign Engineer Dropdown -->
+      <div>
+        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Assign Field Engineer *</label>
+        <select name="engineer_id" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-600 outline-none bg-white">
+          <option value="">-- Select Active Engineer --</option>
+          {% for eng in engineers %}
+          <option value="{{ eng.id }}">{{ eng.name }} ({{ eng.email }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Submit Actions -->
+      <div class="flex justify-end gap-3 pt-4 border-t">
+        <button type="button" onclick="closeSurveyModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded">Cancel</button>
+        <button type="submit" class="px-4 py-2 text-sm font-semibold bg-purple-700 hover:bg-purple-800 text-white rounded shadow">Assign & Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript Modal Handler -->
+<script>
+  function openSurveyModal(id, customerName, phone, address, prefDate, prefTime) {
+    // Modal Form Action URL Dynamic Update
+    document.getElementById('assignForm').action = "/surveys/survey/" + id + "/assign";
+    
+    // Fill Customer Data
+    document.getElementById('modalSurveyTitle').innerText = "Survey Details - SUR-" + id;
+    document.getElementById('modalCustomerName').innerText = customerName;
+    document.getElementById('modalCustomerPhone').innerText = phone || 'N/A';
+    document.getElementById('modalCustomerAddress').innerText = address;
+    
+    // Fill Editable Form Inputs
+    document.getElementById('modalDate').value = prefDate;
+    document.getElementById('modalTime').value = prefTime;
+    
+    // Open Modal
+    document.getElementById('surveyModal').classList.remove('hidden');
+  }
+
+  function closeSurveyModal() {
+    document.getElementById('surveyModal').classList.add('hidden');
+  }
+</script>
+{% endblock %}

@@ -28,14 +28,14 @@ def login():
         session['role'] = 'admin' if 'admin' in roles else roles[0]
         flash(f'Welcome back, {user.full_name}.', 'success')
         return redirect(url_for(dashboard_for(session['role'])))
-    return render_template('staff_login.html')
+    return render_template('admin/auth/staff_login.html')
 
 
 @admin_bp.route('/dashboard')
 @role_required('admin')
 def dashboard():
     return render_template(
-        'admin_dashboard.html',
+        'admin/admin_dashboard.html',
         total_users=User.query.filter(User.role != 'customer').count(),
         total_customers=Customer.query.count(),
         total_surveys=Survey.query.count(),

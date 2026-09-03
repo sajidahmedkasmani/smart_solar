@@ -3,7 +3,7 @@ from app import db
 from app.models import User, Customer, UserRole
 from app.roles import dashboard_for, label_for, get_user_roles, sync_user_roles, CUSTOMER, STAFF_ROLES
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.utils import unique_username
+from app.utils.helpers import unique_username
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import secrets

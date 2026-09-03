@@ -41,9 +41,15 @@
             <td>{{ s.address }}</td>
             <td>{{ s.preferred_date }} ({{ s.preferred_time }})</td>
             <td>
-              <button 
+              <!-- <button 
                 type="button"
                 onclick="openSurveyModal('{{ s.id }}', '{{ s.customer_name }}', '{{ s.phone }}', '{{ s.address }}', '{{ s.preferred_date }}', '{{ s.preferred_time }}')"
+                class="dashboard-action bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 rounded transition">
+                View Request
+              </button> -->
+              <button 
+                type="button"
+                onclick='openSurveyModal({{ s.id }}, {{ s.customer_name|tojson }}, {{ (s.phone or "")|tojson }}, {{ s.address|tojson }}, {{ s.preferred_date|tojson }}, {{ s.preferred_time|tojson }})'
                 class="dashboard-action bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 rounded transition">
                 View Request
               </button>
@@ -102,10 +108,15 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Preferred Time</label>
-          <select id="modalTime" name="preferred_time" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-600 outline-none">
+          <!-- <select id="modalTime" name="preferred_time" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-600 outline-none">
             <option value="Morning (9AM - 12PM)">Morning (9AM - 12PM)</option>
             <option value="Afternoon (12PM - 3PM)">Afternoon (12PM - 3PM)</option>
             <option value="Evening (3PM - 6PM)">Evening (3PM - 6PM)</option>
+          </select> -->
+          <select id="modalTime" name="preferred_time" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-600 outline-none">
+            <option value="Morning (09:00 AM - 12:00 PM)">Morning (09:00 AM - 12:00 PM)</option>
+            <option value="Afternoon (12:00 PM - 03:00 PM)">Afternoon (12:00 PM - 03:00 PM)</option>
+            <option value="Evening (03:00 PM - 06:00 PM)">Evening (03:00 PM - 06:00 PM)</option>
           </select>
         </div>
       </div>
@@ -131,7 +142,7 @@
 </div>
 
 <!-- JavaScript Modal Handler -->
-<script>
+<!-- <script>
   function openSurveyModal(id, customerName, phone, address, prefDate, prefTime) {
     // Modal Form Action URL Dynamic Update
     document.getElementById('assignForm').action = "/surveys/survey/" + id + "/assign";
@@ -147,6 +158,54 @@
     document.getElementById('modalTime').value = prefTime;
     
     // Open Modal
+    document.getElementById('surveyModal').classList.remove('hidden');
+  }
+
+  function closeSurveyModal() {
+    document.getElementById('surveyModal').classList.add('hidden');
+  }
+</script> -->
+
+
+<script>
+  function openSurveyModal(id, customerName, phone, address, prefDate, prefTime) {
+    // Form Action URL Update
+    document.getElementById('assignForm').action = "/admin/surveys/" + id + "/assign";
+    
+    // Fill Customer Info
+    document.getElementById('modalSurveyTitle').innerText = "Survey Details - SUR-" + id;
+    document.getElementById('modalCustomerName').innerText = customerName;
+    document.getElementById('modalCustomerPhone').innerText = phone || 'N/A';
+    document.getElementById('modalCustomerAddress').innerText = address;
+    
+    // Fill Date
+    document.getElementById('modalDate').value = prefDate;
+    
+    // Set Time Select Element
+    const timeSelect = document.getElementById('modalTime');
+    const cleanPrefTime = (prefTime || "").trim();
+
+    // Reset current selection
+    timeSelect.value = "";
+
+    // Loop through options to find exact string match (ignoring extra whitespace)
+    let found = false;
+    for (let i = 0; i < timeSelect.options.length; i++) {
+      if (timeSelect.options[i].value.trim() === cleanPrefTime) {
+        timeSelect.selectedIndex = i;
+        found = true;
+        break;
+      }
+    }
+
+    // Fallback: If no exact match, set direct value or add as custom option
+    if (!found && cleanPrefTime !== "") {
+      const newOption = new Option(cleanPrefTime, cleanPrefTime, true, true);
+      timeSelect.add(newOption);
+      timeSelect.value = cleanPrefTime;
+    }
+    
+    // Show Modal
     document.getElementById('surveyModal').classList.remove('hidden');
   }
 

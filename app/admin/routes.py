@@ -204,6 +204,73 @@ def surveys():
     )
 
 
+# @admin_bp.route('/surveys/<int:survey_id>/assign', methods=['POST'])
+# @role_required('admin')
+# def assign_survey(survey_id):
+#     survey = Survey.query.get_or_404(survey_id)
+    
+#     engineer_id = request.form.get('engineer_id', type=int)
+#     new_date = request.form.get('preferred_date')
+#     new_time = request.form.get('preferred_time')
+    
+#     engineer = User.query.get(engineer_id)
+#     if not engineer:
+#         flash('Invalid Engineer selected.', 'danger')
+#         return redirect(url_for('admin.surveys'))
+
+#     # Check if Admin modified date or time
+#     date_changed = (survey.preferred_date != new_date)
+#     time_changed = (survey.preferred_time != new_time)
+    
+#     survey.engineer_id = engineer_id
+    
+#     if date_changed or time_changed:
+#         # CASE A: Date/Time Changed -> Needs Customer Approval
+#         survey.preferred_date = new_date
+#         survey.preferred_time = new_time
+#         survey.status = 0  # Pending Approval
+#         survey.rescheduled_by_admin = True
+        
+#         db.session.commit()
+        
+#         # Email ONLY to Customer
+#         approval_link = url_for('surveys.approve_reschedule', survey_id=survey.id, _external=True)
+#         customer_email_body = f"""
+#         <h3>Hello {survey.customer_name},</h3>
+#         <p>Your survey request date/time has been modified by the admin.</p>
+#         <p><strong>New Schedule:</strong> {new_date} at {new_time}</p>
+#         <p>Please review and confirm if this schedule works for you:</p>
+#         <a href="{approval_link}" style="padding:10px 15px; background:purple; color:white; text-decoration:none; border-radius:5px;">Approve New Schedule</a>
+#         """
+#         send_survey_email(survey.customer.email, "Action Required: Survey Schedule Change", customer_email_body)
+        
+#         flash('Survey rescheduled! Sent approval request email to customer. Engineer will be notified upon acceptance.', 'warning')
+        
+#     else:
+#         # CASE B: No Schedule Change -> Immediate Assignment
+#         survey.status = 1  # Assigned
+#         survey.rescheduled_by_admin = False
+        
+#         db.session.commit()
+        
+#         # Email to Customer
+#         send_survey_email(
+#             survey.customer.email,
+#             "Survey Confirmed & Engineer Assigned",
+#             f"<h3>Survey Confirmed</h3><p>Engineer <strong>{engineer.name}</strong> has been assigned to your survey on {survey.preferred_date} ({survey.preferred_time}).</p>"
+#         )
+        
+#         # Email to Engineer
+#         send_survey_email(
+#             engineer.email,
+#             "New Survey Task Assigned",
+#             f"<h3>New Assignment</h3><p>You have been assigned to survey <strong>SUR-{survey.id}</strong> at {survey.address} on {survey.preferred_date} ({survey.preferred_time}).</p>"
+#         )
+        
+#         flash('Survey assigned successfully and notifications sent.', 'success')
+
+#     return redirect(url_for('admin.surveys'))
+
 @admin_bp.route('/surveys/<int:survey_id>/assign', methods=['POST'])
 @role_required('admin')
 def assign_survey(survey_id):
@@ -225,48 +292,21 @@ def assign_survey(survey_id):
     survey.engineer_id = engineer_id
     
     if date_changed or time_changed:
-        # CASE A: Date/Time Changed -> Needs Customer Approval
+        # CASE A: Schedule Modified -> Requires Customer Confirmation
         survey.preferred_date = new_date
         survey.preferred_time = new_time
         survey.status = 0  # Pending Approval
         survey.rescheduled_by_admin = True
         
         db.session.commit()
-        
-        # Email ONLY to Customer
-        approval_link = url_for('surveys.approve_reschedule', survey_id=survey.id, _external=True)
-        customer_email_body = f"""
-        <h3>Hello {survey.customer_name},</h3>
-        <p>Your survey request date/time has been modified by the admin.</p>
-        <p><strong>New Schedule:</strong> {new_date} at {new_time}</p>
-        <p>Please review and confirm if this schedule works for you:</p>
-        <a href="{approval_link}" style="padding:10px 15px; background:purple; color:white; text-decoration:none; border-radius:5px;">Approve New Schedule</a>
-        """
-        send_survey_email(survey.customer.email, "Action Required: Survey Schedule Change", customer_email_body)
-        
-        flash('Survey rescheduled! Sent approval request email to customer. Engineer will be notified upon acceptance.', 'warning')
+        flash('Survey schedule updated. Pending customer approval.', 'warning')
         
     else:
-        # CASE B: No Schedule Change -> Immediate Assignment
-        survey.status = 1  # Assigned
+        # CASE B: Schedule Unchanged -> Direct Active Assignment
+        survey.status = 1  # Assigned / Approved
         survey.rescheduled_by_admin = False
         
         db.session.commit()
-        
-        # Email to Customer
-        send_survey_email(
-            survey.customer.email,
-            "Survey Confirmed & Engineer Assigned",
-            f"<h3>Survey Confirmed</h3><p>Engineer <strong>{engineer.name}</strong> has been assigned to your survey on {survey.preferred_date} ({survey.preferred_time}).</p>"
-        )
-        
-        # Email to Engineer
-        send_survey_email(
-            engineer.email,
-            "New Survey Task Assigned",
-            f"<h3>New Assignment</h3><p>You have been assigned to survey <strong>SUR-{survey.id}</strong> at {survey.address} on {survey.preferred_date} ({survey.preferred_time}).</p>"
-        )
-        
-        flash('Survey assigned successfully and notifications sent.', 'success')
+        flash('Engineer assigned successfully!', 'success')
 
     return redirect(url_for('admin.surveys'))

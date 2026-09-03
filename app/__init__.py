@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from sqlalchemy import inspect
 from config import Config
 from flask_mail import Mail
@@ -8,9 +9,20 @@ from flask_mail import Mail
 mail = Mail()
 
 db = SQLAlchemy()
+login_manager = LoginManager()  # <-- Yahan initialize hona zaroori hai
 
+# def create_app(config_class=Config):
+#     # Change this line: remove instance_relative_config=True
+#     app = Flask(__name__)
+#     app.config.from_object(config_class)
+
+#     mail.init_app(app)
+    
+#     # Ensure instance folder exists
+#     os.makedirs(app.instance_path, exist_ok=True)
+
+#     db.init_app(app)
 def create_app(config_class=Config):
-    # Change this line: remove instance_relative_config=True
     app = Flask(__name__)
     app.config.from_object(config_class)
 
@@ -20,6 +32,20 @@ def create_app(config_class=Config):
     os.makedirs(app.instance_path, exist_ok=True)
 
     db.init_app(app)
+    
+    # FIXED: LoginManager init & config
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message_category = 'warning'
+
+    # FIXED: User Loader for current_user
+
+    @login_manager.user_loader
+    def load_user(id): 
+        from app.models import Customer
+        return Customer.query.get(int(id))
+
+    # ... Baki aapka saara existing code (Jinja globals, Blueprints, etc.) ...
     # ... remaining code ...
 
     # HTML templates ke liye globals

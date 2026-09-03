@@ -27,7 +27,12 @@ def system_types():
 @role_required('sales')
 def dashboard():
     quoted_survey_ids = {q.survey_id for q in Quotation.query.filter(Quotation.survey_id.isnot(None)).all()}
-    leads_surveys = [s for s in Survey.query.order_by(Survey.id.desc()).all() if s.id not in quoted_survey_ids and s.status in ('Survey Completed', 'Report Submitted')]
+    leads_surveys = [s for s in Survey.query.order_by(
+        Survey.id.desc()
+    ).all()
+    if s.id not in quoted_survey_ids
+    and s.status == 3
+]
     leads_requirements = Requirement.query.order_by(Requirement.id.desc()).limit(15).all()
     quotations = Quotation.query.order_by(Quotation.id.desc()).all()
     pending_quotations = [q for q in quotations if q.status == 'Pending']

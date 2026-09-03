@@ -1,0 +1,207 @@
+{% extends 'admin/layout/admin_base.html' %}
+
+{% block title %}
+Survey Report - SUR-{{ survey.id }}
+{% endblock %}
+
+{% block page_heading %}
+Survey Report
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="space-y-6">
+
+    <div class="dashboard-dark-card">
+
+        <div class="flex justify-between items-start">
+
+            <div>
+
+                <h2 class="text-xl font-bold">
+                    SUR-{{ survey.id }}
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    {{ survey.customer_name }}
+                </p>
+
+            </div>
+
+            <span class="dashboard-pill">
+                Completed
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="dashboard-dark-card">
+
+            <h3 class="font-bold mb-4">
+                Customer Information
+            </h3>
+
+            <p class="text-sm mb-2">
+                <strong>Name:</strong>
+                {{ survey.customer_name }}
+            </p>
+
+            <p class="text-sm mb-2">
+                <strong>Phone:</strong>
+                {{ survey.phone }}
+            </p>
+
+            <p class="text-sm mb-2">
+                <strong>Address:</strong>
+                {{ survey.address }}
+            </p>
+
+            <p class="text-sm mb-2">
+                <strong>City:</strong>
+                {{ survey.city }}
+            </p>
+
+            <p class="text-sm mb-2">
+                <strong>Property:</strong>
+                {{ survey.property_type }}
+            </p>
+
+        </div>
+
+
+        <div class="dashboard-dark-card">
+
+            <h3 class="font-bold mb-4">
+                Survey Technical Data
+            </h3>
+
+            <p class="text-sm mb-2">
+                <strong>Engineer:</strong>
+
+                {% if survey.assigned_engineer %}
+                    {{ survey.assigned_engineer.full_name }}
+                {% else %}
+                    -
+                {% endif %}
+            </p>
+
+            <p class="text-sm mb-2">
+                <strong>Roof Area:</strong>
+                {{ survey.roof_area }}
+            </p>
+
+            <p class="text-sm mb-2">
+                <strong>Roof Direction:</strong>
+                {{ survey.roof_direction }}
+            </p>
+
+            <p class="text-sm mb-2">
+                <strong>Shading:</strong>
+                {{ survey.shading }}
+            </p>
+
+            <p class="text-sm mb-2">
+                <strong>Recommended System:</strong>
+                {{ survey.recommended_kw }} kW
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="dashboard-dark-card">
+
+        <h3 class="font-bold mb-3">
+            Engineer Technical Notes
+        </h3>
+
+        <p class="text-sm text-slate-600 whitespace-pre-line">
+            {{ survey.report_notes or 'No notes provided.' }}
+        </p>
+
+    </div>
+
+
+    <div class="dashboard-dark-card">
+
+        <h3 class="font-bold mb-4">
+            Site Images
+        </h3>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+            {% for image in survey.images %}
+
+            <a
+                href="{{ url_for('static', filename='uploads/surveys/' ~ image.filename) }}"
+                target="_blank"
+            >
+
+                <img
+                    src="{{ url_for('static', filename='uploads/surveys/' ~ image.filename) }}"
+                    class="w-full h-40 object-cover rounded-xl border"
+                >
+
+            </a>
+
+            {% else %}
+
+            <p class="text-sm text-slate-400">
+                No images uploaded.
+            </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <div class="dashboard-dark-card">
+
+        <h3 class="font-bold mb-4">
+            Quotation
+        </h3>
+
+        {% if survey.quotations %}
+
+            {% for q in survey.quotations %}
+
+                <div class="flex justify-between">
+
+                    <div>
+                        <strong>
+                            {{ q.quotation_number }}
+                        </strong>
+
+                        <p class="text-xs text-slate-500">
+                            {{ q.system_capacity_kw }} kW
+                        </p>
+                    </div>
+
+                    <strong>
+                        PKR {{ '{:,.0f}'.format(q.final_amount) }}
+                    </strong>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="text-sm text-slate-400">
+                Sales has not generated a quotation yet.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

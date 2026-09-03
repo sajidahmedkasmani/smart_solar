@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app import db
-from app.models import User, Customer, SolarPackage, SystemType, UserRole, StaffRoleRequest, Survey, Quotation, Installation, Inventory, MaintenanceRequest
+from app.models import User, Customer, SolarPackage, SystemType, UserRole, StaffRoleRequest, Survey, Quotation, Installation, Inventory, MaintenanceRequest, Notification
 from app.auth.decorators import role_required
 from app.roles import ROLES, STAFF_ROLES, label_for, get_user_roles, sync_user_roles, dashboard_for
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,6 +8,19 @@ from app.utils.email import send_survey_email
 
 admin_bp = Blueprint('admin', __name__)
 ADMIN_EMAIL = 'admin@solarease.pk'
+
+
+def notify_user(user_id, title, message):
+    if user_id:
+        db.session.add(
+            Notification(
+                user_id=user_id,
+                title=title,
+                message=message
+            )
+        )
+
+
 
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
@@ -185,23 +198,23 @@ def system_types():
 
 
 
-@admin_bp.route('/surveys')
-@role_required('admin')
-def surveys():
-    unassigned = Survey.query.filter_by(engineer_id=None).all()
-    # my_surveys = Survey.query.filter_by(engineer_id=current_user.id).all()
-    completed = Survey.query.filter_by(status='Completed').all()
+# @admin_bp.route('/surveys')
+# @role_required('admin')
+# def surveys():
+#     unassigned = Survey.query.filter_by(engineer_id=None).all()
+#     # my_surveys = Survey.query.filter_by(engineer_id=current_user.id).all()
+#     completed = Survey.query.filter_by(status='Completed').all()
     
-    # Active Engineers load karein dropdown ke liye
-    engineers = User.query.filter_by(role='engineer', status=1).all()
+#     # Active Engineers load karein dropdown ke liye
+#     engineers = User.query.filter_by(role='engineer', status=1).all()
 
-    return render_template(
-        'admin/admin_surveys.html',
-        unassigned=unassigned,
-        # my_surveys=my_surveys,
-        completed=completed,
-        engineers=engineers
-    )
+#     return render_template(
+#         'admin/admin_surveys.html',
+#         unassigned=unassigned,
+#         # my_surveys=my_surveys,
+#         completed=completed,
+#         engineers=engineers
+#     )
 
 
 # @admin_bp.route('/surveys/<int:survey_id>/assign', methods=['POST'])
@@ -271,42 +284,295 @@ def surveys():
 
 #     return redirect(url_for('admin.surveys'))
 
-@admin_bp.route('/surveys/<int:survey_id>/assign', methods=['POST'])
+# @admin_bp.route('/surveys/<int:survey_id>/assign', methods=['POST'])
+# @role_required('admin')
+# def assign_survey(survey_id):
+#     survey = Survey.query.get_or_404(survey_id)
+    
+#     engineer_id = request.form.get('engineer_id', type=int)
+#     new_date = request.form.get('preferred_date')
+#     new_time = request.form.get('preferred_time')
+    
+#     engineer = User.query.get(engineer_id)
+#     if not engineer:
+#         flash('Invalid Engineer selected.', 'danger')
+#         return redirect(url_for('admin.surveys'))
+
+#     # Check if Admin modified date or time
+#     date_changed = (survey.preferred_date != new_date)
+#     time_changed = (survey.preferred_time != new_time)
+    
+#     survey.engineer_id = engineer_id
+    
+#     if date_changed or time_changed:
+#         # CASE A: Schedule Modified -> Requires Customer Confirmation
+#         survey.preferred_date = new_date
+#         survey.preferred_time = new_time
+#         survey.status = 0  # Pending Approval
+#         survey.rescheduled_by_admin = True
+        
+#         db.session.commit()
+#         flash('Survey schedule updated. Pending customer approval.', 'warning')
+        
+#     else:
+#         # CASE B: Schedule Unchanged -> Direct Active Assignment
+#         survey.status = 1  # Assigned / Approved
+#         survey.rescheduled_by_admin = False
+        
+#         db.session.commit()
+#         flash('Engineer assigned successfully!', 'success')
+
+#     return redirect(url_for('admin.surveys'))
+
+@admin_bp.route('/surveys')
+@role_required('admin')
+def surveys():
+
+    unassigned = Survey.query.filter(
+        Survey.engineer_id.is_(None),
+        Survey.status.in_([5])
+    ).order_by(
+        Survey.id.desc()
+    ).all()
+
+    pending_approval = Survey.query.filter_by(
+        status=0
+    ).order_by(
+        Survey.id.desc()
+    ).all()
+
+    completed = Survey.query.filter_by(
+        status=3
+    ).order_by(
+        Survey.id.desc()
+    ).all()
+
+    engineers = User.query.filter_by(
+        role='engineer',
+        status=1
+    ).all()
+
+    return render_template(
+        'admin/admin_surveys.html',
+        unassigned=unassigned,
+        pending_approval=pending_approval,
+        completed=completed,
+        engineers=engineers
+    )
+
+
+@admin_bp.route(
+    '/surveys/<int:survey_id>/assign',
+    methods=['POST']
+)
 @role_required('admin')
 def assign_survey(survey_id):
-    survey = Survey.query.get_or_404(survey_id)
-    
-    engineer_id = request.form.get('engineer_id', type=int)
-    new_date = request.form.get('preferred_date')
-    new_time = request.form.get('preferred_time')
-    
-    engineer = User.query.get(engineer_id)
+
+    survey = Survey.query.get_or_404(
+        survey_id
+    )
+
+    engineer_id = request.form.get(
+        'engineer_id',
+        type=int
+    )
+
+    new_date = request.form.get(
+        'preferred_date'
+    )
+
+    new_time = request.form.get(
+        'preferred_time'
+    )
+
+    engineer = User.query.get(
+        engineer_id
+    )
+
     if not engineer:
-        flash('Invalid Engineer selected.', 'danger')
-        return redirect(url_for('admin.surveys'))
+        flash(
+            'Invalid engineer selected.',
+            'danger'
+        )
 
-    # Check if Admin modified date or time
-    date_changed = (survey.preferred_date != new_date)
-    time_changed = (survey.preferred_time != new_time)
-    
+        return redirect(
+            url_for('admin.surveys')
+        )
+
+    if not new_date or not new_time:
+        flash(
+            'Date and time are required.',
+            'danger'
+        )
+
+        return redirect(
+            url_for('admin.surveys')
+        )
+
+    # Check engineer schedule conflict
+    conflict = Survey.query.filter(
+        Survey.engineer_id == engineer_id,
+        Survey.id != survey.id,
+        Survey.preferred_date == new_date,
+        Survey.preferred_time == new_time,
+        Survey.status.in_([0, 1, 2])
+    ).first()
+
+    if conflict:
+
+        flash(
+            f'{engineer.full_name} is already assigned to '
+            f'SUR-{conflict.id} at this date/time.',
+            'danger'
+        )
+
+        return redirect(
+            url_for('admin.surveys')
+        )
+
+    date_changed = (
+        survey.preferred_date != new_date
+    )
+
+    time_changed = (
+        survey.preferred_time != new_time
+    )
+
     survey.engineer_id = engineer_id
-    
-    if date_changed or time_changed:
-        # CASE A: Schedule Modified -> Requires Customer Confirmation
-        survey.preferred_date = new_date
-        survey.preferred_time = new_time
-        survey.status = 0  # Pending Approval
-        survey.rescheduled_by_admin = True
-        
-        db.session.commit()
-        flash('Survey schedule updated. Pending customer approval.', 'warning')
-        
-    else:
-        # CASE B: Schedule Unchanged -> Direct Active Assignment
-        survey.status = 1  # Assigned / Approved
-        survey.rescheduled_by_admin = False
-        
-        db.session.commit()
-        flash('Engineer assigned successfully!', 'success')
+    survey.preferred_date = new_date
+    survey.preferred_time = new_time
 
-    return redirect(url_for('admin.surveys'))
+    if date_changed or time_changed:
+
+        survey.status = 0
+        survey.rescheduled_by_admin = True
+
+        notify_user(
+            survey.user_id,
+            'Survey Schedule Changed',
+            f'Admin proposed a new schedule for SUR-{survey.id}: '
+            f'{new_date} ({new_time}). Please approve or suggest another time.'
+        )
+
+        if survey.user_id:
+
+            customer = User.query.get(
+                survey.user_id
+            )
+
+            if customer and customer.email:
+
+                send_survey_email(
+                    customer.email,
+                    'SolarEase - Survey Schedule Changed',
+                    f'''
+                    <h3>Survey Schedule Updated</h3>
+                    <p>Your site survey <strong>SUR-{survey.id}</strong>
+                    has been scheduled for:</p>
+                    <p><strong>{new_date}</strong></p>
+                    <p><strong>{new_time}</strong></p>
+                    <p>Please login to SolarEase to approve the schedule
+                    or suggest another time.</p>
+                    '''
+                )
+
+        if engineer.email:
+
+            send_survey_email(
+                engineer.email,
+                'SolarEase - Survey Assignment',
+                f'''
+                <h3>Survey Assignment</h3>
+                <p>You have been assigned SUR-{survey.id}.</p>
+                <p><strong>Customer:</strong> {survey.customer_name}</p>
+                <p><strong>Address:</strong> {survey.address}</p>
+                <p><strong>Date:</strong> {new_date}</p>
+                <p><strong>Time:</strong> {new_time}</p>
+                <p>The assignment becomes active after customer approval.</p>
+                '''
+            )
+
+        flash(
+            'Schedule changed. Customer approval is required.',
+            'warning'
+        )
+
+    else:
+
+        survey.status = 1
+        survey.rescheduled_by_admin = False
+
+        notify_user(
+            survey.user_id,
+            'Survey Confirmed',
+            f'SUR-{survey.id} has been confirmed for '
+            f'{new_date} ({new_time}).'
+        )
+
+        notify_user(
+            engineer.id,
+            'New Survey Assigned',
+            f'SUR-{survey.id} has been assigned to you for '
+            f'{new_date} ({new_time}).'
+        )
+
+        customer = User.query.get(
+            survey.user_id
+        )
+
+        if customer and customer.email:
+
+            send_survey_email(
+                customer.email,
+                'SolarEase - Survey Confirmed',
+                f'''
+                <h3>Survey Confirmed</h3>
+                <p>Your site survey <strong>SUR-{survey.id}</strong>
+                has been confirmed.</p>
+                <p><strong>Date:</strong> {new_date}</p>
+                <p><strong>Time:</strong> {new_time}</p>
+                <p><strong>Engineer:</strong> {engineer.full_name}</p>
+                '''
+            )
+
+        if engineer.email:
+
+            send_survey_email(
+                engineer.email,
+                'SolarEase - New Survey Assignment',
+                f'''
+                <h3>New Survey Assignment</h3>
+                <p>SUR-{survey.id} has been assigned to you.</p>
+                <p><strong>Customer:</strong> {survey.customer_name}</p>
+                <p><strong>Address:</strong> {survey.address}</p>
+                <p><strong>Date:</strong> {new_date}</p>
+                <p><strong>Time:</strong> {new_time}</p>
+                '''
+            )
+
+        flash(
+            'Engineer assigned successfully.',
+            'success'
+        )
+
+    db.session.commit()
+
+    return redirect(
+        url_for('admin.surveys')
+    )
+
+
+@admin_bp.route(
+    '/surveys/<int:survey_id>/report'
+)
+@role_required('admin')
+def survey_report(survey_id):
+
+    survey = Survey.query.get_or_404(
+        survey_id
+    )
+
+    return render_template(
+        'admin/survey_report.html',
+        survey=survey
+    )

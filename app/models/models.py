@@ -130,49 +130,200 @@ class SolarPackage(db.Model):
 #     assigned_engineer = db.relationship('User', foreign_keys=[engineer_id], backref='assigned_surveys')
 
 
-from datetime import datetime
-from app import db  # Ya jahan se aapka db instance import hota hai
+# from datetime import datetime
+# from app import db  # Ya jahan se aapka db instance import hota hai
 
 class Survey(db.Model):
     __tablename__ = 'surveys'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        nullable=True
+    )
+
     customer_name = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(30), nullable=False)
     address = db.Column(db.Text, nullable=False)
     city = db.Column(db.String(80), default='Karachi')
+
     preferred_date = db.Column(db.String(30), nullable=False)
     preferred_time = db.Column(db.String(80), nullable=False)
-    property_type = db.Column(db.String(40), default='Residential')
-    contact_person = db.Column(db.String(120), default='')
-    notes = db.Column(db.Text, default='')
-    
-    # INTEGER STATUS:
-    # 0 = Pending Customer Approval (Rescheduled)
-    # 1 = Assigned & Approved
+
+    property_type = db.Column(
+        db.String(40),
+        default='Residential'
+    )
+
+    contact_person = db.Column(
+        db.String(120),
+        default=''
+    )
+
+    notes = db.Column(
+        db.Text,
+        default=''
+    )
+
+    # STATUS
+    # 0 = Pending Customer Approval
+    # 1 = Scheduled / Assigned
     # 2 = In Progress
     # 3 = Completed
     # 4 = Cancelled
-    status = db.Column(db.Integer, default=1, nullable=False)
-    
-    # Reschedule Flag
-    rescheduled_by_admin = db.Column(db.Boolean, default=False)
+    # 5 = Pending Admin Assignment
 
-    report_notes = db.Column(db.Text, default='')
-    roof_area = db.Column(db.Float, default=0)
-    roof_direction = db.Column(db.String(40), default='Not recorded')
-    shading = db.Column(db.String(120), default='Not recorded')
-    recommended_kw = db.Column(db.Float, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(
+        db.Integer,
+        default=5,
+        nullable=False
+    )
 
-    # Foreign Key & Relationship for Engineer
-    engineer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    assigned_engineer = db.relationship('User', foreign_keys=[engineer_id], backref='assigned_surveys')
+    rescheduled_by_admin = db.Column(
+        db.Boolean,
+        default=False
+    )
 
-    # Relationship for Customer
-    customer = db.relationship('User', foreign_keys=[user_id], backref='my_surveys')
+    # Survey timing
+    started_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    completed_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    # Technical report
+    report_notes = db.Column(
+        db.Text,
+        default=''
+    )
+
+    roof_area = db.Column(
+        db.Float,
+        default=0
+    )
+
+    roof_direction = db.Column(
+        db.String(40),
+        default='Not recorded'
+    )
+
+    shading = db.Column(
+        db.String(120),
+        default='Not recorded'
+    )
+
+    recommended_kw = db.Column(
+        db.Float,
+        default=0
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    # Assigned engineer
+    engineer_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        nullable=True
+    )
+
+    assigned_engineer = db.relationship(
+        'User',
+        foreign_keys=[engineer_id],
+        backref='assigned_surveys'
+    )
+
+    # Customer
+    customer = db.relationship(
+        'User',
+        foreign_keys=[user_id],
+        backref='my_surveys'
+    )
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        nullable=False
+    )
+
+    title = db.Column(
+        db.String(150),
+        nullable=False
+    )
+
+    message = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    is_read = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    user = db.relationship(
+        'User',
+        backref=db.backref(
+            'notifications',
+            lazy=True
+        )
+    )
+
+
+class SurveyImage(db.Model):
+    __tablename__ = 'survey_images'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    survey_id = db.Column(
+        db.Integer,
+        db.ForeignKey('surveys.id'),
+        nullable=False
+    )
+
+    filename = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    image_type = db.Column(
+        db.String(50),
+        default='site'
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    survey = db.relationship(
+        'Survey',
+        backref=db.backref(
+            'images',
+            lazy=True,
+            cascade='all, delete-orphan'
+        )
+    )
 
 class Quotation(db.Model):
     __tablename__ = 'quotations'
@@ -282,4 +433,4 @@ class SystemType(db.Model):
     packages = db.relationship('SolarPackage', backref='system_type_obj', lazy=True)
 
     # def __repr__(self):
-    #     return f"<SystemType {self.name}>"
+    #     return f"<SystemType {self.name}>

@@ -127,7 +127,7 @@
         <select name="engineer_id" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-600 outline-none bg-white">
           <option value="">-- Select Active Engineer --</option>
           {% for eng in engineers %}
-          <option value="{{ eng.id }}">{{ eng.name }} ({{ eng.email }})</option>
+          <option value="{{ eng.id }}">{{ eng.full_name }} ({{ eng.email }})</option>
           {% endfor %}
         </select>
       </div>
@@ -138,6 +138,151 @@
         <button type="submit" class="px-4 py-2 text-sm font-semibold bg-purple-700 hover:bg-purple-800 text-white rounded shadow">Assign & Save</button>
       </div>
     </form>
+  </div>
+</div>
+<!-- Pending Customer Approval -->
+<div class="dashboard-dark-card">
+  <h3 class="font-bold text-slate-900 mb-3">
+      Pending Customer Approval
+  </h3>
+
+  <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+          <thead>
+              <tr>
+                  <th>Survey</th>
+                  <th>Customer</th>
+                  <th>Engineer</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Status</th>
+              </tr>
+          </thead>
+
+          <tbody>
+              {% for s in pending_approval %}
+              <tr>
+                  <td>SUR-{{ s.id }}</td>
+
+                  <td>
+                      {{ s.customer_name }}
+                  </td>
+
+                  <td>
+                      {% if s.assigned_engineer %}
+                          {{ s.assigned_engineer.full_name }}
+                      {% else %}
+                          -
+                      {% endif %}
+                  </td>
+
+                  <td>
+                      {{ s.preferred_date }}
+                  </td>
+
+                  <td>
+                      {{ s.preferred_time }}
+                  </td>
+
+                  <td>
+                      <span class="dashboard-pill">
+                          Waiting Customer Approval
+                      </span>
+                  </td>
+              </tr>
+
+              {% else %}
+              <tr>
+                  <td colspan="6">
+                      No pending approvals.
+                  </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  </div>
+</div>
+
+
+<!-- Completed Surveys -->
+<div class="dashboard-dark-card mt-6">
+
+  <h3 class="font-bold text-slate-900 mb-3">
+      Completed Survey Reports
+  </h3>
+
+  <div class="dashboard-table-wrap">
+
+      <table class="dashboard-table">
+
+          <thead>
+              <tr>
+                  <th>Survey</th>
+                  <th>Customer</th>
+                  <th>Engineer</th>
+                  <th>Roof Area</th>
+                  <th>Recommended kW</th>
+                  <th>Action</th>
+              </tr>
+          </thead>
+
+          <tbody>
+
+              {% for s in completed %}
+
+              <tr>
+
+                  <td>
+                      <strong>
+                          SUR-{{ s.id }}
+                      </strong>
+                  </td>
+
+                  <td>
+                      {{ s.customer_name }}
+                  </td>
+
+                  <td>
+                      {% if s.assigned_engineer %}
+                          {{ s.assigned_engineer.full_name }}
+                      {% else %}
+                          -
+                      {% endif %}
+                  </td>
+
+                  <td>
+                      {{ s.roof_area }}
+                  </td>
+
+                  <td>
+                      {{ s.recommended_kw }} kW
+                  </td>
+
+                  <td>
+                      <a
+                          href="{{ url_for('admin.survey_report', survey_id=s.id) }}"
+                          class="dashboard-action"
+                      >
+                          View Report
+                      </a>
+                  </td>
+
+              </tr>
+
+              {% else %}
+
+              <tr>
+                  <td colspan="6">
+                      No completed surveys yet.
+                  </td>
+              </tr>
+
+              {% endfor %}
+
+          </tbody>
+
+      </table>
+
   </div>
 </div>
 

@@ -22,48 +22,109 @@
         
         <!-- Status Badges -->
         <td>
-          {% if survey.status == 0 %}
-            <span class="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
-              Rescheduled by Admin
-            </span>
-            <p class="text-[11px] text-amber-700 font-semibold mt-1">Approval Required</p>
+          {% if survey.status == 5 %}
 
+          <span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">
+              Waiting for Admin Assignment
+          </span>
+          
+          {% elif survey.status == 0 %}
+          
+          <span class="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
+              Admin Proposed New Schedule
+          </span>
+          
+          <p class="text-[11px] text-amber-700 font-semibold mt-1">
+              Approval Required
+          </p>
+          
           {% elif survey.status == 1 %}
-            <span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
-              Assigned
-            </span>
-            {% if survey.assigned_engineer %}
-              <p class="text-xs text-slate-600 mt-1">
-                Eng: <strong>{{ survey.assigned_engineer.username or survey.assigned_engineer.email }}</strong>
-              </p>
-            {% endif %}
-
+          
+          <span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
+              Confirmed
+          </span>
+          
+          {% if survey.assigned_engineer %}
+          <p class="text-xs text-slate-600 mt-1">
+              Engineer:
+              <strong>
+                  {{ survey.assigned_engineer.full_name }}
+              </strong>
+          </p>
+          {% endif %}
+          
           {% elif survey.status == 2 %}
-            <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
-              In Progress
-            </span>
-
+          
+          <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
+              Survey In Progress
+          </span>
+          
           {% elif survey.status == 3 %}
-            <span class="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-bold rounded-full">
-              Completed
-            </span>
-
+          
+          <span class="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-bold rounded-full">
+              Survey Completed
+          </span>
+          
           {% elif survey.status == 4 %}
-            <span class="px-2.5 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-full">
+          
+          <span class="px-2.5 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-full">
               Cancelled
-            </span>
+          </span>
+          
           {% endif %}
         </td>
 
         <!-- Actions -->
         <td>
-          {% if survey.status == 0 %}
-            <a href="{{ url_for('surveys.approve_reschedule', survey_id=survey.id) }}" 
-               class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded shadow transition inline-block font-semibold">
-              Approve Schedule
-            </a>
-          {% else %}
-            <span class="text-xs text-slate-400">No Action Required</span>
+          {% if survey.status == 5 %}
+
+          <span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">
+              Waiting for Admin Assignment
+          </span>
+          
+          {% elif survey.status == 0 %}
+          
+          <span class="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
+              Admin Proposed New Schedule
+          </span>
+          
+          <p class="text-[11px] text-amber-700 font-semibold mt-1">
+              Approval Required
+          </p>
+          
+          {% elif survey.status == 1 %}
+          
+          <span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
+              Confirmed
+          </span>
+          
+          {% if survey.assigned_engineer %}
+          <p class="text-xs text-slate-600 mt-1">
+              Engineer:
+              <strong>
+                  {{ survey.assigned_engineer.full_name }}
+              </strong>
+          </p>
+          {% endif %}
+          
+          {% elif survey.status == 2 %}
+          
+          <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
+              Survey In Progress
+          </span>
+          
+          {% elif survey.status == 3 %}
+          
+          <span class="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-bold rounded-full">
+              Survey Completed
+          </span>
+          
+          {% elif survey.status == 4 %}
+          
+          <span class="px-2.5 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-full">
+              Cancelled
+          </span>
+          
           {% endif %}
         </td>
       </tr>

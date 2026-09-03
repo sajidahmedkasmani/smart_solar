@@ -82,7 +82,7 @@ def generate_quotation(survey_id):
         final_amount=total,
         status='Pending',
     )
-    survey.status = 'Report Submitted'
+    survey.status = 3
     db.session.add(q)
     db.session.commit()
     flash('Quotation generated successfully.', 'success')

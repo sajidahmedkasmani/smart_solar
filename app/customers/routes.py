@@ -4,6 +4,7 @@ from app import db
 from app.models import Requirement, Survey, Quotation, Installation
 from app.auth.decorators import role_required
 
+
 customers_bp = Blueprint('customers', __name__)
 
 
@@ -46,14 +47,32 @@ def dashboard():
 #     return render_template('landing_page/customer/cust_surveys.html')
 
 
+# @customers_bp.route('/surveys')
+# @login_required
+# @role_required('customer')
+# def cust_surveys():
+#     # Sirf current logged-in customer ke surveys fetch karein
+#     user_surveys = Survey.query.filter_by(user_id=current_user.id)\
+#                                .order_by(Survey.created_at.desc())\
+#                                .all()
+    
+#     return render_template('landing_page/customer/cust_surveys.html', surveys=user_surveys)
+
 @customers_bp.route('/surveys')
-@login_required
 @role_required('customer')
 def cust_surveys():
-    # Sirf current logged-in customer ke surveys fetch karein
-    user_surveys = Survey.query.filter_by(user_id=current_user.id)\
-                               .order_by(Survey.created_at.desc())\
-                               .all()
-    
-    return render_template('landing_page/customer/cust_surveys.html', surveys=user_surveys)
+
+    uid = session.get('user_id')
+
+    user_surveys = (
+        Survey.query
+        .filter_by(user_id=uid)
+        .order_by(Survey.created_at.desc())
+        .all()
+    )
+
+    return render_template(
+        'landing_page/customer/cust_surveys.html',
+        surveys=user_surveys
+    )
 

@@ -122,7 +122,28 @@ def upgrade_legacy_schema():
         if 'system_type_id' not in columns:
             db.session.execute(db.text('ALTER TABLE solar_packages ADD COLUMN system_type_id INTEGER'))
             db.session.commit()
+        # Survey table compatibility migration
+    if 'surveys' in tables:
+        columns = {
+            c['name']
+            for c in inspector.get_columns('surveys')
+        }
 
+        if 'started_at' not in columns:
+            db.session.execute(
+                db.text(
+                    'ALTER TABLE surveys ADD COLUMN started_at DATETIME'
+                )
+            )
+
+        if 'completed_at' not in columns:
+            db.session.execute(
+                db.text(
+                    'ALTER TABLE surveys ADD COLUMN completed_at DATETIME'
+                )
+            )
+
+        db.session.commit()
 
 def seed_role_assignments():
     """Create role rows for legacy users without changing their existing data."""

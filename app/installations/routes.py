@@ -61,5 +61,5 @@ def technician_dashboard():
     my_projects = Installation.query.filter_by(technician=my_name).order_by(Installation.id.desc()).all()
     in_progress = [p for p in my_projects if p.status != 'Completed & Handover']
     completed = [p for p in my_projects if p.status == 'Completed & Handover']
-    return render_template('technician_dashboard.html', my_projects=my_projects, unassigned=[],
+    return render_template('admin/technician_dashboard.html', my_projects=my_projects, unassigned=[],
                            in_progress=in_progress, completed=completed)

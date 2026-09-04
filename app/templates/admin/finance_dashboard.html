@@ -1,6 +1,98 @@
-{% extends 'dashboard_base.html' %}
-{% block title %}Finance Dashboard - SolarEase{% endblock %}
+{% extends 'admin/layout/admin_base.html' %} 
+{% block title %}Finance Dashboard - SmartSolar{% endblock %} 
 {% block page_heading %}Finance Dashboard{% endblock %}
+
 {% block dashboard_content %}
-<div class="space-y-6"><div class="grid grid-cols-3 gap-4">{% for label,value in [('Total Revenue','PKR ' ~ '{:,.0f}'.format(total_revenue)),('Pending Verification',pending_verification|length),('Outstanding','PKR ' ~ '{:,.0f}'.format(outstanding))] %}<div class="dashboard-dark-card"><p class="text-[10px] text-slate-400 uppercase font-bold">{{ label }}</p><p class="text-xl font-extrabold text-purple-700 mt-2">{{ value }}</p></div>{% endfor %}</div><div class="dashboard-dark-card"><h3 class="font-bold text-slate-900 mb-3">Payments Awaiting Verification</h3><div class="dashboard-table-wrap"><table class="dashboard-table"><thead><tr><th>Ref</th><th>Quotation</th><th>Method</th><th>Amount</th><th>Action</th></tr></thead><tbody>{% for p in pending_verification %}<tr class="dashboard-searchable"><td>{{ p.trx_ref }}</td><td>{{ p.quotation.quotation_number if p.quotation else '—' }}</td><td>{{ p.payment_method }} ({{ p.payment_type }})</td><td>PKR {{ '{:,.0f}'.format(p.amount_paid) }}</td><td class="flex gap-2"><form action="{{ url_for('payments.verify_payment', payment_id=p.id) }}" method="POST"><input type="hidden" name="action" value="verify"><button class="dashboard-action">Verify</button></form><form action="{{ url_for('payments.verify_payment', payment_id=p.id) }}" method="POST"><input type="hidden" name="action" value="reject"><button class="dashboard-action" style="background:#e2e8f0;color:#334155">Reject</button></form></td></tr>{% else %}<tr><td colspan="5">No payments waiting on verification.</td></tr>{% endfor %}</tbody></table></div></div><div class="dashboard-dark-card"><h3 class="font-bold text-slate-900 mb-3">All Payment Records</h3><div class="dashboard-table-wrap"><table class="dashboard-table"><thead><tr><th>Ref</th><th>Quotation</th><th>Method</th><th>Amount</th><th>Status</th></tr></thead><tbody>{% for p in payments %}<tr class="dashboard-searchable"><td>{{ p.trx_ref }}</td><td>{{ p.quotation.quotation_number if p.quotation else '—' }}</td><td>{{ p.payment_method }}</td><td>PKR {{ '{:,.0f}'.format(p.amount_paid) }}</td><td><span class="dashboard-pill">{{ p.status }}</span></td></tr>{% else %}<tr><td colspan="5">No payment records yet.</td></tr>{% endfor %}</tbody></table></div></div></div>
+<div class="space-y-6">
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-3 gap-4">
+    {% for label,value in [('Total Revenue','PKR ' ~ '{:,.0f}'.format(total_revenue)), ('Pending Verification', pending_verification|length), ('Outstanding Balance','PKR ' ~ '{:,.0f}'.format(outstanding))] %}
+    <div class="dashboard-dark-card">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">{{ label }}</p>
+      <p class="text-xl font-extrabold text-purple-700 mt-2">{{ value }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Awaiting Verification Table -->
+  <div class="dashboard-dark-card">
+    <h3 class="font-bold text-slate-900 mb-3">
+      Payments Awaiting Verification
+    </h3>
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Payment Ref</th>
+            <th>Project</th>
+            <th>Milestone</th>
+            <th>Method</th>
+            <th>Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pending_verification %}
+          <tr class="dashboard-searchable">
+            <td>#PAY-{{ p.id }}</td>
+            <td>{{ p.project.project_name if p.project else '—' }}</td>
+            <td>{{ p.milestone_name }}</td>
+            <td>{{ p.payment_method }}</td>
+            <td>PKR {{ '{:,.0f}'.format(p.amount) }}</td>
+            <td class="flex gap-2">
+              <form action="{{ url_for('payments.verify_payment', payment_id=p.id) }}" method="POST">
+                <input type="hidden" name="action" value="verify" />
+                <button class="dashboard-action">Verify</button>
+              </form>
+              <form action="{{ url_for('payments.verify_payment', payment_id=p.id) }}" method="POST">
+                <input type="hidden" name="action" value="reject" />
+                <button class="dashboard-action" style="background: #e2e8f0; color: #334155">Reject</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6">No payments waiting on verification.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- All Payment Records -->
+  <div class="dashboard-dark-card">
+    <h3 class="font-bold text-slate-900 mb-3">All Payment Records</h3>
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Payment Ref</th>
+            <th>Project</th>
+            <th>Milestone</th>
+            <th>Method</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr class="dashboard-searchable">
+            <td>#PAY-{{ p.id }}</td>
+            <td>{{ p.project.project_name if p.project else '—' }}</td>
+            <td>{{ p.milestone_name }}</td>
+            <td>{{ p.payment_method }}</td>
+            <td>PKR {{ '{:,.0f}'.format(p.amount) }}</td>
+            <td><span class="dashboard-pill">{{ p.status }}</span></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6">No payment records yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

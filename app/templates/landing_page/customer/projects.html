@@ -1,0 +1,129 @@
+{% extends 'landing_page/customer/layout/base_customer.html' %}
+
+{% block title %}My Solar Projects - SmartSolar{% endblock %}
+{% block header_title %}Active Solar Projects{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto space-y-8">
+    
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Your Solar Installation Projects</h2>
+            <p class="text-sm text-gray-500 mt-1">Track system deployment, payments, and site updates in real-time.</p>
+        </div>
+    </div>
+
+    {% if projects %}
+        {% for project in projects %}
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6">
+            <!-- Project Header -->
+            <div class="p-6 border-b border-gray-100 flex flex-wrap justify-between items-center bg-gray-50/50 gap-4">
+                <div>
+                    <div class="flex items-center space-x-3">
+                        <h3 class="text-xl font-bold text-gray-900">{{ project.project_name }}</h3>
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                            {{ project.status }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Contract Quotation Ref: 
+                        <span class="font-medium text-gray-700">#{{ project.quotation.quotation_number if project.quotation else 'N/A' }}</span>
+                    </p>
+                </div>
+                
+                <div class="text-right">
+                    <p class="text-xs text-gray-400">Total System Cost</p>
+                    <p class="text-2xl font-extrabold text-amber-600">
+                        PKR {{ "{:,.2f}".format(project.quotation.final_amount) if project.quotation else '0.00' }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Payment & Lifecycle Steps -->
+            <div class="p-6 space-y-6">
+                <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Payment & Project Lifecycle</h4>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    {% for payment in project.payments %}
+                    <!-- Payment Milestone Card -->
+                    <div class="border rounded-xl p-5 relative flex flex-col justify-between transition border-gray-200 bg-white">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Milestone</span>
+                                {% if payment.status == 'Paid' %}
+                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">Paid</span>
+                                {% elif payment.status == 'Verification Required' %}
+                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-700">Under Verification</span>
+                                {% else %}
+                                    <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-100 text-rose-700">Pending</span>
+                                {% endif %}
+                            </div>
+
+                            <h5 class="font-bold text-gray-800 text-base mb-1">{{ payment.milestone_name }}</h5>
+                            <p class="text-xl font-extrabold text-gray-900 mb-4">PKR {{ "{:,.2f}".format(payment.amount) }}</p>
+                        </div>
+
+                        <!-- Action Button Based on Status -->
+                        <!-- <div class="pt-2">
+                            {% if payment.status == 'Pending' %}
+                                <a href="{{ url_for('customers.make_payment', payment_id=payment.id) }}" class="w-full inline-flex justify-center items-center py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                                    <i class="fa-solid fa-upload mr-2"></i> Upload Payment Slip
+                                </a>
+                            {% elif payment.status == 'Verification Required' %}
+                                <button disabled class="w-full py-2.5 px-4 bg-gray-100 text-gray-500 text-sm font-medium rounded-xl cursor-not-allowed">
+                                    <i class="fa-solid fa-clock-rotate-left mr-2"></i> Receipt Submitted
+                                </button>
+                            {% else %}
+                                <div class="text-xs text-emerald-600 font-semibold flex items-center">
+                                    <i class="fa-solid fa-circle-check mr-1.5"></i> Payment Confirmed
+                                </div>
+                            {% endif %}
+                        </div> -->
+                   
+
+
+                        <!-- Action Button Based on Status & Lifecycle -->
+                        <div class="pt-2">
+                            {% if payment.status == 'Pending' %}
+                                {% if 'Post-Installation' in payment.milestone_name and project.status != 'Completed' %}
+                                    <button disabled class="w-full py-2.5 px-4 bg-gray-100 text-gray-400 text-sm font-medium rounded-xl cursor-not-allowed">
+                                        <i class="fa-solid fa-lock mr-2"></i> Unlocks After Installation
+                                    </button>
+                                {% else %}
+                                    <a href="{{ url_for('customers.make_payment', payment_id=payment.id) }}" class="w-full inline-flex justify-center items-center py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                                        <i class="fa-solid fa-upload mr-2"></i> Upload Payment Slip
+                                    </a>
+                                {% endif %}
+                            {% elif payment.status == 'Verification Required' %}
+                                <button disabled class="w-full py-2.5 px-4 bg-gray-100 text-gray-500 text-sm font-medium rounded-xl cursor-not-allowed">
+                                    <i class="fa-solid fa-clock-rotate-left mr-2"></i> Receipt Submitted
+                                </button>
+                            {% else %}
+                                <div class="text-xs text-emerald-600 font-semibold flex items-center">
+                                    <i class="fa-solid fa-circle-check mr-1.5"></i> Payment Confirmed
+                                </div>
+                            {% endif %}
+                        </div>
+                   
+                   
+                   
+                    </div>
+                    {% else %}
+                        <p class="text-xs text-gray-400 col-span-3">No payment milestones generated yet.</p>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="bg-white rounded-2xl p-12 text-center border border-gray-200">
+            <i class="fa-solid fa-solar-panel text-5xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-bold text-gray-800">No Active Projects Yet</h3>
+            <p class="text-sm text-gray-500 mt-1">Once you accept a quotation contract, your project lifecycle will appear here.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

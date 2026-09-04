@@ -528,15 +528,15 @@ class SystemType(db.Model):
 class Project(db.Model):
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True)
-    quotation_id = db.Column(db.Integer, db.ForeignKey('quotation.id'), nullable=False)
-    customer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    quotation_id = db.Column(db.Integer, db.ForeignKey('quotations.id'), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
     project_name = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(50), default='Pending Advance') 
     # Statuses: Pending Advance, Material Pending, In Installation, Completed
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     quotation = db.relationship('Quotation', backref=db.backref('project', uselist=False))
-    customer = db.relationship('User', backref='projects')
+    customer = db.relationship('Customer', backref='projects')
 
 class Payment(db.Model):
     __tablename__ = 'payments'

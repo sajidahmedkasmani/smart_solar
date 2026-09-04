@@ -46,7 +46,12 @@ def history():
                 .order_by(Payment.id.desc()).all())
     approved = _customer_quotations()
     project = approved[0] if approved else None
-    return render_template('payment.html', payments=payments, project=project, quotations=approved)
+    return render_template(
+    'admin/payment.html',
+    payments=payments,
+    project=project,
+    quotations=approved
+)
 
 
 @payments_bp.route('/process/<int:project_id>', methods=['POST'])

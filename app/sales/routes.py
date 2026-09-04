@@ -1,9 +1,19 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app import db
-from app.models import SolarPackage, Requirement, Survey, Quotation
+from app.models import SolarPackage, Requirement, Survey, Quotation, Notification
 from app.auth.decorators import role_required
 
+
 sales_bp = Blueprint('sales', __name__)
+
+
+def notify_user(user_id, title, message):
+    notification = Notification(
+        user_id=user_id,
+        title=title,
+        message=message
+    )
+    db.session.add(notification)
 
 
 @sales_bp.route('/packages')

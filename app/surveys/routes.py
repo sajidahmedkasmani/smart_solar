@@ -981,10 +981,11 @@ def approve_reschedule(survey_id):
         )
 
     if request.method == 'GET':
-        return render_template(
-            'landing_page/customer/survey_response.html',
-            survey=survey
-        )
+      return render_template(
+    'admin/survey_response.html',
+    survey=survey
+
+)
 
     action = request.form.get(
         'action'

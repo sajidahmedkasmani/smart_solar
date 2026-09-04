@@ -56,7 +56,7 @@ def list_quotations():
                   .outerjoin(Requirement, Quotation.requirement_id == Requirement.id)
                   .filter(db.or_(Survey.user_id == uid, Requirement.user_id == uid))
                   .order_by(Quotation.id.desc()).all())
-    return render_template('quotation.html', quotations=quotations)
+    return render_template('admin/quotation.html',quotations=quotations)
 
 
 @quotations_bp.route('/generate/<int:survey_id>', methods=['GET', 'POST'])

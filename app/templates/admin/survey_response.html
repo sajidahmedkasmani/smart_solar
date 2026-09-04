@@ -1,454 +1,212 @@
-{% extends 'admin/layout/admin_base.html' %}
+{% extends 'landing_page/layout/base.html' %}
 
-{% block title %}
-Engineer Dashboard
-{% endblock %}
+{% block title %}Survey Schedule Approval{% endblock %}
 
-{% block page_heading %}
-Engineer Dashboard
-{% endblock %}
+{% block content %}
 
-{% block dashboard_content %}
+<div class="max-w-3xl mx-auto px-5 py-10">
 
-<div class="space-y-6">
+    <div class="card-panel">
 
-    <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="mb-6">
+            <h3 class="font-display font-bold text-2xl mb-2">
+                <i class="fa-solid fa-calendar-check mr-2"
+                   style="color: var(--leaf);"></i>
+                Survey Schedule Approval
+            </h3>
 
-        <div class="dashboard-dark-card">
-            <p class="text-[10px] text-slate-400 uppercase font-bold">
-                Assigned Surveys
-            </p>
-
-            <p class="text-2xl font-extrabold text-purple-700 mt-2">
-                {{ my_surveys|length }}
+            <p class="text-sm" style="color: var(--ink-soft);">
+                Please review the scheduled site survey and choose whether
+                you want to approve it or request a different date and time.
             </p>
         </div>
 
-        <div class="dashboard-dark-card">
-            <p class="text-[10px] text-slate-400 uppercase font-bold">
-                In Progress
-            </p>
 
-            <p class="text-2xl font-extrabold text-blue-700 mt-2">
-                {{ my_surveys|selectattr('status', 'equalto', 2)|list|length }}
-            </p>
-        </div>
+        <!-- SURVEY DETAILS -->
 
-        <div class="dashboard-dark-card">
-            <p class="text-[10px] text-slate-400 uppercase font-bold">
-                Completed
-            </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
 
-            <p class="text-2xl font-extrabold text-green-700 mt-2">
-                {{ completed|length }}
-            </p>
-        </div>
+            <div class="stat-tile">
+                <span class="text-xs" style="color: var(--ink-soft);">
+                    Survey ID
+                </span>
 
-    </div>
+                <h4 class="font-display font-bold text-lg mt-1">
+                    SUR-{{ survey.id }}
+                </h4>
+            </div>
 
 
-    <!-- My Assignments -->
+            <div class="stat-tile">
+                <span class="text-xs" style="color: var(--ink-soft);">
+                    Customer
+                </span>
 
-    <div class="dashboard-dark-card">
+                <h4 class="font-display font-bold text-lg mt-1">
+                    {{ survey.customer_name }}
+                </h4>
+            </div>
 
-        <div class="flex justify-between items-center mb-4">
 
-            <div>
-                <h3 class="font-bold text-slate-900">
-                    My Assigned Site Surveys
-                </h3>
+            <div class="stat-tile">
+                <span class="text-xs" style="color: var(--ink-soft);">
+                    Survey Date
+                </span>
 
-                <p class="text-xs text-slate-500">
-                    Start button becomes available 10 minutes before appointment.
-                </p>
+                <h4 class="font-display font-bold text-lg mt-1">
+                    {{ survey.preferred_date }}
+                </h4>
+            </div>
+
+
+            <div class="stat-tile">
+                <span class="text-xs" style="color: var(--ink-soft);">
+                    Survey Time
+                </span>
+
+                <h4 class="font-display font-bold text-lg mt-1">
+                    {{ survey.preferred_time }}
+                </h4>
             </div>
 
         </div>
 
 
-        <div class="space-y-4">
+        <!-- APPROVAL -->
 
-            {% for s in my_surveys %}
+        <div class="mb-8 p-5 rounded-lg"
+             style="background: #f0fff7; border: 1px solid var(--leaf);">
 
-            <div class="border border-slate-200 rounded-xl p-5">
+            <h5 class="font-display font-bold text-lg mb-2"
+                style="color: var(--leaf);">
 
-                <div class="flex flex-col md:flex-row justify-between gap-4">
+                <i class="fa-solid fa-circle-question mr-2"></i>
+                Do you approve this survey schedule?
+
+            </h5>
+
+            <p class="text-sm" style="color: var(--ink-soft);">
+                If the date and time are suitable for you, click
+                <strong>Approve Schedule</strong>.
+                Otherwise, you can request a new date and time below.
+            </p>
+
+        </div>
+
+
+        <!-- ACCEPT FORM -->
+
+        <form method="POST"
+              action="{{ url_for(
+                  'surveys.approve_reschedule',
+                  survey_id=survey.id
+              ) }}"
+              class="mb-8">
+
+            <input type="hidden"
+                   name="action"
+                   value="accept">
+
+            <button type="submit"
+                    class="btn-outline px-6 py-3 text-sm font-semibold"
+                    style="border-color: var(--leaf); color: var(--leaf);">
+
+                <i class="fa-solid fa-check mr-2"></i>
+                Approve Schedule
+
+            </button>
+
+        </form>
+
+
+        <!-- REJECT / RESCHEDULE -->
+
+        <div class="pt-6"
+             style="border-top: 1px solid var(--line);">
+
+            <h5 class="font-display font-bold text-lg mb-4">
+
+                <i class="fa-solid fa-calendar-xmark mr-2"
+                   style="color: var(--gold-dark);"></i>
+
+                Need a Different Date or Time?
+
+            </h5>
+
+
+            <form method="POST"
+                  action="{{ url_for(
+                      'surveys.approve_reschedule',
+                      survey_id=survey.id
+                  ) }}">
+
+                <input type="hidden"
+                       name="action"
+                       value="reject">
+
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 
                     <div>
+                        <label class="block text-sm font-semibold mb-2">
+                            Preferred New Date
+                        </label>
 
-                        <div class="flex items-center gap-2">
-
-                            <strong>
-                                SUR-{{ s.id }}
-                            </strong>
-
-                            {% if s.status == 1 %}
-
-                                <span class="px-2 py-1 text-[10px] rounded-full bg-green-100 text-green-700">
-                                    Scheduled
-                                </span>
-
-                            {% elif s.status == 2 %}
-
-                                <span class="px-2 py-1 text-[10px] rounded-full bg-blue-100 text-blue-700">
-                                    In Progress
-                                </span>
-
-                            {% elif s.status == 3 %}
-
-                                <span class="px-2 py-1 text-[10px] rounded-full bg-slate-100 text-slate-700">
-                                    Completed
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
-                        <p class="text-sm font-semibold mt-2">
-                            {{ s.customer_name }}
-                        </p>
-
-                        <p class="text-xs text-slate-500">
-                            {{ s.address }}
-                        </p>
-
+                        <input type="date"
+                               name="new_date"
+                               required
+                               class="w-full px-4 py-3 rounded-lg"
+                               style="border: 1px solid var(--line);">
                     </div>
 
 
-                    <div class="text-sm">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">
+                            Preferred New Time
+                        </label>
 
-                        <p>
-                            <strong>Date:</strong>
-                            {{ s.preferred_date }}
-                        </p>
+                        <select name="new_time"
+                                required
+                                class="w-full px-4 py-3 rounded-lg"
+                                style="border: 1px solid var(--line);">
 
-                        <p>
-                            <strong>Time:</strong>
-                            {{ s.preferred_time }}
-                        </p>
+                            <option value="">
+                                Select Time
+                            </option>
 
+                            <option value="Morning (09:00 AM - 12:00 PM)">
+                                Morning (09:00 AM - 12:00 PM)
+                            </option>
+
+                            <option value="Afternoon (12:00 PM - 03:00 PM)">
+                                Afternoon (12:00 PM - 03:00 PM)
+                            </option>
+
+                            <option value="Evening (03:00 PM - 06:00 PM)">
+                                Evening (03:00 PM - 06:00 PM)
+                            </option>
+
+                        </select>
                     </div>
 
                 </div>
 
 
-                {% if s.status == 1 %}
+                <button type="submit"
+                        class="btn-outline px-6 py-3 text-sm font-semibold"
+                        style="border-color: var(--gold-dark); color: var(--gold-dark);">
 
-                <div
-                    class="mt-4"
-                    data-appointment="{{ s.preferred_date }}|{{ s.preferred_time }}"
-                >
+                    <i class="fa-solid fa-calendar-plus mr-2"></i>
+                    Request New Schedule
 
-                    <form
-                        method="POST"
-                        action="{{ url_for('surveys.start_survey', survey_id=s.id) }}"
-                    >
+                </button>
 
-                        <button
-                            type="submit"
-                            class="dashboard-action start-btn"
-                            disabled
-                        >
-                            Start Survey
-                        </button>
-
-                    </form>
-
-                    <p class="start-message text-xs text-slate-500 mt-2">
-                        Checking appointment time...
-                    </p>
-
-                </div>
-
-                {% elif s.status == 2 %}
-
-                <div class="mt-5">
-
-                    <form
-                        method="POST"
-                        action="{{ url_for('surveys.complete_survey', survey_id=s.id) }}"
-                        enctype="multipart/form-data"
-                        class="space-y-4"
-                    >
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-                            <div>
-
-                                <label class="text-xs font-bold">
-                                    Roof Area
-                                </label>
-
-                                <input
-                                    class="dashboard-input"
-                                    type="number"
-                                    step="0.1"
-                                    name="roof_area"
-                                    value="{{ s.roof_area or '' }}"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div>
-
-                                <label class="text-xs font-bold">
-                                    Recommended System kW
-                                </label>
-
-                                <input
-                                    class="dashboard-input"
-                                    type="number"
-                                    step="0.1"
-                                    name="recommended_kw"
-                                    value="{{ s.recommended_kw or '' }}"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div>
-
-                                <label class="text-xs font-bold">
-                                    Roof Direction
-                                </label>
-
-                                <select
-                                    name="roof_direction"
-                                    class="dashboard-input"
-                                >
-                                    <option>North</option>
-                                    <option>South</option>
-                                    <option>East</option>
-                                    <option>West</option>
-                                    <option>North-East</option>
-                                    <option>North-West</option>
-                                    <option>South-East</option>
-                                    <option>South-West</option>
-                                </select>
-
-                            </div>
-
-
-                            <div>
-
-                                <label class="text-xs font-bold">
-                                    Shading
-                                </label>
-
-                                <select
-                                    name="shading"
-                                    class="dashboard-input"
-                                >
-                                    <option>No major shading</option>
-                                    <option>Low</option>
-                                    <option>Medium</option>
-                                    <option>High</option>
-                                </select>
-
-                            </div>
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="text-xs font-bold">
-                                Technical Notes
-                            </label>
-
-                            <textarea
-                                name="report_notes"
-                                rows="4"
-                                class="dashboard-input"
-                                placeholder="Enter technical site observations..."
-                            ></textarea>
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="text-xs font-bold">
-                                Site / Roof / Meter Photos
-                            </label>
-
-                            <input
-                                type="file"
-                                name="survey_images"
-                                multiple
-                                accept="image/*"
-                                class="dashboard-input"
-                            >
-
-                        </div>
-
-
-                        <button
-                            type="submit"
-                            class="dashboard-action"
-                        >
-                            End Survey & Submit Report
-                        </button>
-
-                    </form>
-
-                </div>
-
-                {% elif s.status == 3 %}
-
-                <div class="mt-4 p-4 bg-green-50 rounded-lg">
-
-                    <p class="text-sm font-bold text-green-800">
-                        Survey Completed
-                    </p>
-
-                    <p class="text-xs text-green-700 mt-1">
-                        Technical report has been submitted to Admin.
-                    </p>
-
-                </div>
-
-                {% endif %}
-
-            </div>
-
-            {% else %}
-
-            <p class="text-sm text-slate-400">
-                No surveys assigned to you yet.
-            </p>
-
-            {% endfor %}
+            </form>
 
         </div>
 
     </div>
 
 </div>
-
-
-<script>
-
-function appointmentStart(dateString, timeString) {
-
-    const date = new Date(dateString + "T00:00:00");
-
-    const text = (timeString || "").toLowerCase();
-
-    let hour = null;
-
-    if (
-        text.includes("09:00") ||
-        text.includes("morning")
-    ) {
-        hour = 9;
-    }
-
-    else if (
-        text.includes("12:00") ||
-        text.includes("afternoon")
-    ) {
-        hour = 12;
-    }
-
-    else if (
-        text.includes("03:00") ||
-        text.includes("15:00") ||
-        text.includes("evening")
-    ) {
-        hour = 15;
-    }
-
-    if (hour === null) {
-        return null;
-    }
-
-    date.setHours(hour, 0, 0, 0);
-
-    return date;
-}
-
-
-document.querySelectorAll(
-    "[data-appointment]"
-).forEach(function(box) {
-
-    const value =
-        box.dataset.appointment.split("|");
-
-    const appointment =
-        appointmentStart(
-            value[0],
-            value[1]
-        );
-
-    const button =
-        box.querySelector(".start-btn");
-
-    const message =
-        box.querySelector(".start-message");
-
-    if (!appointment) {
-        message.textContent =
-            "Invalid appointment time.";
-
-        return;
-    }
-
-
-    function updateButton() {
-
-        const now = new Date();
-
-        const enableAt =
-            new Date(
-                appointment.getTime()
-                - (10 * 60 * 1000)
-            );
-
-
-        if (now >= enableAt) {
-
-            button.disabled = false;
-
-            message.textContent =
-                "Survey is ready to start.";
-
-        } else {
-
-            button.disabled = true;
-
-            const diff =
-                enableAt.getTime()
-                - now.getTime();
-
-            const minutes =
-                Math.ceil(
-                    diff / 60000
-                );
-
-            message.textContent =
-                "Start available in approximately "
-                + minutes
-                + " minute(s).";
-
-        }
-
-    }
-
-    updateButton();
-
-    setInterval(
-        updateButton,
-        30000
-    );
-
-});
-
-</script>
 
 {% endblock %}

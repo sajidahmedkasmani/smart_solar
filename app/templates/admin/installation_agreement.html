@@ -1,0 +1,592 @@
+{% extends "landing_page/layout/base.html" %}
+
+{% block content %}
+
+<style>
+    .agreement-page {
+        min-height: 100vh;
+        background: #f5f7fb;
+        padding: 45px 20px 70px;
+        font-family: Arial, sans-serif;
+    }
+
+    .agreement-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .agreement-header {
+        background: linear-gradient(135deg, #0d2438, #163b57);
+        border-radius: 18px;
+        padding: 35px 40px;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(13, 36, 56, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .agreement-header::after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.08);
+        right: -70px;
+        top: -90px;
+    }
+
+    .brand-small {
+        color: #ffc107;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .agreement-header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .agreement-header p {
+        margin: 10px 0 0;
+        color: #d8e3ec;
+        font-size: 15px;
+    }
+
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .status-badge {
+        background: #fff;
+        color: #198754;
+        padding: 9px 18px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* Cards */
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 22px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e8edf2;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 22px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #edf0f3;
+    }
+
+    .section-number {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: #fff3cd;
+        color: #b58100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .section-title h2 {
+        margin: 0;
+        font-size: 19px;
+        color: #162c3d;
+        font-weight: 700;
+    }
+
+    /* Info Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .info-box {
+        background: #f8fafc;
+        border: 1px solid #edf1f5;
+        border-radius: 12px;
+        padding: 17px;
+    }
+
+    .info-label {
+        color: #7b8794;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        margin-bottom: 7px;
+    }
+
+    .info-value {
+        color: #172b3a;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .approved-text {
+        color: #198754;
+    }
+
+    /* Price */
+    .price-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .price-row {
+        background: #f8fafc;
+        border-radius: 11px;
+        padding: 15px 17px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        border: 1px solid #edf1f5;
+    }
+
+    .price-row span:first-child {
+        color: #667482;
+        font-size: 14px;
+    }
+
+    .price-row span:last-child {
+        color: #182c3b;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .total-box {
+        margin-top: 18px;
+        background: linear-gradient(135deg, #0d2438, #163b57);
+        border-radius: 13px;
+        padding: 20px 23px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+    }
+
+    .total-label {
+        font-size: 15px;
+        color: #dbe5ec;
+    }
+
+    .total-amount {
+        font-size: 25px;
+        font-weight: 800;
+        color: #ffc107;
+    }
+
+    /* Terms */
+    .terms-list {
+        margin: 0;
+        padding-left: 22px;
+    }
+
+    .terms-list li {
+        margin-bottom: 12px;
+        color: #52606d;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    /* Acceptance */
+    .acceptance-card {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        margin-top: 25px;
+        border: 2px solid #e9edf1;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        text-align: center;
+    }
+
+    .acceptance-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        background: #e8f7ef;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+        font-weight: bold;
+    }
+
+    .acceptance-card h2 {
+        margin: 0 0 10px;
+        color: #162c3d;
+        font-size: 22px;
+    }
+
+    .acceptance-card p {
+        max-width: 700px;
+        margin: 0 auto 22px;
+        color: #6c7884;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .accept-btn {
+        border: none;
+        background: #198754;
+        color: white;
+        padding: 13px 28px;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .accept-btn:hover {
+        background: #157347;
+        transform: translateY(-1px);
+    }
+
+    .back-btn {
+        display: inline-block;
+        margin-top: 18px;
+        color: #52606d;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .back-btn:hover {
+        color: #0d2438;
+    }
+
+    /* Accepted */
+    .accepted-box {
+        background: #eaf8f0;
+        border: 1px solid #bce3cc;
+        color: #176b3a;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .info-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .price-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .agreement-page {
+            padding: 25px 12px 50px;
+        }
+
+        .agreement-header {
+            padding: 25px 22px;
+        }
+
+        .header-top {
+            flex-direction: column;
+        }
+
+        .agreement-header h1 {
+            font-size: 25px;
+        }
+
+        .section-card,
+        .acceptance-card {
+            padding: 20px;
+        }
+
+        .info-grid,
+        .price-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .total-box {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+</style>
+
+
+<div class="agreement-page">
+
+    <div class="agreement-wrapper">
+
+        <!-- Header -->
+        <div class="agreement-header">
+            <div class="header-top">
+
+                <div>
+                    <div class="brand-small">SOLAREASE</div>
+
+                    <h1>Installation Agreement</h1>
+
+                    <p>
+                        Official installation agreement for your approved solar quotation.
+                    </p>
+                </div>
+
+                <div class="status-badge">
+                    ✓ Quotation Approved
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- Quotation Information -->
+        <div class="section-card">
+
+            <div class="section-title">
+                <div class="section-number">01</div>
+                <h2>Quotation Information</h2>
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-box">
+                    <div class="info-label">Quotation Number</div>
+                    <div class="info-value">
+                        {{ q.quotation_number }}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">Quotation Status</div>
+                    <div class="info-value approved-text">
+                        {{ q.status }}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">System Capacity</div>
+                    <div class="info-value">
+                        {{ q.system_capacity_kw }} kW
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">System Type</div>
+                    <div class="info-value">
+                        {{ q.system_type }}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Project Cost -->
+        <div class="section-card">
+
+            <div class="section-title">
+                <div class="section-number">02</div>
+                <h2>Project Cost</h2>
+            </div>
+
+            <div class="price-grid">
+
+                <div class="price-row">
+                    <span>Equipment Cost</span>
+                    <span>PKR {{ "{:,.0f}".format(q.equipment_cost or 0) }}</span>
+                </div>
+
+                <div class="price-row">
+                    <span>Installation Cost</span>
+                    <span>PKR {{ "{:,.0f}".format(q.installation_cost or 0) }}</span>
+                </div>
+
+                <div class="price-row">
+                    <span>Transport Cost</span>
+                    <span>PKR {{ "{:,.0f}".format(q.transport_cost or 0) }}</span>
+                </div>
+
+                <div class="price-row">
+                    <span>Tax</span>
+                    <span>PKR {{ "{:,.0f}".format(q.tax or 0) }}</span>
+                </div>
+
+                <div class="price-row">
+                    <span>Discount</span>
+                    <span>PKR {{ "{:,.0f}".format(q.discount or 0) }}</span>
+                </div>
+
+            </div>
+
+            <div class="total-box">
+                <div class="total-label">
+                    Final Project Amount
+                </div>
+
+                <div class="total-amount">
+                    PKR {{ "{:,.0f}".format(q.final_amount or 0) }}
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Payment & Warranty -->
+        <div class="section-card">
+
+            <div class="section-title">
+                <div class="section-number">03</div>
+                <h2>Payment & Warranty</h2>
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-box" style="grid-column: span 2;">
+                    <div class="info-label">Payment Terms</div>
+                    <div class="info-value">
+                        {{ q.payment_terms or 'As agreed in quotation.' }}
+                    </div>
+                </div>
+
+                <div class="info-box" style="grid-column: span 2;">
+                    <div class="info-label">Warranty</div>
+                    <div class="info-value">
+                        {{ q.warranty_terms or 'As specified in quotation.' }}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Terms -->
+        <div class="section-card">
+
+            <div class="section-title">
+                <div class="section-number">04</div>
+                <h2>Terms & Conditions</h2>
+            </div>
+
+            <ol class="terms-list">
+
+                <li>
+                    The customer confirms that the quotation has been reviewed and approved.
+                </li>
+
+                <li>
+                    SolarEase will perform the solar installation according to the approved quotation and system specifications.
+                </li>
+
+                <li>
+                    Any additional equipment or work outside the approved quotation may require additional charges.
+                </li>
+
+                <li>
+                    Installation scheduling will be coordinated between SolarEase and the customer.
+                </li>
+
+                <li>
+                    The customer agrees to provide reasonable access to the installation site when required.
+                </li>
+
+                <li>
+                    Warranty coverage will be provided according to the warranty terms specified in the quotation.
+                </li>
+
+                <li>
+                    After acceptance of this agreement, SolarEase may proceed with the installation process.
+                </li>
+
+            </ol>
+
+        </div>
+
+
+        <!-- Acceptance -->
+        <div class="acceptance-card">
+
+            {% if q.contract_accepted %}
+
+                <div class="acceptance-icon">
+                    ✓
+                </div>
+
+                <h2>Agreement Accepted</h2>
+
+                <p>
+                    You have successfully accepted the SolarEase installation agreement.
+                    The installation process can now proceed according to the approved quotation.
+                </p>
+
+                <div class="accepted-box">
+                    <strong>Agreement Status:</strong>
+                    Accepted
+                    {% if q.contract_accepted_at %}
+                        on {{ q.contract_accepted_at.strftime('%d %B %Y, %I:%M %p') }}
+                    {% endif %}
+                </div>
+
+            {% else %}
+
+                <div class="acceptance-icon">
+                    ✓
+                </div>
+
+                <h2>Customer Acceptance</h2>
+
+                <p>
+                    By clicking the button below, you confirm that you have reviewed
+                    the installation agreement and agree to proceed with the installation.
+                </p>
+
+                <form method="POST"
+                      action="{{ url_for('quotations.accept_contract', quotation_id=q.id) }}">
+
+                    <button type="submit" class="accept-btn">
+                        ✓ Accept Installation Agreement
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+            <a href="{{ url_for('quotations.view_quotation', quotation_id=q.id) }}"
+               class="back-btn">
+                ← Back to Quotation
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

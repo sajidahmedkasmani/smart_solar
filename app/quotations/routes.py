@@ -585,9 +585,9 @@ def contract(quotation_id):
         )
 
     return render_template(
-        'installation_agreement.html',
-        q=q
-    )
+    'admin/installation_agreement.html',
+    q=q
+)
 
 
 @quotations_bp.route(

@@ -367,17 +367,17 @@ class Quotation(db.Model):
     requirement = db.relationship('Requirement', backref=db.backref('quotations', lazy=True))
 
 
-class Payment(db.Model):
-    __tablename__ = 'payments'
-    id = db.Column(db.Integer, primary_key=True)
-    quotation_id = db.Column(db.Integer, db.ForeignKey('quotations.id'), nullable=False)
-    payment_method = db.Column(db.String(50), nullable=False)
-    payment_type = db.Column(db.String(60), nullable=False)
-    trx_ref = db.Column(db.String(100), nullable=False)
-    amount_paid = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(40), default='Payment Verification Required')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    quotation = db.relationship('Quotation', backref=db.backref('payments', lazy=True))
+# class Payment(db.Model):
+#     __tablename__ = 'payments'
+#     id = db.Column(db.Integer, primary_key=True)
+#     quotation_id = db.Column(db.Integer, db.ForeignKey('quotations.id'), nullable=False)
+#     payment_method = db.Column(db.String(50), nullable=False)
+#     payment_type = db.Column(db.String(60), nullable=False)
+#     trx_ref = db.Column(db.String(100), nullable=False)
+#     amount_paid = db.Column(db.Float, nullable=False)
+#     status = db.Column(db.String(40), default='Payment Verification Required')
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+#     quotation = db.relationship('Quotation', backref=db.backref('payments', lazy=True))
 
 
 class Installation(db.Model):
@@ -520,3 +520,34 @@ class SystemType(db.Model):
 
     # def __repr__(self):
     #     return f"<SystemType {self.name}>
+
+
+
+
+
+class Project(db.Model):
+    __tablename__ = 'projects'
+    id = db.Column(db.Integer, primary_key=True)
+    quotation_id = db.Column(db.Integer, db.ForeignKey('quotation.id'), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    project_name = db.Column(db.String(120), nullable=False)
+    status = db.Column(db.String(50), default='Pending Advance') 
+    # Statuses: Pending Advance, Material Pending, In Installation, Completed
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    quotation = db.relationship('Quotation', backref=db.backref('project', uselist=False))
+    customer = db.relationship('User', backref='projects')
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    milestone_name = db.Column(db.String(50), nullable=False) # e.g. '30% Advance Payment'
+    amount = db.Column(db.Float, nullable=False)
+    payment_method = db.Column(db.String(50), default='Bank Transfer')
+    receipt_file = db.Column(db.String(255), nullable=True) # Uploaded slip
+    status = db.Column(db.String(50), default='Pending') 
+    # Statuses: Pending, Verification Required, Paid, Failed
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    project = db.relationship('Project', backref='payments')

@@ -18,6 +18,7 @@ from app import db
 from app.models import Requirement, Quotation, Survey
 from app.auth.decorators import role_required
 
+from app.models import Payment, Project, Quotation  # Project aur Payment models import kar lein
 
 quotations_bp = Blueprint('quotations', __name__)
 
@@ -590,49 +591,103 @@ def contract(quotation_id):
 )
 
 
-@quotations_bp.route(
-    '/contract/accept/<int:quotation_id>',
-    methods=['POST']
-)
+# @quotations_bp.route(
+#     '/contract/accept/<int:quotation_id>',
+#     methods=['POST']
+# )
+# @role_required('customer')
+# def accept_contract(quotation_id):
+#     q = Quotation.query.get_or_404(quotation_id)
+
+#     if not _customer_owns_quotation(q):
+#         flash(
+#             'You can only accept your own agreement.',
+#             'danger'
+#         )
+#         return redirect(
+#             url_for('quotations.list_quotations')
+#         )
+
+#     if q.status != 'Approved':
+#         flash(
+#             'Quotation must be approved before accepting the agreement.',
+#             'warning'
+#         )
+#         return redirect(
+#             url_for(
+#                 'quotations.view_quotation',
+#                 quotation_id=q.id
+#             )
+#         )
+
+#     q.contract_generated = True
+#     q.contract_accepted = True
+#     q.contract_accepted_at = datetime.utcnow()
+
+#     db.session.commit()
+
+#     flash(
+#         'Installation agreement accepted successfully.',
+#         'success'
+#     )
+
+#     return redirect(
+#         url_for('quotations.list_quotations')
+#     )
+
+
+
+
+
+@quotations_bp.route('/contract/accept/<int:quotation_id>', methods=['POST'])
 @role_required('customer')
 def accept_contract(quotation_id):
     q = Quotation.query.get_or_404(quotation_id)
 
     if not _customer_owns_quotation(q):
-        flash(
-            'You can only accept your own agreement.',
-            'danger'
-        )
-        return redirect(
-            url_for('quotations.list_quotations')
-        )
+        flash('You can only accept your own agreement.', 'danger')
+        return redirect(url_for('quotations.list_quotations'))
 
     if q.status != 'Approved':
-        flash(
-            'Quotation must be approved before accepting the agreement.',
-            'warning'
-        )
-        return redirect(
-            url_for(
-                'quotations.view_quotation',
-                quotation_id=q.id
-            )
-        )
+        flash('Quotation must be approved before accepting the agreement.', 'warning')
+        return redirect(url_for('quotations.view_quotation', quotation_id=q.id))
 
+    # 1. Update Quotation Status
     q.contract_generated = True
     q.contract_accepted = True
     q.contract_accepted_at = datetime.utcnow()
+    q.status = 'Contract Signed'
+
+    # 2. Check if Project already exists, agar nahi toh create karein
+    project = Project.query.filter_by(quotation_id=q.id).first()
+    if not project:
+        project = Project(
+            quotation_id=q.id,
+            customer_id=q.survey.user_id if q.survey else current_user.id,
+            project_name=f"Solar System - {q.quotation_number}",
+            status='Pending Advance'
+        )
+        db.session.add(project)
+        db.session.flush()  # Project ID generate karne ke liye
+
+    # 3. Automatic 30% Advance Payment Milestone
+    advance_payment = Payment.query.filter_by(project_id=project.id, milestone_name='30% Advance Payment').first()
+    if not advance_payment:
+        advance_amount = q.final_amount * 0.30
+        advance_payment = Payment(
+            project_id=project.id,
+            milestone_name='30% Advance Payment',
+            amount=advance_amount,
+            status='Pending'
+        )
+        db.session.add(advance_payment)
 
     db.session.commit()
 
-    flash(
-        'Installation agreement accepted successfully.',
-        'success'
-    )
-
-    return redirect(
-        url_for('quotations.list_quotations')
-    )
+    flash('Installation agreement accepted! Project initialized. Please submit your 30% advance payment to proceed.', 'success')
+    
+    # Redirect customer directly to Payment Upload Page
+    return redirect(url_for('customer.make_payment', payment_id=advance_payment.id))
 
 
 # =========================================================

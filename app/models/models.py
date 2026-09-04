@@ -343,6 +343,25 @@ class Quotation(db.Model):
     warranty_terms = db.Column(db.String(120), default='10 years equipment warranty')
     status = db.Column(db.String(40), default='Pending')
     customer_comment = db.Column(db.Text, default='')
+    # Customer quotation decision
+    decision_reason = db.Column(db.Text, default='')
+    decision_at = db.Column(db.DateTime, nullable=True)
+    # Customer requested quotation changes
+    revision_requested = db.Column(db.Boolean, default=False)
+    revision_status = db.Column(db.String(30), default='')
+    revision_reason = db.Column(db.Text, default='')
+    # Customer-editable requested values
+    requested_system_capacity_kw = db.Column(db.Float, nullable=True)
+    requested_system_type = db.Column(db.String(30), nullable=True)
+    requested_equipment_cost = db.Column(db.Float, nullable=True)
+    requested_installation_cost = db.Column(db.Float, nullable=True)
+    # Sales review of customer's requested changes
+    sales_review_reason = db.Column(db.Text, default='')
+    sales_review_at = db.Column(db.DateTime, nullable=True)
+    # Contract / Agreement
+    contract_generated = db.Column(db.Boolean, default=False)
+    contract_accepted = db.Column(db.Boolean, default=False)
+    contract_accepted_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     survey = db.relationship('Survey', backref=db.backref('quotations', lazy=True))
     requirement = db.relationship('Requirement', backref=db.backref('quotations', lazy=True))

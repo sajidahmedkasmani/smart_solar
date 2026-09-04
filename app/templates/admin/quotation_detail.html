@@ -1,0 +1,1115 @@
+{% extends 'landing_page/layout/base.html' %}
+{% block title %}Quotation Details - SolarEase{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto px-5 py-10">
+
+    <div class="flex justify-between items-center mb-8">
+
+        <div>
+            <h3 class="font-display font-bold text-2xl">
+                <i class="fa-solid fa-file-invoice mr-2"
+                   style="color: var(--gold-dark);"></i>
+
+                Quotation Details
+            </h3>
+
+            <p class="text-sm mt-1"
+               style="color: var(--ink-soft);">
+
+                {{ quotation.quotation_number }}
+
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         QUOTATION DETAILS
+         ===================================================== -->
+
+    <div class="card-panel">
+
+        <!-- HEADER -->
+
+        <div class="flex justify-between items-center mb-5">
+
+            <div>
+
+                <h4 class="font-display font-bold text-xl">
+
+                    {{ quotation.quotation_number }}
+
+                </h4>
+
+                <p class="text-xs mt-1"
+                   style="color: var(--ink-soft);">
+
+                    Generated Date:
+                    {{ quotation.created_at }}
+
+                </p>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <span class="badge-pill
+
+                {% if quotation.status == 'Approved' %}
+
+                    badge-leaf
+
+                {% elif quotation.status == 'Pending' %}
+
+                    badge-gold
+
+                {% elif quotation.status == 'Sent to Customer' %}
+
+                    badge-gold
+
+                {% elif quotation.status == 'On Hold' %}
+
+                    badge-gold
+
+                {% else %}
+
+                    badge-neutral
+
+                {% endif %}">
+
+                {{ quotation.status }}
+
+            </span>
+
+        </div>
+
+
+        <!-- =====================================================
+             QUOTATION STATUS
+             ===================================================== -->
+
+        <div class="mb-5 rounded-xl p-4"
+             style="
+                background: var(--sky-soft);
+                border: 1px solid var(--line);
+             ">
+
+            <div class="flex justify-between items-center">
+
+                <span class="font-semibold">
+                    Quotation Status
+                </span>
+
+                <strong>
+                    {{ quotation.status }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             SYSTEM INFORMATION
+             ===================================================== -->
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
+            <!-- System Capacity -->
+
+            <div class="rounded-xl p-4"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <p class="text-xs"
+                   style="color: var(--ink-soft);">
+
+                    System Capacity
+
+                </p>
+
+                <strong>
+                    {{ quotation.system_capacity_kw }} kW
+                </strong>
+
+            </div>
+
+
+            <!-- System Type -->
+
+            <div class="rounded-xl p-4"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <p class="text-xs"
+                   style="color: var(--ink-soft);">
+
+                    System Type
+
+                </p>
+
+                <strong>
+                    {{ quotation.system_type }}
+                </strong>
+
+            </div>
+
+
+            <!-- Equipment Cost -->
+
+            <div class="rounded-xl p-4"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <p class="text-xs"
+                   style="color: var(--ink-soft);">
+
+                    Equipment Cost
+
+                </p>
+
+                <strong>
+
+                    PKR
+                    {{ "{:,.0f}".format(quotation.equipment_cost or 0) }}
+
+                </strong>
+
+            </div>
+
+
+            <!-- Installation Cost -->
+
+            <div class="rounded-xl p-4"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <p class="text-xs"
+                   style="color: var(--ink-soft);">
+
+                    Installation Cost
+
+                </p>
+
+                <strong>
+
+                    PKR
+                    {{ "{:,.0f}".format(quotation.installation_cost or 0) }}
+
+                </strong>
+
+            </div>
+
+
+            <!-- Transport -->
+
+            <div class="rounded-xl p-4"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <p class="text-xs"
+                   style="color: var(--ink-soft);">
+
+                    Transport
+
+                </p>
+
+                <strong>
+
+                    PKR
+                    {{ "{:,.0f}".format(quotation.transport_cost or 0) }}
+
+                </strong>
+
+            </div>
+
+
+            <!-- Tax -->
+
+            <div class="rounded-xl p-4"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <p class="text-xs"
+                   style="color: var(--ink-soft);">
+
+                    Tax
+
+                </p>
+
+                <strong>
+
+                    PKR
+                    {{ "{:,.0f}".format(quotation.tax or 0) }}
+
+                </strong>
+
+            </div>
+
+
+            <!-- Discount -->
+
+            <div class="rounded-xl p-4"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <p class="text-xs"
+                   style="color: var(--ink-soft);">
+
+                    Discount
+
+                </p>
+
+                <strong>
+
+                    PKR
+                    {{ "{:,.0f}".format(quotation.discount or 0) }}
+
+                </strong>
+
+            </div>
+
+
+            <!-- Final Amount -->
+
+            <div class="rounded-xl p-4"
+                 style="
+                    background: var(--sky-soft);
+                    border: 1px solid var(--line);
+                 ">
+
+                <p class="text-xs"
+                   style="color: var(--ink-soft);">
+
+                    Final Amount
+
+                </p>
+
+                <strong class="text-xl"
+                        style="color: var(--gold-dark);">
+
+                    PKR
+                    {{ "{:,.0f}".format(quotation.final_amount or 0) }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             PAYMENT TERMS
+             ===================================================== -->
+
+        <div class="mt-5 rounded-xl p-4"
+             style="
+                background: var(--paper);
+                border: 1px solid var(--line);
+             ">
+
+            <h4 class="font-bold mb-2">
+
+                Payment Schedule
+
+            </h4>
+
+            <p class="text-sm">
+
+                {{ quotation.payment_terms or
+                   'As agreed in the installation agreement.' }}
+
+            </p>
+
+        </div>
+
+
+        <!-- =====================================================
+             WARRANTY
+             ===================================================== -->
+
+        <div class="mt-4 rounded-xl p-4"
+             style="
+                background: var(--paper);
+                border: 1px solid var(--line);
+             ">
+
+            <h4 class="font-bold mb-2">
+
+                Warranty Conditions
+
+            </h4>
+
+            <p class="text-sm">
+
+                {{ quotation.warranty_terms or
+                   'As specified in the installation agreement.' }}
+
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             APPROVAL AREA
+             ================================================= -->
+
+        {% if quotation.status == 'Pending'
+              or quotation.status == 'Sent to Customer' %}
+
+        <div class="mt-6 pt-5 border-t"
+             style="border-color: var(--line);">
+
+            <h4 class="font-bold mb-4">
+
+                Quotation Decision
+
+            </h4>
+
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+
+                <!-- APPROVE -->
+
+                <form
+                    action="{{ url_for('quotations.approve', quotation_id=quotation.id) }}"
+                    method="POST">
+
+                    <button
+                        type="submit"
+                        class="btn-solar w-full py-3">
+
+                        <i class="fa-solid fa-check mr-1"></i>
+
+                        Approve
+
+                    </button>
+
+                </form>
+
+
+                <!-- HOLD -->
+
+                <button
+                    type="button"
+                    class="btn-outline w-full py-3"
+                    onclick="showHoldForm('{{ quotation.id }}')">
+
+                    <i class="fa-solid fa-clock mr-1"></i>
+
+                    Hold
+
+                </button>
+
+
+                <!-- REJECT -->
+
+                <button
+                    type="button"
+                    class="btn-outline w-full py-3"
+                    onclick="showRejectForm('{{ quotation.id }}')">
+
+                    <i class="fa-solid fa-xmark mr-1"></i>
+
+                    Reject
+
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 HOLD FORM
+                 ================================================= -->
+
+            <div id="holdForm{{ quotation.id }}"
+                 class="hidden mt-5 rounded-xl p-5"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <h4 class="font-bold mb-3">
+
+                    Hold Quotation
+
+                </h4>
+
+
+                <form
+                    action="{{ url_for('quotations.hold', quotation_id=quotation.id) }}"
+                    method="POST">
+
+                    <label class="text-sm font-semibold">
+
+                        Reason
+
+                        <span class="font-normal"
+                              style="color: var(--ink-soft);">
+
+                            (Optional)
+
+                        </span>
+
+                    </label>
+
+
+                    <textarea
+                        name="hold_reason"
+                        rows="3"
+                        class="w-full rounded-xl p-3 mt-2"
+                        placeholder="Why do you want to put this quotation on hold?"></textarea>
+
+
+                    <div class="flex gap-3 mt-3">
+
+                        <button
+                            type="submit"
+                            class="btn-solar px-5 py-2">
+
+                            Confirm Hold
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            onclick="hideHoldForm('{{ quotation.id }}')"
+                            class="btn-outline px-5 py-2">
+
+                            Cancel
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <!-- =================================================
+                 REJECT FORM
+                 ================================================= -->
+
+            <div id="rejectForm{{ quotation.id }}"
+                 class="hidden mt-5 rounded-xl p-5"
+                 style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                 ">
+
+                <h4 class="font-bold mb-4">
+
+                    Reject Quotation
+
+                </h4>
+
+
+                <form
+                    action="{{ url_for('quotations.reject', quotation_id=quotation.id) }}"
+                    method="POST">
+
+
+                    <!-- Required reason -->
+
+                    <label class="text-sm font-semibold">
+
+                        Reason for Reject
+
+                        <span style="color: var(--danger);">
+
+                            *
+
+                        </span>
+
+                    </label>
+
+
+                    <textarea
+                        name="reject_reason"
+                        rows="3"
+                        required
+                        class="w-full rounded-xl p-3 mt-2"
+                        placeholder="Please explain why you are rejecting this quotation."></textarea>
+
+
+                    <!-- Changes -->
+
+                    <label class="block text-sm font-semibold mt-5">
+
+                        Any changes to quotation?
+
+                        <span class="font-normal"
+                              style="color: var(--ink-soft);">
+
+                            (Optional)
+
+                        </span>
+
+                    </label>
+
+
+                    <textarea
+                        name="changes_requested"
+                        rows="3"
+                        class="w-full rounded-xl p-3 mt-2"
+                        placeholder="Describe any changes you would like to request."></textarea>
+
+
+                    <!-- =================================================
+                         LIMITED EDITABLE FIELDS
+                         ================================================= -->
+
+                    <div class="mt-5 pt-5 border-t"
+                         style="border-color: var(--line);">
+
+                        <h5 class="font-bold mb-3">
+
+                            Requested Quotation Changes
+
+                        </h5>
+
+
+                        <p class="text-xs mb-4"
+                           style="color: var(--ink-soft);">
+
+                            Only these selected quotation fields can be
+                            requested for change. Quotation number,
+                            warranty terms, payment terms, transport,
+                            tax and discount are protected and cannot
+                            be changed by the customer.
+
+                        </p>
+
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
+                            <!-- System Capacity -->
+
+                            <div>
+
+                                <label class="text-sm font-semibold">
+
+                                    System Capacity (kW)
+
+                                </label>
+
+
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0.1"
+                                    name="requested_system_capacity_kw"
+                                    value="{{ quotation.system_capacity_kw }}"
+                                    class="w-full rounded-xl p-3 mt-1">
+
+                            </div>
+
+
+                            <!-- System Type -->
+
+                            <div>
+
+                                <label class="text-sm font-semibold">
+
+                                    System Type
+
+                                </label>
+
+
+                                <select
+                                    name="requested_system_type"
+                                    class="w-full rounded-xl p-3 mt-1">
+
+                                    <option
+                                        value="{{ quotation.system_type }}"
+                                        selected>
+
+                                        {{ quotation.system_type }}
+
+                                    </option>
+
+
+                                    {% if quotation.system_type != 'On-Grid' %}
+
+                                    <option value="On-Grid">
+
+                                        On-Grid
+
+                                    </option>
+
+                                    {% endif %}
+
+
+                                    {% if quotation.system_type != 'Hybrid' %}
+
+                                    <option value="Hybrid">
+
+                                        Hybrid
+
+                                    </option>
+
+                                    {% endif %}
+
+
+                                    {% if quotation.system_type != 'Off-Grid' %}
+
+                                    <option value="Off-Grid">
+
+                                        Off-Grid
+
+                                    </option>
+
+                                    {% endif %}
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Equipment Cost -->
+
+                            <div>
+
+                                <label class="text-sm font-semibold">
+
+                                    Equipment Cost
+
+                                </label>
+
+
+                                <input
+                                    type="number"
+                                    step="1"
+                                    min="0"
+                                    name="requested_equipment_cost"
+                                    value="{{ quotation.equipment_cost or 0 }}"
+                                    class="w-full rounded-xl p-3 mt-1">
+
+                            </div>
+
+
+                            <!-- Installation Cost -->
+
+                            <div>
+
+                                <label class="text-sm font-semibold">
+
+                                    Installation Cost
+
+                                </label>
+
+
+                                <input
+                                    type="number"
+                                    step="1"
+                                    min="0"
+                                    name="requested_installation_cost"
+                                    value="{{ quotation.installation_cost or 0 }}"
+                                    class="w-full rounded-xl p-3 mt-1">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="flex gap-3 mt-5">
+
+                        <button
+                            type="submit"
+                            class="btn-solar px-6 py-3">
+
+                            <i class="fa-solid fa-paper-plane mr-1"></i>
+
+                            Submit Rejection
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            onclick="hideRejectForm('{{ quotation.id }}')"
+                            class="btn-outline px-6 py-3">
+
+                            Cancel
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        {% elif quotation.status == 'Approved' %}
+
+
+        <!-- =====================================================
+             AGREEMENT
+             ===================================================== -->
+
+        <div class="mt-6 rounded-xl p-5"
+             style="
+                background: var(--sky-soft);
+                border: 1px solid rgba(29,110,140,.25);
+             ">
+
+            <div class="flex items-start gap-3">
+
+                <i class="fa-solid fa-file-signature text-xl"></i>
+
+                <div>
+
+                    <h4 class="font-bold">
+
+                        Quotation Approved
+
+                    </h4>
+
+                    <p class="text-sm mt-1">
+
+                        Your installation agreement is ready.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if quotation.contract_accepted %}
+
+            <div class="mt-4 rounded-xl p-4"
+                 style="
+                    background: rgba(46, 125, 50, .08);
+                    border: 1px solid rgba(46, 125, 50, .2);
+                 ">
+
+                <strong>
+
+                    <i class="fa-solid fa-circle-check mr-1"></i>
+
+                    Installation Agreement Accepted
+
+                </strong>
+
+
+                {% if quotation.contract_accepted_at %}
+
+                <p class="text-sm mt-1">
+
+                    Accepted on:
+                    {{ quotation.contract_accepted_at }}
+
+                </p>
+
+                {% endif %}
+
+            </div>
+
+            {% endif %}
+
+
+            <a
+                href="{{ url_for('quotations.contract', quotation_id=quotation.id) }}"
+                class="btn-solar inline-block mt-4 px-6 py-3">
+
+                <i class="fa-solid fa-file-signature mr-1"></i>
+
+                View Installation Agreement
+
+            </a>
+
+        </div>
+
+
+        {% elif quotation.status == 'On Hold' %}
+
+
+        <!-- =====================================================
+             ON HOLD
+             ===================================================== -->
+
+        <div class="mt-5 rounded-xl p-4"
+             style="
+                background: #fff8e1;
+                border: 1px solid var(--line);
+             ">
+
+            <strong>
+
+                <i class="fa-solid fa-clock mr-1"></i>
+
+                Quotation On Hold
+
+            </strong>
+
+
+            {% if quotation.decision_reason %}
+
+            <p class="text-sm mt-2">
+
+                {{ quotation.decision_reason }}
+
+            </p>
+
+            {% endif %}
+
+
+            <p class="text-xs mt-2"
+               style="color: var(--ink-soft);">
+
+                Please contact the sales team if you want to
+                continue with this quotation.
+
+            </p>
+
+        </div>
+
+
+        {% elif quotation.status == 'Rejected' %}
+
+
+        <!-- =====================================================
+             REJECTED
+             ===================================================== -->
+
+        <div class="mt-5 rounded-xl p-4"
+             style="
+                background: var(--paper);
+                border: 1px solid var(--line);
+             ">
+
+            <strong>
+
+                <i class="fa-solid fa-circle-xmark mr-1"></i>
+
+                Quotation Rejected
+
+            </strong>
+
+
+            {% if quotation.decision_reason %}
+
+            <p class="text-sm mt-2">
+
+                <strong>Reason:</strong>
+
+                {{ quotation.decision_reason }}
+
+            </p>
+
+            {% endif %}
+
+
+            {% if quotation.revision_requested %}
+
+            <p class="text-sm mt-2">
+
+                <strong>
+
+                    Revision Request:
+
+                </strong>
+
+                {{ quotation.revision_status }}
+
+            </p>
+
+
+            {% if quotation.revision_reason %}
+
+            <p class="text-sm mt-2">
+
+                <strong>
+
+                    Requested Changes:
+
+                </strong>
+
+                {{ quotation.revision_reason }}
+
+            </p>
+
+            {% endif %}
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             FOOTER
+             ===================================================== -->
+
+        <div class="flex justify-between items-center mt-6 pt-5 border-t"
+             style="border-color: var(--line);">
+
+            <a
+                href="{{ url_for('quotations.pdf', quotation_id=quotation.id) }}"
+                class="btn-outline px-5 py-2">
+
+                <i class="fa-solid fa-download mr-1"></i>
+
+                Download PDF
+
+            </a>
+
+
+            <a
+               href="{{ url_for('quotations.list_quotations') }}"
+                class="btn-outline px-5 py-2">
+
+                Back to Quotations
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function showHoldForm(id) {
+
+    const holdForm = document.getElementById(
+        'holdForm' + id
+    );
+
+    const rejectForm = document.getElementById(
+        'rejectForm' + id
+    );
+
+    if (holdForm) {
+
+        holdForm.classList.remove('hidden');
+
+    }
+
+    if (rejectForm) {
+
+        rejectForm.classList.add('hidden');
+
+    }
+
+}
+
+
+function hideHoldForm(id) {
+
+    const holdForm = document.getElementById(
+        'holdForm' + id
+    );
+
+    if (holdForm) {
+
+        holdForm.classList.add('hidden');
+
+    }
+
+}
+
+
+function showRejectForm(id) {
+
+    const rejectForm = document.getElementById(
+        'rejectForm' + id
+    );
+
+    const holdForm = document.getElementById(
+        'holdForm' + id
+    );
+
+    if (rejectForm) {
+
+        rejectForm.classList.remove('hidden');
+
+    }
+
+    if (holdForm) {
+
+        holdForm.classList.add('hidden');
+
+    }
+
+}
+
+
+function hideRejectForm(id) {
+
+    const rejectForm = document.getElementById(
+        'rejectForm' + id
+    );
+
+    if (rejectForm) {
+
+        rejectForm.classList.add('hidden');
+
+    }
+
+}
+
+
+document.addEventListener(
+    'keydown',
+    function(event) {
+
+        if (event.key === 'Escape') {
+
+            document.querySelectorAll(
+                '[id^="holdForm"]'
+            ).forEach(function(form) {
+
+                form.classList.add('hidden');
+
+            });
+
+
+            document.querySelectorAll(
+                '[id^="rejectForm"]'
+            ).forEach(function(form) {
+
+                form.classList.add('hidden');
+
+            });
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

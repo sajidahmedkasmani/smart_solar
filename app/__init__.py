@@ -5,48 +5,37 @@ from flask_login import LoginManager
 from sqlalchemy import inspect
 from config import Config
 from flask_mail import Mail
+from flask_migrate import Migrate
 
 mail = Mail()
 
 db = SQLAlchemy()
-login_manager = LoginManager()  # <-- Yahan initialize hona zaroori hai
+login_manager = LoginManager()
+migrate = Migrate()
 
-# def create_app(config_class=Config):
-#     # Change this line: remove instance_relative_config=True
-#     app = Flask(__name__)
-#     app.config.from_object(config_class)
 
-#     mail.init_app(app)
-    
-#     # Ensure instance folder exists
-#     os.makedirs(app.instance_path, exist_ok=True)
-
-#     db.init_app(app)
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
     mail.init_app(app)
-    
+
     # Ensure instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
 
     db.init_app(app)
-    
-    # FIXED: LoginManager init & config
+    migrate.init_app(app, db)
+
+    # LoginManager init & config
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'warning'
 
-    # FIXED: User Loader for current_user
-
+    # User Loader for current_user
     @login_manager.user_loader
-    def load_user(id): 
+    def load_user(id):
         from app.models import Customer
         return Customer.query.get(int(id))
-
-    # ... Baki aapka saara existing code (Jinja globals, Blueprints, etc.) ...
-    # ... remaining code ...
 
     # HTML templates ke liye globals
     app.jinja_env.globals['APP_NAME'] = app.config['APP_NAME']
@@ -61,6 +50,7 @@ def create_app(config_class=Config):
     app.jinja_env.globals['label_for'] = label_for
     app.jinja_env.globals['get_user_roles'] = get_user_roles
 
+    # Blueprints
     from app.auth.routes import auth_bp
     from app.customers.routes import customers_bp
     from app.sales.routes import sales_bp
@@ -92,9 +82,12 @@ def create_app(config_class=Config):
         from app.models import SolarPackage
         return __import__('flask').render_template(
             'landing_page/index.html',
-            packages=SolarPackage.query.order_by(SolarPackage.id.desc()).limit(3).all()
+            packages=SolarPackage.query.order_by(
+                SolarPackage.id.desc()
+            ).limit(3).all()
         )
 
+    # Database setup + legacy schema upgrades + seed data
     with app.app_context():
         db.create_all()
         upgrade_legacy_schema()
@@ -106,23 +99,49 @@ def create_app(config_class=Config):
 
 def upgrade_legacy_schema():
     """SQLite compatibility migrations for updated schemas."""
+
     inspector = inspect(db.engine)
     tables = inspector.get_table_names()
 
+    # =========================================================
     # Maintenance requests table check
+    # =========================================================
     if 'maintenance_requests' in tables:
-        columns = {c['name'] for c in inspector.get_columns('maintenance_requests')}
+        columns = {
+            c['name']
+            for c in inspector.get_columns('maintenance_requests')
+        }
+
         if 'user_id' not in columns:
-            db.session.execute(db.text('ALTER TABLE maintenance_requests ADD COLUMN user_id INTEGER'))
+            db.session.execute(
+                db.text(
+                    'ALTER TABLE maintenance_requests '
+                    'ADD COLUMN user_id INTEGER'
+                )
+            )
             db.session.commit()
 
-    # Solar packages foreign key migration check for existing DBs
+    # =========================================================
+    # Solar packages foreign key migration check
+    # =========================================================
     if 'solar_packages' in tables:
-        columns = {c['name'] for c in inspector.get_columns('solar_packages')}
+        columns = {
+            c['name']
+            for c in inspector.get_columns('solar_packages')
+        }
+
         if 'system_type_id' not in columns:
-            db.session.execute(db.text('ALTER TABLE solar_packages ADD COLUMN system_type_id INTEGER'))
+            db.session.execute(
+                db.text(
+                    'ALTER TABLE solar_packages '
+                    'ADD COLUMN system_type_id INTEGER'
+                )
+            )
             db.session.commit()
-        # Survey table compatibility migration
+
+    # =========================================================
+    # Survey table compatibility migration
+    # =========================================================
     if 'surveys' in tables:
         columns = {
             c['name']
@@ -132,35 +151,95 @@ def upgrade_legacy_schema():
         if 'started_at' not in columns:
             db.session.execute(
                 db.text(
-                    'ALTER TABLE surveys ADD COLUMN started_at DATETIME'
+                    'ALTER TABLE surveys '
+                    'ADD COLUMN started_at DATETIME'
                 )
             )
 
         if 'completed_at' not in columns:
             db.session.execute(
                 db.text(
-                    'ALTER TABLE surveys ADD COLUMN completed_at DATETIME'
+                    'ALTER TABLE surveys '
+                    'ADD COLUMN completed_at DATETIME'
                 )
             )
 
         db.session.commit()
 
+    # =========================================================
+    # Quotation table compatibility migration
+    # =========================================================
+    if 'quotations' in tables:
+        columns = {
+            c['name']
+            for c in inspector.get_columns('quotations')
+        }
+
+        quotation_columns = {
+            'decision_reason': 'TEXT',
+            'decision_at': 'DATETIME',
+
+            'revision_requested': 'BOOLEAN DEFAULT 0',
+            'revision_status': "VARCHAR(30) DEFAULT ''",
+            'revision_reason': "TEXT DEFAULT ''",
+
+            'requested_system_capacity_kw': 'FLOAT',
+            'requested_system_type': 'VARCHAR(30)',
+            'requested_equipment_cost': 'FLOAT',
+            'requested_installation_cost': 'FLOAT',
+
+            'sales_review_reason': "TEXT DEFAULT ''",
+            'sales_review_at': 'DATETIME',
+
+            'contract_generated': 'BOOLEAN DEFAULT 0',
+            'contract_accepted': 'BOOLEAN DEFAULT 0',
+            'contract_accepted_at': 'DATETIME'
+        }
+
+        for column_name, column_definition in quotation_columns.items():
+            if column_name not in columns:
+                db.session.execute(
+                    db.text(
+                        f'ALTER TABLE quotations '
+                        f'ADD COLUMN {column_name} {column_definition}'
+                    )
+                )
+
+        db.session.commit()
+
+
 def seed_role_assignments():
     """Create role rows for legacy users without changing their existing data."""
+
     from app.models import User, Customer, UserRole
     from app.roles import ROLES, get_user_roles
 
     for user in User.query.all():
         if not user.role or user.role not in ROLES:
             user.role = 'customer'
+
         exists = UserRole.query.filter_by(user_id=user.id).first()
+
         if not exists:
-            db.session.add(UserRole(user_id=user.id, role=user.role))
+            db.session.add(
+                UserRole(
+                    user_id=user.id,
+                    role=user.role
+                )
+            )
 
     for user in User.query.all():
         if 'customer' in get_user_roles(user):
             if not Customer.query.filter_by(user_id=user.id).first():
-                db.session.add(Customer(user_id=user.id, full_name=user.full_name, email=user.email, phone=''))
+                db.session.add(
+                    Customer(
+                        user_id=user.id,
+                        full_name=user.full_name,
+                        email=user.email,
+                        phone=''
+                    )
+                )
+
     db.session.commit()
 
 
@@ -168,7 +247,9 @@ def seed_data():
     from app.models import SolarPackage, Inventory, User, SystemType
     from werkzeug.security import generate_password_hash
 
+    # =========================================================
     # 1. Seed System Types first
+    # =========================================================
     if SystemType.query.count() == 0:
         db.session.add_all([
             SystemType(
@@ -199,6 +280,7 @@ def seed_data():
                 supports_net_metering=False
             )
         ])
+
         db.session.commit()
 
     # Fetch references for linking FKs
@@ -206,7 +288,9 @@ def seed_data():
     hybrid = SystemType.query.filter_by(name='Hybrid').first()
     off_grid = SystemType.query.filter_by(name='Off-Grid').first()
 
+    # =========================================================
     # 2. Seed Solar Packages using system_type_id
+    # =========================================================
     if SolarPackage.query.count() == 0:
         db.session.add_all([
             SolarPackage(
@@ -288,28 +372,76 @@ def seed_data():
             ),
         ])
 
+    # =========================================================
     # 3. Seed Inventory
+    # =========================================================
     if Inventory.query.count() == 0:
         db.session.add_all([
-            Inventory(item_name='550W Mono Solar Panel', category='Solar Panel', brand='Tier-1', model='N-Type 550W', quantity=50, purchase_price=28000, selling_price=35000, minimum_stock=10),
-            Inventory(item_name='5kW Hybrid Inverter', category='Inverter', brand='SolarEase', model='SE-H5', quantity=10, purchase_price=220000, selling_price=275000, minimum_stock=2),
-            Inventory(item_name='Lithium Battery 5kWh', category='Battery', brand='SolarEase', model='LFP-5', quantity=12, purchase_price=180000, selling_price=230000, minimum_stock=2),
-            Inventory(item_name='DC Cable 6mm', category='Cable', brand='Generic', model='PV-6', quantity=200, purchase_price=250, selling_price=350, minimum_stock=30),
+            Inventory(
+                item_name='550W Mono Solar Panel',
+                category='Solar Panel',
+                brand='Tier-1',
+                model='N-Type 550W',
+                quantity=50,
+                purchase_price=28000,
+                selling_price=35000,
+                minimum_stock=10
+            ),
+            Inventory(
+                item_name='5kW Hybrid Inverter',
+                category='Inverter',
+                brand='SolarEase',
+                model='SE-H5',
+                quantity=10,
+                purchase_price=220000,
+                selling_price=275000,
+                minimum_stock=2
+            ),
+            Inventory(
+                item_name='Lithium Battery 5kWh',
+                category='Battery',
+                brand='SolarEase',
+                model='LFP-5',
+                quantity=12,
+                purchase_price=180000,
+                selling_price=230000,
+                minimum_stock=2
+            ),
+            Inventory(
+                item_name='DC Cable 6mm',
+                category='Cable',
+                brand='Generic',
+                model='PV-6',
+                quantity=200,
+                purchase_price=250,
+                selling_price=350,
+                minimum_stock=30
+            ),
         ])
 
+    # =========================================================
     # 4. Seed Administrator User
-    admin = User.query.filter_by(email='admin@solarease.pk').first()
+    # =========================================================
+    admin = User.query.filter_by(
+        email='admin@solarease.pk'
+    ).first()
+
     if not admin:
-        db.session.add(User(
-            full_name='SolarEase Administrator',
-            username='admin',
-            email='admin@solarease.pk',
-            password=generate_password_hash('admin123'),
-            role='admin',
-        ))
+        db.session.add(
+            User(
+                full_name='SolarEase Administrator',
+                username='admin',
+                email='admin@solarease.pk',
+                password=generate_password_hash('admin123'),
+                role='admin',
+            )
+        )
     else:
         admin.role = 'admin'
-        if not admin.password.startswith(('scrypt:', 'pbkdf2:', 'argon2:')):
+
+        if not admin.password.startswith(
+            ('scrypt:', 'pbkdf2:', 'argon2:')
+        ):
             admin.password = generate_password_hash('admin123')
-    
+
     db.session.commit()

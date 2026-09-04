@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -237,6 +238,7 @@
       color: #94a3b8;
       font-size: 13px;
       pointer-events: none;
+      z-index: 2;
     }
 
     .form-input {
@@ -261,6 +263,42 @@
       background: #ffffff;
       border-color: #a855f7;
       box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.10);
+    }
+
+    /* Password */
+
+    .password-input {
+      padding-right: 45px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 5px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease;
+      z-index: 3;
+    }
+
+    .password-toggle:hover {
+      color: #7e22ce;
+    }
+
+    .password-toggle:focus {
+      outline: none;
+    }
+
+    .password-toggle i {
+      pointer-events: none;
     }
 
     /* =========================
@@ -445,7 +483,6 @@
     <div class="glow-one"></div>
     <div class="glow-two"></div>
 
-
     <div class="login-wrapper">
 
       <div class="login-card">
@@ -520,10 +557,21 @@
               <input
                 type="password"
                 name="password"
-                class="form-input"
+                id="password"
+                class="form-input password-input"
                 placeholder="Enter your password"
                 required
               >
+
+              <!-- Show / Hide Password -->
+              <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword()"
+                aria-label="Show password"
+              >
+                <i class="fa-solid fa-eye" id="password-eye"></i>
+              </button>
 
             </div>
 
@@ -585,6 +633,38 @@
 
   </main>
 
+
+  <!-- =========================
+       PASSWORD TOGGLE
+  ========================== -->
+
+  <script>
+    function togglePassword() {
+
+      const passwordInput = document.getElementById("password");
+      const passwordEye = document.getElementById("password-eye");
+      const toggleButton = document.querySelector(".password-toggle");
+
+      if (passwordInput.type === "password") {
+
+        passwordInput.type = "text";
+
+        passwordEye.classList.remove("fa-eye");
+        passwordEye.classList.add("fa-eye-slash");
+
+        toggleButton.setAttribute("aria-label", "Hide password");
+
+      } else {
+
+        passwordInput.type = "password";
+
+        passwordEye.classList.remove("fa-eye-slash");
+        passwordEye.classList.add("fa-eye");
+
+        toggleButton.setAttribute("aria-label", "Show password");
+      }
+    }
+  </script>
+
 </body>
 </html>
-```

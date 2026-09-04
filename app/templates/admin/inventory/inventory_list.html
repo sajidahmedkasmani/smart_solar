@@ -1,0 +1,275 @@
+{% extends 'admin/layout/admin_base.html' %}
+{% block title %}Inventory Management - SolarEase{% endblock %}
+{% block page_heading %}Inventory & Supply Chain Manager{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+
+  <!-- Top Metrics -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    {% for label,value,color in [
+      ('Total Items', items|length, 'text-purple-700'), 
+      ('Low Stock Alerts', low_stock|length, 'text-red-600'), 
+      ('Total Stock Units', items|sum(attribute='quantity'), 'text-emerald-700'),
+      ('Suppliers Registered', suppliers|length, 'text-blue-700')
+    ] %}
+    <div class="dashboard-dark-card">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">{{ label }}</p>
+      <p class="text-2xl font-extrabold {{ color }} mt-2">{{ value }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Action Modals / Quick Forms -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    
+    <!-- Record Purchase Form -->
+    <div class="dashboard-dark-card">
+      <h4 class="font-bold text-slate-900 mb-2 text-sm"><i class="fa-solid fa-cart-plus text-purple-600"></i> Record New Purchase</h4>
+      <form action="{{ url_for('inventory.record_purchase') }}" method="POST" class="space-y-2 text-xs">
+        <select name="inventory_id" class="dashboard-input w-full" required>
+          <option value="">Select Equipment</option>
+          {% for i in items %}<option value="{{ i.id }}">{{ i.item_name }} (Current: {{ i.quantity }})</option>{% endfor %}
+        </select>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="number" name="quantity" min="1" placeholder="Qty" class="dashboard-input" required>
+          <input type="number" step="0.01" name="unit_cost" placeholder="Unit Cost (PKR)" class="dashboard-input" required>
+        </div>
+        <select name="supplier_id" class="dashboard-input w-full">
+          <option value="">Select Supplier (Optional)</option>
+          {% for s in suppliers %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+        </select>
+        <input name="invoice_number" placeholder="Invoice / Bill No." class="dashboard-input w-full">
+        <button class="dashboard-action w-full justify-center">Record Purchase (+Stock)</button>
+      </form>
+    </div>
+
+    <!-- Assign Equipment to Project -->
+    <div class="dashboard-dark-card">
+      <h4 class="font-bold text-slate-900 mb-2 text-sm"><i class="fa-solid fa-truck-ramp-box text-blue-600"></i> Assign to Project</h4>
+      <form action="{{ url_for('inventory.assign_project') }}" method="POST" class="space-y-2 text-xs">
+        <select name="inventory_id" class="dashboard-input w-full" required>
+          <option value="">Select Equipment</option>
+          {% for i in items %}<option value="{{ i.id }}">{{ i.item_name }} (Stock: {{ i.quantity }})</option>{% endfor %}
+        </select>
+        <input name="project_name" placeholder="Project / Customer Site ID" class="dashboard-input w-full" required>
+        <input type="number" name="quantity" min="1" placeholder="Quantity to Assign" class="dashboard-input w-full" required>
+        <button class="dashboard-action w-full justify-center bg-blue-600 text-white hover:bg-blue-700">Dispatch Stock (-Stock)</button>
+      </form>
+    </div>
+
+    <!-- Report Damaged Equipment -->
+    <div class="dashboard-dark-card">
+      <h4 class="font-bold text-slate-900 mb-2 text-sm"><i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Report Damaged Item</h4>
+      <form action="{{ url_for('inventory.report_damaged') }}" method="POST" class="space-y-2 text-xs">
+        <select name="inventory_id" class="dashboard-input w-full" required>
+          <option value="">Select Equipment</option>
+          {% for i in items %}<option value="{{ i.id }}">{{ i.item_name }}</option>{% endfor %}
+        </select>
+        <input type="number" name="quantity" min="1" placeholder="Quantity Damaged" class="dashboard-input w-full" required>
+        <input name="reason" placeholder="Damage Reason (e.g. Cracked during transit)" class="dashboard-input w-full" required>
+        <button class="dashboard-action w-full justify-center bg-amber-600 text-white hover:bg-amber-700">Log Damaged (-Stock)</button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Action Modals / Quick Forms -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    
+    <!-- 1. Add Supplier Form -->
+    <div class="dashboard-dark-card">
+      <h4 class="font-bold text-slate-900 mb-2 text-sm"><i class="fa-solid fa-user-plus text-indigo-600"></i> Add Supplier</h4>
+      <form action="{{ url_for('inventory.add_supplier') }}" method="POST" class="space-y-2 text-xs">
+        <input name="name" placeholder="Supplier Company Name" class="dashboard-input w-full" required>
+        <input name="contact_person" placeholder="Contact Person" class="dashboard-input w-full">
+        <input name="phone" placeholder="Phone Number" class="dashboard-input w-full">
+        <input name="email" type="email" placeholder="Email Address" class="dashboard-input w-full">
+        <button class="dashboard-action w-full justify-center bg-indigo-600 text-white hover:bg-indigo-700">Save Supplier</button>
+      </form>
+    </div>
+
+    <!-- 2. Record Purchase Form -->
+    <div class="dashboard-dark-card">
+      <h4 class="font-bold text-slate-900 mb-2 text-sm"><i class="fa-solid fa-cart-plus text-purple-600"></i> Record Purchase</h4>
+      <form action="{{ url_for('inventory.record_purchase') }}" method="POST" class="space-y-2 text-xs">
+        <select name="inventory_id" class="dashboard-input w-full" required>
+          <option value="">Select Equipment</option>
+          {% for i in items %}<option value="{{ i.id }}">{{ i.item_name }} (Stock: {{ i.quantity }})</option>{% endfor %}
+        </select>
+        <div class="grid grid-cols-2 gap-1">
+          <input type="number" name="quantity" min="1" placeholder="Qty" class="dashboard-input" required>
+          <input type="number" step="0.01" name="unit_cost" placeholder="Cost" class="dashboard-input" required>
+        </div>
+        <select name="supplier_id" class="dashboard-input w-full">
+          <option value="">Select Supplier</option>
+          {% for s in suppliers %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+        </select>
+        <input name="invoice_number" placeholder="Invoice No." class="dashboard-input w-full">
+        <button class="dashboard-action w-full justify-center">Record (+Stock)</button>
+      </form>
+    </div>
+
+    <!-- 3. Assign Equipment to Project -->
+    <div class="dashboard-dark-card">
+      <h4 class="font-bold text-slate-900 mb-2 text-sm"><i class="fa-solid fa-truck-ramp-box text-blue-600"></i> Assign to Project</h4>
+      <form action="{{ url_for('inventory.assign_project') }}" method="POST" class="space-y-2 text-xs">
+        <select name="inventory_id" class="dashboard-input w-full" required>
+          <option value="">Select Equipment</option>
+          {% for i in items %}<option value="{{ i.id }}">{{ i.item_name }} (Stock: {{ i.quantity }})</option>{% endfor %}
+        </select>
+        <input name="project_name" placeholder="Project / Customer Site" class="dashboard-input w-full" required>
+        <input type="number" name="quantity" min="1" placeholder="Quantity" class="dashboard-input w-full" required>
+        <button class="dashboard-action w-full justify-center bg-blue-600 text-white hover:bg-blue-700">Dispatch (-Stock)</button>
+      </form>
+    </div>
+
+    <!-- 4. Report Damaged Equipment -->
+    <div class="dashboard-dark-card">
+      <h4 class="font-bold text-slate-900 mb-2 text-sm"><i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Report Damaged</h4>
+      <form action="{{ url_for('inventory.report_damaged') }}" method="POST" class="space-y-2 text-xs">
+        <select name="inventory_id" class="dashboard-input w-full" required>
+          <option value="">Select Equipment</option>
+          {% for i in items %}<option value="{{ i.id }}">{{ i.item_name }}</option>{% endfor %}
+        </select>
+        <input type="number" name="quantity" min="1" placeholder="Qty Damaged" class="dashboard-input w-full" required>
+        <input name="reason" placeholder="Reason (e.g. Cracked)" class="dashboard-input w-full" required>
+        <button class="dashboard-action w-full justify-center bg-amber-600 text-white hover:bg-amber-700">Log Damaged (-Stock)</button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Main Stock Catalog Table -->
+  <div class="dashboard-dark-card">
+    <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+      <div>
+        <h3 class="font-bold text-slate-900">Equipment Catalog & Stock Status</h3>
+        <p class="text-xs dashboard-muted-text mt-1">Live inventory, warranty details, and re-order thresholds.</p>
+      </div>
+      <a href="{{ url_for('inventory.add_item') }}" class="dashboard-action"><i class="fa-solid fa-plus"></i> Add Equipment</a>
+    </div>
+
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Stock Units</th>
+            <th>Warranty</th>
+            <th>Supplier</th>
+            <th>Quick Adjust</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+          <tr class="dashboard-searchable">
+            <td>
+              <strong>{{ item.item_name }}</strong>
+              <p class="text-[10px] text-slate-400">{{ item.brand }} {{ item.model }}</p>
+            </td>
+            <td>{{ item.category }}</td>
+            <td>
+              <span class="font-bold">{{ item.quantity }}</span>
+              {% if item.quantity <= item.minimum_stock %}
+                <span class="dashboard-pill bg-red-100 text-red-700 ml-2">Low Stock Alert</span>
+              {% endif %}
+            </td>
+            <td>{{ item.warranty_years }} Year(s)</td>
+            <td>{{ item.supplier or '—' }}</td>
+            <td>
+              <form action="{{ url_for('inventory.adjust_quantity', item_id=item.id) }}" method="POST" class="flex gap-2 items-center">
+                <input type="number" name="quantity" value="{{ item.quantity }}" class="dashboard-input" style="width:80px;">
+                <button class="dashboard-action">Save</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6" class="text-center dashboard-muted-text py-4">No inventory items found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Project Dispatch & Damaged Logs -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    
+    <!-- Dispatched Items -->
+    <div class="dashboard-dark-card">
+      <h3 class="font-bold text-slate-900 mb-3">Recent Project Dispatches</h3>
+      <div class="dashboard-table-wrap">
+        <table class="dashboard-table">
+          <thead><tr><th>Item</th><th>Project</th><th>Qty</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for a in assignments[:5] %}
+            <tr>
+              <td>{{ a.inventory.item_name }}</td>
+              <td>{{ a.project_name }}</td>
+              <td>{{ a.quantity_assigned }}</td>
+              <td>{{ a.assigned_date.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-slate-400 py-3">No dispatches yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Damaged Logs -->
+    <div class="dashboard-dark-card">
+      <h3 class="font-bold text-slate-900 mb-3">Damaged Equipment Logs</h3>
+      <div class="dashboard-table-wrap">
+        <table class="dashboard-table">
+          <thead><tr><th>Item</th><th>Qty</th><th>Reason</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for d in damaged[:5] %}
+            <tr>
+              <td>{{ d.inventory.item_name }}</td>
+              <td><span class="text-red-600 font-bold">{{ d.quantity_damaged }}</span></td>
+              <td>{{ d.reason }}</td>
+              <td>{{ d.reported_date.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-slate-400 py-3">No damaged items reported.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Registered Suppliers List -->
+  <div class="dashboard-dark-card">
+    <h3 class="font-bold text-slate-900 mb-3">Registered Suppliers & Vendors</h3>
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Supplier Name</th>
+            <th>Contact Person</th>
+            <th>Phone</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in suppliers %}
+          <tr>
+            <td><strong>{{ s.name }}</strong></td>
+            <td>{{ s.contact_person or '—' }}</td>
+            <td>{{ s.phone or '—' }}</td>
+            <td>{{ s.email or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="text-center text-slate-400 py-3">No suppliers added yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

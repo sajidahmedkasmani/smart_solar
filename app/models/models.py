@@ -375,6 +375,26 @@ class Installation(db.Model):
     quotation = db.relationship('Quotation', backref=db.backref('installation', uselist=False))
 
 
+# class Inventory(db.Model):
+#     __tablename__ = 'inventory'
+#     id = db.Column(db.Integer, primary_key=True)
+#     item_name = db.Column(db.String(120), nullable=False)
+#     category = db.Column(db.String(60), nullable=False)
+#     brand = db.Column(db.String(80), default='Generic')
+#     model = db.Column(db.String(80), default='')
+#     serial_number = db.Column(db.String(100), unique=True, nullable=True)
+#     quantity = db.Column(db.Integer, nullable=False, default=0)
+#     purchase_price = db.Column(db.Float, default=0)
+#     selling_price = db.Column(db.Float, default=0)
+#     supplier = db.Column(db.String(120), default='Local Supplier')
+#     warehouse = db.Column(db.String(120), default='Main Warehouse')
+#     warranty_years = db.Column(db.Integer, default=1)
+#     minimum_stock = db.Column(db.Integer, default=2)
+
+
+
+
+# Existing Inventory Model
 class Inventory(db.Model):
     __tablename__ = 'inventory'
     id = db.Column(db.Integer, primary_key=True)
@@ -390,6 +410,53 @@ class Inventory(db.Model):
     warehouse = db.Column(db.String(120), default='Main Warehouse')
     warranty_years = db.Column(db.Integer, default=1)
     minimum_stock = db.Column(db.Integer, default=2)
+
+# --- NEW INVENTORY MODULE MODELS ---
+
+class Supplier(db.Model):
+    __tablename__ = 'suppliers'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    contact_person = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(120))
+    address = db.Column(db.Text)
+
+class PurchaseOrder(db.Model):
+    __tablename__ = 'purchase_orders'
+    id = db.Column(db.Integer, primary_key=True)
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_cost = db.Column(db.Float, nullable=False)
+    total_cost = db.Column(db.Float, nullable=False)
+    purchase_date = db.Column(db.DateTime, default=datetime.utcnow)
+    invoice_number = db.Column(db.String(80))
+    
+    inventory = db.relationship('Inventory', backref='purchases')
+    supplier_rel = db.relationship('Supplier', backref='purchases')
+
+class ProjectAssignment(db.Model):
+    __tablename__ = 'project_assignments'
+    id = db.Column(db.Integer, primary_key=True)
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
+    project_name = db.Column(db.String(120), nullable=False) # e.g. Site SUR-004 / Customer Name
+    quantity_assigned = db.Column(db.Integer, nullable=False)
+    assigned_date = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.Text)
+
+    inventory = db.relationship('Inventory', backref='project_allocations')
+
+class DamagedItem(db.Model):
+    __tablename__ = 'damaged_items'
+    id = db.Column(db.Integer, primary_key=True)
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
+    quantity_damaged = db.Column(db.Integer, nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+    reported_date = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(50), default='Reported') # Reported / Replaced / Scrapped
+
+    inventory = db.relationship('Inventory', backref='damaged_logs')
 
 
 class Warranty(db.Model):

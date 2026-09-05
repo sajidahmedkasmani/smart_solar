@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SolarEase — Go Solar, Save More</title>
+    <title>{{ APP_TITLE }} — Go Solar, Save More</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -127,7 +127,7 @@
       <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div class="flex items-center gap-2">
               <div class="brand-mark"></div>
-              <span class="font-display font-bold text-lg">SolarEase</span>
+              <span class="font-display font-bold text-lg">{{ APP_NAME }}</span>
           </div>
           
           <div class="hidden md:flex items-center gap-8">
@@ -231,7 +231,7 @@
           </h1>
           <p class="reveal in reveal-delay-1 text-lg mb-8" style="color:var(--ink-soft); max-width:520px;">
             Free site survey, transparent pricing, and installation in as little as 3 days.
-            Join 500+ homes already cutting their electricity bill with Solaris Ops.
+            Join 500+ homes already cutting their electricity bill with {{ APP_NAME }}.
           </p>
           <div class="reveal in reveal-delay-2 flex flex-wrap gap-4 mb-10">
             <a href="{{ url_for('quotations.calculator') }}" class="btn-solar px-7 py-3.5">Get Your Free Estimate <i class="fa-solid fa-arrow-right ms-1"></i></a>
@@ -259,7 +259,7 @@
     <section id="features" class="py-24" style="background:var(--panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-14">
-          <span class="reveal font-mono text-xs uppercase tracking-widest" style="color:var(--sky-dark);">Why Solaris Ops</span>
+          <span class="reveal font-mono text-xs uppercase tracking-widest" style="color:var(--sky-dark);">Why {{ APP_NAME }}</span>
           <h2 class="reveal font-display font-bold mt-2" style="font-size:2.2rem;">Everything, handled end-to-end</h2>
         </div>
         <div class="grid md:grid-cols-4 gap-6">
@@ -309,7 +309,7 @@
           <div class="reveal reveal-delay-2 text-center">
             <div class="step-dot mx-auto mb-4" data-step="3">3</div>
             <h4 class="font-display font-semibold text-sm md:text-base mb-1">Approve & Install</h4>
-            <p class="text-xs md:text-sm" style="color:var(--ink-soft);">Sign off, we install fast</p>
+            <p class="text-xs md:text-sm" style="color:var(--ink-soft);">Sign off quote, we install & test.</p>
           </div>
           <div class="reveal reveal-delay-3 text-center">
             <div class="step-dot mx-auto mb-4" data-step="4">4</div>
@@ -325,7 +325,9 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-14">
           <span class="reveal font-mono text-xs uppercase tracking-widest" style="color:var(--sky-dark);">Packages</span>
-          <h2 class="reveal font-display font-bold mt-2" style="font-size:2.2rem;">Pick a system that fits your home</h2>
+          <h2 class="reveal font-display font-bold mt-2" style="font-size:2.2rem;">
+            Pick a system that fits your needs
+          </h2>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
           

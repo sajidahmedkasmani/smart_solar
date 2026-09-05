@@ -1,0 +1,205 @@
+{% extends 'landing_page/customer/layout/base_customer.html' %}
+
+{% block title %}My Solar Projects - SmartSolar{% endblock %}
+{% block header_title %}Active Solar Projects{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-6 space-y-8">
+
+    <!-- WELCOME HEADING -->
+    <h3 class="font-display font-bold text-2xl text-gray-800">
+        Welcome back, {{ session.get('user_name', 'Customer') }}!
+    </h3>
+
+    <!-- STATS CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm border-l-4 border-l-sky-500">
+            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Calculated Load</span>
+            <h3 class="font-display font-bold text-2xl mt-1 text-sky-600">
+                {{ latest_req.recommended_kw if latest_req else '0' }} kW
+            </h3>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm border-l-4 border-l-emerald-500">
+            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Survey Status</span>
+            <h4 class="font-display font-bold text-lg mt-1 text-emerald-600">
+                {% if not latest_survey %}
+                    Not Booked
+                {% elif latest_survey.status == 0 %}
+                    Action Needed
+                {% elif latest_survey.status == 1 %}
+                    Engineer Assigned
+                {% elif latest_survey.status == 2 %}
+                    In Progress
+                {% elif latest_survey.status == 3 %}
+                    Completed
+                {% else %}
+                    Pending
+                {% endif %}
+            </h4>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm border-l-4 border-l-amber-500">
+            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Quotations</span>
+            <h3 class="font-display font-bold text-2xl mt-1 text-amber-600">
+                {{ quotations|length if quotations else 0 }}
+            </h3>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm border-l-4 border-l-indigo-500">
+            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Active Projects</span>
+            <h3 class="font-display font-bold text-2xl mt-1 text-indigo-600">
+                {{ projects|length if projects else 0 }}
+            </h3>
+        </div>
+
+    </div>
+
+    <!-- CUSTOMER APPROVAL ALERT (IF SURVEY SCHEDULED) -->
+    {% if latest_survey and latest_survey.status == 0 %}
+    <div class="bg-emerald-50 p-6 rounded-2xl border-2 border-emerald-400 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h5 class="font-display font-bold text-lg text-emerald-800 mb-1">
+                    <i class="fa-solid fa-circle-check mr-2"></i> Survey Schedule Approval Required
+                </h5>
+                <p class="text-sm text-emerald-900">
+                    Your site survey has been scheduled for: 
+                    <span class="font-bold">{{ latest_survey.preferred_date }} — {{ latest_survey.preferred_time }}</span>
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('surveys.approve_reschedule', survey_id=latest_survey.id) }}"
+                   class="inline-flex items-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition shadow-sm">
+                    <i class="fa-solid fa-check mr-2"></i> Review & Approve
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- MAIN DASHBOARD GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- LEFT COLUMN: PROJECT STATUS & NEXT STEPS -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <h5 class="font-display font-bold text-lg mb-4 text-gray-800 flex items-center">
+                <i class="fa-solid fa-compass text-amber-500 mr-2.5"></i> Project Status & Next Steps
+            </h5>
+
+            {% if projects %}
+                {% set active_proj = projects[0] %}
+                <div class="space-y-4">
+                    <!-- Active Project Banner -->
+                    <div class="p-4 bg-amber-50/60 rounded-xl border border-amber-200">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold uppercase text-amber-700 tracking-wider">Active System</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                                {{ active_proj.status }}
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-base">{{ active_proj.project_name }}</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Ref: #{{ active_proj.quotation.quotation_ref if active_proj.quotation else 'N/A' }}</p>
+                    </div>
+
+                    <!-- Dynamic Next Step Guide -->
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
+                        <h6 class="text-xs font-bold text-gray-500 uppercase tracking-wider">What's Next?</h6>
+                        
+                        {% if active_proj.status == 'Material Pending' %}
+                            <p class="text-sm text-gray-700">
+                                <i class="fa-solid fa-truck-ramp-box text-sky-500 mr-1.5"></i> 
+                                Your material dispatch is being processed. Complete the <strong>50% Pre-Installation Payment</strong> to proceed.
+                            </p>
+                            <a href="{{ url_for('installations.list_installations') }}" class="inline-block mt-2 text-xs font-bold text-amber-600 hover:text-amber-700 underline">
+                                View Project Timeline &rarr;
+                            </a>
+
+                        {% elif active_proj.status == 'Installation Pending' %}
+                            <p class="text-sm text-gray-700">
+                                <i class="fa-solid fa-screwdriver-wrench text-emerald-500 mr-1.5"></i> 
+                                Our engineering team is scheduled for installation. Final payment will unlock after completion.
+                            </p>
+
+                        {% elif active_proj.status == 'Completed' %}
+                            <p class="text-sm text-emerald-700 font-medium">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mr-1.5"></i> 
+                                Your solar system installation is fully complete and operational!
+                            </p>
+
+                        {% else %}
+                            <p class="text-sm text-gray-600">
+                                Track your installation progress and updates in real-time.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            {% elif latest_survey %}
+                <!-- Flow Before Project Creation -->
+                <div class="p-4 bg-sky-50 rounded-xl border border-sky-100 space-y-2">
+                    <h6 class="text-xs font-bold text-sky-700 uppercase tracking-wider">Survey Underway</h6>
+                    <p class="text-sm text-gray-700">
+                        Your technical survey request is currently in progress. Once completed, your custom quotation will be generated.
+                    </p>
+                </div>
+
+            {% else %}
+                <!-- New Customer Onboarding -->
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 text-center py-6">
+                    <i class="fa-solid fa-solar-panel text-amber-500 text-3xl mb-2"></i>
+                    <h6 class="font-bold text-gray-800 text-sm">Ready to switch to Solar?</h6>
+                    <p class="text-xs text-gray-600 mt-1 mb-4">Start by calculating your load or booking a technical site survey.</p>
+                    <a href="{{ url_for('surveys.index') }}" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                        Book Site Survey
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- RIGHT COLUMN: RECENT ACTIVITY -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <h5 class="font-display font-bold text-lg mb-4 text-gray-800 flex items-center">
+                <i class="fa-solid fa-clock-rotate-left text-emerald-500 mr-2.5"></i> Recent Activity
+            </h5>
+
+            <ul class="divide-y divide-gray-100">
+                {% if latest_survey %}
+                <li class="flex justify-between items-center py-3 text-sm">
+                    <span class="text-gray-700">Survey requested for <strong>{{ latest_survey.preferred_date }}</strong></span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                        {% if latest_survey.status == 0 %}
+                            Waiting Approval
+                        {% elif latest_survey.status == 1 %}
+                            Engineer Assigned
+                        {% elif latest_survey.status == 3 %}
+                            Completed
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </span>
+                </li>
+                {% endif %}
+
+                {% if latest_req %}
+                <li class="flex justify-between items-center py-3 text-sm">
+                    <span class="text-gray-700">Calculated <strong>{{ latest_req.recommended_kw }} kW</strong> requirement</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-700">
+                        Completed
+                    </span>
+                </li>
+                {% endif %}
+
+                {% if not latest_survey and not latest_req %}
+                <li class="py-6 text-center text-sm text-gray-400">
+                    No recent activities found.<br>Start by calculating your load!
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

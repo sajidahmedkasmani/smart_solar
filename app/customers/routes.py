@@ -24,7 +24,7 @@ def dashboard():
     quotation_ids = [q.id for q in quotations]
     projects = (Installation.query.filter(Installation.quotation_id.in_(quotation_ids)).order_by(Installation.id.desc()).all()
                 if quotation_ids else [])
-    return render_template('landing_page/customer/user_dashboard.html', latest_req=latest_req, latest_survey=latest_survey,
+    return render_template('landing_page/customer/user_dash.html', latest_req=latest_req, latest_survey=latest_survey,
                            quotations=quotations, projects=projects)
 
 

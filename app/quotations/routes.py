@@ -99,6 +99,38 @@ def calculator():
     )
 
 
+# @quotations_bp.route('/')
+# @role_required('customer')
+# def list_quotations():
+#     uid = session.get('user_id')
+
+#     quotations = (
+#         Quotation.query
+#         .outerjoin(
+#             Survey,
+#             Quotation.survey_id == Survey.id
+#         )
+#         .outerjoin(
+#             Requirement,
+#             Quotation.requirement_id == Requirement.id
+#         )
+#         .filter(
+#             db.or_(
+#                 Survey.user_id == uid,
+#                 Requirement.user_id == uid
+#             )
+#         )
+#         .order_by(Quotation.id.desc())
+#         .all()
+#     )
+
+#     return render_template(
+#         'admin/quotation.html',
+#         quotations=quotations
+#     )
+
+
+
 @quotations_bp.route('/')
 @role_required('customer')
 def list_quotations():
@@ -118,14 +150,16 @@ def list_quotations():
             db.or_(
                 Survey.user_id == uid,
                 Requirement.user_id == uid
-            )
+            ),
+            # Sales team ke pending status ko hide karne ke liye filter:
+            Quotation.status != 'Pending Sales Review'  # Ya Quotation.status == 'Approved' / Quotation.status != 0 (aapke model ke mutabiq)
         )
         .order_by(Quotation.id.desc())
         .all()
     )
 
     return render_template(
-        'admin/quotation.html',
+        'landing_page/customer/quotation.html',  # Note: Customer panel ke liye template path check kar lein (e.g., 'customer/quotation.html')
         quotations=quotations
     )
 

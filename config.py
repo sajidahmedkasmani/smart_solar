@@ -15,10 +15,10 @@ DB_PATH = os.path.join(INSTANCE_DIR, 'solarease.db').replace('\\', '/')
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-fallback-key'
 
-    APP_NAME = os.getenv('APP_NAME', 'SolarEase')
-    APP_TITLE = os.getenv('APP_TITLE', 'Solar Ease System')
+    APP_NAME = os.getenv('APP_NAME', 'SmartSolar')
+    APP_TITLE = os.getenv('APP_TITLE', 'Smart Solar System')
     APP_TAGLINE = os.getenv('APP_TAGLINE', 'Solar Solutions')
-    COMPANY_EMAIL = os.getenv('COMPANY_EMAIL', 'info@solarease.pk')
+    COMPANY_EMAIL = os.getenv('COMPANY_EMAIL', 'info@smartsolar.pk')
     COMPANY_PHONE = os.getenv('COMPANY_PHONE', '')
 
     DATABASE_URL = os.getenv('DATABASE_URL')

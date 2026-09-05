@@ -1,4 +1,4 @@
-from .models import (
+from .models_1 import (
     User, Customer, UserRole, StaffRoleRequest, Requirement, SolarPackage, Survey,
     SurveyImage, Notification, Quotation, Payment, Installation, Inventory,
     Warranty, MaintenanceRequest, MaintenancePlan, CustomerSubscription, Complaint, SystemType,

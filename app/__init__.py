@@ -58,7 +58,7 @@ def create_app(config_class=Config):
     from app.quotations.routes import quotations_bp
     from app.inventory.routes import inventory_bp
     from app.installations.routes import installations_bp
-    from app.payments.routes import payments_bp
+    from app.payments.routes_1 import payments_bp
     from app.maintenance.routes import maintenance_bp
     from app.complaints.routes import complaints_bp
     from app.warranties.routes import warranties_bp

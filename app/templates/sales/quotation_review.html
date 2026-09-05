@@ -1,0 +1,46 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Quotation Revision Review - SolarEase{% endblock %}
+{% block page_heading %}Quotation Revision Review{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div class="dashboard-dark-card">
+        <h2 class="font-bold text-slate-900 mb-2">Customer Revision Requests</h2>
+        <p class="text-xs text-slate-500">Review requested quotation changes before accepting them.</p>
+    </div>
+
+    {% for q in quotations %}
+    <div class="dashboard-dark-card">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+                <p class="text-xs text-slate-400 uppercase font-bold">Quotation</p>
+                <h3 class="font-extrabold text-slate-900">{{ q.quotation_number }}</h3>
+                <p class="text-xs text-slate-500 mt-1">{{ q.revision_reason or 'No reason provided.' }}</p>
+            </div>
+            <span class="dashboard-pill">{{ q.revision_status or 'Pending' }}</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 text-sm">
+            <div><span class="text-slate-400 block text-xs">Current Capacity</span>{{ q.system_capacity_kw }} kW</div>
+            <div><span class="text-slate-400 block text-xs">Requested Capacity</span>{{ q.requested_system_capacity_kw if q.requested_system_capacity_kw is not none else '—' }} kW</div>
+            <div><span class="text-slate-400 block text-xs">Current Type</span>{{ q.system_type or '—' }}</div>
+            <div><span class="text-slate-400 block text-xs">Requested Type</span>{{ q.requested_system_type or '—' }}</div>
+        </div>
+
+        <div class="flex gap-2 mt-5">
+            <form method="POST" action="{{ url_for('quotations.sales_accept_revision', quotation_id=q.id) }}">
+                <button class="dashboard-action">Accept Changes</button>
+            </form>
+            <form method="POST" action="{{ url_for('quotations.sales_reject_revision', quotation_id=q.id) }}">
+                <button class="dashboard-action" style="background:#e2e8f0;color:#334155">Reject</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="dashboard-dark-card">
+        <p class="text-sm text-slate-500">No quotation revision requests are waiting for review.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

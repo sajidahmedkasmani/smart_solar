@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Complaint Management{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-5 py-10">
+    <div class="flex items-end justify-between gap-5 flex-wrap mb-7">
+        <div>
+            <p class="text-xs uppercase tracking-[0.22em] text-slate-400 font-bold">Administrator Portal</p>
+            <h1 class="text-3xl font-extrabold text-slate-900 mt-1">Complaint Management</h1>
+            <p class="text-slate-500 mt-2">Review customer complaints and move them through the official workflow.</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn-outline px-4 py-2 text-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-7">
+        {% for status in statuses %}
+        <a href="{{ url_for('complaints.admin_index', status=status) }}"
+           class="bg-white border rounded-xl p-4 hover:shadow-sm {% if active_status == status %}border-amber-400 ring-1 ring-amber-200{% else %}border-slate-200{% endif %}">
+            <p class="text-xs font-semibold text-slate-500">{{ status }}</p>
+            <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ counts[status] }}</p>
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+            <h2 class="font-bold text-slate-900">
+                {% if active_status %}{{ active_status }} Complaints{% else %}All Complaints{% endif %}
+            </h2>
+            {% if active_status %}
+            <a href="{{ url_for('complaints.admin_index') }}" class="text-sm font-semibold text-slate-500">Clear filter</a>
+            {% endif %}
+        </div>
+
+        {% if complaints %}
+        <div class="divide-y divide-slate-100">
+            {% for complaint in complaints %}
+            <div class="p-5">
+                <div class="flex items-start justify-between gap-5 flex-wrap">
+                    <div class="min-w-0">
+                        <div class="flex gap-2 items-center flex-wrap">
+                            <span class="font-mono text-xs font-bold text-slate-500">{{ complaint.complaint_number }}</span>
+                            <span class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600">{{ complaint.category }}</span>
+                            <span class="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700">{{ complaint.status }}</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-900 mt-2">{{ complaint.subject }}</h3>
+                        <p class="text-xs text-slate-500 mt-1">
+                            {{ complaint.customer.full_name }} · {{ complaint.customer.email }} ·
+                            {{ complaint.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                        </p>
+                        <p class="text-sm text-slate-600 mt-3 whitespace-pre-line">{{ complaint.description }}</p>
+                    </div>
+
+                    <form method="post" action="{{ url_for('complaints.update', complaint_id=complaint.id) }}"
+                          class="w-full lg:w-80 bg-slate-50 border border-slate-200 rounded-xl p-4 shrink-0">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Status</label>
+                        <select name="status" class="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white text-sm">
+                            {% for status in statuses %}
+                            <option value="{{ status }}" {% if complaint.status == status %}selected{% endif %}>{{ status }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mt-3 mb-1">Support Response</label>
+                        <textarea name="admin_response" rows="4" maxlength="2000"
+                                  placeholder="Optional response to the customer..."
+                                  class="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white text-sm resize-y">{{ complaint.admin_response or '' }}</textarea>
+
+                        <input type="hidden" name="return_status" value="{{ active_status }}">
+                        <button type="submit" class="btn-solar w-full px-4 py-2.5 mt-3 text-sm">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Update
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-12 text-center">
+            <i class="fa-regular fa-circle-check text-3xl text-slate-300"></i>
+            <p class="font-bold text-slate-800 mt-3">No complaints found</p>
+            <p class="text-sm text-slate-500 mt-1">There are no complaints in this status.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

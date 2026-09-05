@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}AMC Checkout - SolarEase{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-5 py-10">
+  <div class="mb-8">
+    <a href="{{ url_for('maintenance.plans') }}" class="text-sm" style="color:var(--gold-dark);"><i class="fa-solid fa-arrow-left mr-2"></i>Back to plans</a>
+    <h1 class="font-display font-bold text-3xl mt-3">Secure AMC Checkout</h1>
+    <p class="mt-1" style="color:var(--ink-soft);">Review your annual maintenance plan and submit payment details.</p>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-7">
+    <div class="lg:col-span-3 card-panel">
+      <h2 class="font-display font-bold text-xl mb-6">Payment</h2>
+      <form method="POST">
+        <label class="form-label">Payment method</label>
+        <select name="payment_method" class="form-input mb-5" required>
+          <option value="">Select payment method</option>
+          <option>Card / Online Gateway</option>
+          <option>Bank Transfer</option>
+        </select>
+        <label class="form-label">Transaction / Reference (optional)</label>
+        <input name="transaction_reference" class="form-input mb-5" placeholder="e.g. bank reference or gateway transaction ID">
+        <div class="p-4 rounded-lg mb-6" style="background:var(--paper-soft);">
+          <p class="text-sm"><i class="fa-solid fa-circle-info mr-2" style="color:var(--gold-dark);"></i>
+          Your order is activated after Finance verifies the payment. Do not enter card numbers or CVV here.</p>
+        </div>
+        <button class="btn-solar w-full py-3"><i class="fa-solid fa-check mr-2"></i>Place AMC Order</button>
+      </form>
+    </div>
+    <aside class="lg:col-span-2 card-panel h-fit">
+      <div class="text-xs uppercase tracking-wider" style="color:var(--gold-dark);">Selected Plan</div>
+      <h2 class="font-display font-bold text-2xl mt-1">{{ plan.name }}</h2>
+      <p class="text-sm mt-2" style="color:var(--ink-soft);">{{ plan.description }}</p>
+      <div class="border-t my-5" style="border-color:var(--line);"></div>
+      <div class="flex justify-between text-sm mb-3"><span>Duration</span><strong>12 months</strong></div>
+      <div class="flex justify-between text-sm mb-3"><span>Scheduled inspections</span><strong>{{ plan.visits_per_year }}</strong></div>
+      <div class="flex justify-between text-lg pt-3 border-t" style="border-color:var(--line);"><strong>Total</strong><strong>PKR {{ "{:,.0f}".format(plan.price) }}</strong></div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy import inspect
@@ -60,7 +60,9 @@ def create_app(config_class=Config):
     from app.installations.routes import installations_bp
     from app.payments.routes import payments_bp
     from app.maintenance.routes import maintenance_bp
+    from app.complaints.routes import complaints_bp
     from app.warranties.routes import warranties_bp
+    from app.notifications.routes import notifications_bp
     from app.admin.routes import admin_bp
     from app.api.routes import api_bp
 
@@ -73,9 +75,29 @@ def create_app(config_class=Config):
     app.register_blueprint(installations_bp, url_prefix='/installations')
     app.register_blueprint(payments_bp, url_prefix='/payments')
     app.register_blueprint(maintenance_bp, url_prefix='/maintenance')
+    app.register_blueprint(complaints_bp, url_prefix='/complaints')
     app.register_blueprint(warranties_bp, url_prefix='/warranties')
+    app.register_blueprint(notifications_bp, url_prefix='/notifications')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
+
+    @app.context_processor
+    def inject_notification_state():
+        """Expose the current user's notification count to all templates."""
+        from app.models import Notification
+
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'notification_unread_count': 0}
+
+        roles = session.get('roles') or [session.get('role')]
+        if isinstance(roles, str):
+            roles = [roles]
+        if 'customer' in roles and not any(r in {'admin', 'finance', 'sales', 'engineer', 'technician', 'inventory_manager'} for r in roles):
+            unread = Notification.query.filter_by(customer_id=user_id, is_read=False).count()
+        else:
+            unread = Notification.query.filter_by(user_id=user_id, is_read=False).count()
+        return {'notification_unread_count': unread}
 
     @app.route('/')
     def index():
@@ -104,22 +126,154 @@ def upgrade_legacy_schema():
     tables = inspector.get_table_names()
 
     # =========================================================
+    # Module 23: Notification metadata compatibility check
+    # =========================================================
+    if 'notifications' not in tables:
+        db.session.execute(
+            db.text(
+                """
+                CREATE TABLE notifications (
+                    id INTEGER PRIMARY KEY,
+                    user_id INTEGER,
+                    customer_id INTEGER,
+                    title VARCHAR(150) NOT NULL,
+                    message TEXT NOT NULL,
+                    is_read BOOLEAN NOT NULL DEFAULT 0,
+                    category VARCHAR(40) DEFAULT 'general',
+                    channel VARCHAR(30) DEFAULT 'Dashboard',
+                    event_type VARCHAR(80) DEFAULT 'General',
+                    link VARCHAR(255),
+                    read_at DATETIME,
+                    created_at DATETIME
+                )
+                """
+            )
+        )
+        db.session.commit()
+    else:
+        columns = {c['name'] for c in inspector.get_columns('notifications')}
+        notification_columns = {
+            'customer_id': 'INTEGER',
+            'category': "VARCHAR(40) DEFAULT 'general'",
+            'channel': "VARCHAR(30) DEFAULT 'Dashboard'",
+            'event_type': "VARCHAR(80) DEFAULT 'General'",
+            'link': 'VARCHAR(255)',
+            'read_at': 'DATETIME',
+        }
+        for column_name, column_definition in notification_columns.items():
+            if column_name not in columns:
+                db.session.execute(
+                    db.text(
+                        f'ALTER TABLE notifications ADD COLUMN {column_name} {column_definition}'
+                    )
+                )
+        db.session.commit()
+
+    # Existing SQLite installations may have the old Module 23 notifications
+    # schema where user_id was NOT NULL. Rebuild it once so customer_id can be
+    # used safely for customer accounts.
+    if db.engine.dialect.name == 'sqlite' and 'notifications' in tables:
+        info = db.session.execute(db.text('PRAGMA table_info(notifications)')).fetchall()
+        user_id_info = next((row for row in info if row[1] == 'user_id'), None)
+        if user_id_info and user_id_info[3] == 1:
+            db.session.execute(db.text('PRAGMA foreign_keys=OFF'))
+            db.session.execute(db.text('''CREATE TABLE IF NOT EXISTS notifications_new (
+                id INTEGER PRIMARY KEY, user_id INTEGER, customer_id INTEGER,
+                title VARCHAR(150) NOT NULL, message TEXT NOT NULL,
+                is_read BOOLEAN NOT NULL DEFAULT 0, category VARCHAR(40) DEFAULT 'general',
+                channel VARCHAR(30) DEFAULT 'Dashboard', event_type VARCHAR(80) DEFAULT 'General',
+                link VARCHAR(255), read_at DATETIME, created_at DATETIME
+            )'''))
+            db.session.execute(db.text('''INSERT OR IGNORE INTO notifications_new
+                (id,user_id,title,message,is_read,category,channel,event_type,link,read_at,created_at)
+                SELECT id,user_id,title,message,is_read,category,channel,event_type,link,read_at,created_at
+                FROM notifications'''))
+            db.session.execute(db.text('DROP TABLE notifications'))
+            db.session.execute(db.text('ALTER TABLE notifications_new RENAME TO notifications'))
+            db.session.execute(db.text('PRAGMA foreign_keys=ON'))
+            db.session.execute(db.text('''UPDATE notifications
+                SET customer_id = user_id, user_id = NULL
+                WHERE user_id IS NOT NULL
+                  AND EXISTS (SELECT 1 FROM customers c WHERE c.id = notifications.user_id)
+                  AND NOT EXISTS (SELECT 1 FROM users u WHERE u.id = notifications.user_id)'''))
+            db.session.commit()
+
+    # =========================================================
     # Maintenance requests table check
     # =========================================================
     if 'maintenance_requests' in tables:
-        columns = {
-            c['name']
-            for c in inspector.get_columns('maintenance_requests')
-        }
-
-        if 'user_id' not in columns:
-            db.session.execute(
-                db.text(
-                    'ALTER TABLE maintenance_requests '
-                    'ADD COLUMN user_id INTEGER'
-                )
-            )
+        columns = {c['name'] for c in inspector.get_columns('maintenance_requests')}
+        if db.engine.dialect.name == 'sqlite' and ('customer_id' not in columns or 'assigned_to' not in columns or 'scheduled_visit' not in columns or 'resolution_notes' not in columns):
+            db.session.execute(db.text('PRAGMA foreign_keys=OFF'))
+            db.session.execute(db.text('''CREATE TABLE IF NOT EXISTS maintenance_requests_new (
+                id INTEGER PRIMARY KEY, customer_id INTEGER, user_id INTEGER,
+                customer_name VARCHAR(120) NOT NULL, service_type VARCHAR(100) NOT NULL,
+                issue_description TEXT NOT NULL, status VARCHAR(30) NOT NULL DEFAULT 'Request Submitted',
+                assigned_to VARCHAR(120), scheduled_visit DATETIME, resolution_notes TEXT, created_at DATETIME
+            )'''))
+            existing = ','.join([c for c in ['id','user_id','customer_name','service_type','issue_description','status','created_at'] if c in columns])
+            db.session.execute(db.text(f'''INSERT OR IGNORE INTO maintenance_requests_new
+                ({existing}) SELECT {existing} FROM maintenance_requests'''))
+            db.session.execute(db.text('DROP TABLE maintenance_requests'))
+            db.session.execute(db.text('ALTER TABLE maintenance_requests_new RENAME TO maintenance_requests'))
+            db.session.execute(db.text('PRAGMA foreign_keys=ON'))
             db.session.commit()
+        else:
+            if 'customer_id' not in columns:
+                db.session.execute(db.text('ALTER TABLE maintenance_requests ADD COLUMN customer_id INTEGER'))
+            if 'assigned_to' not in columns:
+                db.session.execute(db.text('ALTER TABLE maintenance_requests ADD COLUMN assigned_to VARCHAR(120)'))
+            if 'scheduled_visit' not in columns:
+                db.session.execute(db.text('ALTER TABLE maintenance_requests ADD COLUMN scheduled_visit DATETIME'))
+            if 'resolution_notes' not in columns:
+                db.session.execute(db.text('ALTER TABLE maintenance_requests ADD COLUMN resolution_notes TEXT'))
+            db.session.commit()
+
+    # =========================================================
+    # Module 22: Complaint table compatibility check
+    # =========================================================
+    if 'complaints' not in tables:
+        db.session.execute(
+            db.text(
+                """
+                CREATE TABLE complaints (
+                    id INTEGER PRIMARY KEY,
+                    customer_id INTEGER NOT NULL,
+                    complaint_number VARCHAR(40) NOT NULL UNIQUE,
+                    category VARCHAR(60) NOT NULL,
+                    subject VARCHAR(150) NOT NULL,
+                    description TEXT NOT NULL,
+                    status VARCHAR(30) NOT NULL DEFAULT 'Submitted',
+                    admin_response TEXT,
+                    created_at DATETIME NOT NULL,
+                    updated_at DATETIME NOT NULL,
+                    FOREIGN KEY(customer_id) REFERENCES customers(id)
+                )
+                """
+            )
+        )
+        db.session.commit()
+    else:
+        columns = {c['name'] for c in inspector.get_columns('complaints')}
+        complaint_columns = {
+            'complaint_number': "VARCHAR(40)",
+            'category': "VARCHAR(60)",
+            'subject': "VARCHAR(150)",
+            'description': "TEXT",
+            'status': "VARCHAR(30) DEFAULT 'Submitted'",
+            'admin_response': "TEXT",
+            'created_at': "DATETIME",
+            'updated_at': "DATETIME",
+        }
+        for column_name, column_definition in complaint_columns.items():
+            if column_name not in columns:
+                db.session.execute(
+                    db.text(
+                        f'ALTER TABLE complaints '
+                        f'ADD COLUMN {column_name} {column_definition}'
+                    )
+                )
+        db.session.commit()
 
     # =========================================================
     # Solar packages foreign key migration check
@@ -244,7 +398,7 @@ def seed_role_assignments():
 
 
 def seed_data():
-    from app.models import SolarPackage, Inventory, User, SystemType
+    from app.models import SolarPackage, Inventory, User, SystemType, MaintenancePlan
     from werkzeug.security import generate_password_hash
 
     # =========================================================
@@ -281,7 +435,39 @@ def seed_data():
             )
         ])
 
-        db.session.commit()
+    
+    # =========================================================
+    # 5. Seed Annual Maintenance Contract plans (Module 21)
+    # =========================================================
+    if MaintenancePlan.query.count() == 0:
+        db.session.add_all([
+            MaintenancePlan(
+                name='Basic Plan',
+                description='Essential annual care for reliable solar performance.',
+                visits_per_year=2,
+                includes_cleaning=True,
+                includes_performance_check=True,
+                includes_emergency_support=False,
+                includes_minor_repairs=False,
+                priority_visits=False,
+                price=45000,
+                duration_months=12,
+            ),
+            MaintenancePlan(
+                name='Premium Plan',
+                description='Priority annual protection with emergency support and minor repairs.',
+                visits_per_year=4,
+                includes_cleaning=True,
+                includes_performance_check=True,
+                includes_emergency_support=True,
+                includes_minor_repairs=True,
+                priority_visits=True,
+                price=85000,
+                duration_months=12,
+            ),
+        ])
+
+    db.session.commit()
 
     # Fetch references for linking FKs
     on_grid = SystemType.query.filter_by(name='On-Grid').first()

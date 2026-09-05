@@ -114,6 +114,27 @@
     {% endif %}
 
 
+    <!-- NOTIFICATIONS -->
+    {% if recent_notifications %}
+    <div class="card-panel mb-6">
+        <div class="flex items-center justify-between gap-3 mb-3">
+            <h5 class="font-display font-bold text-lg"><i class="fa-regular fa-bell mr-2" style="color: var(--gold-dark);"></i>Notifications</h5>
+            <a href="{{ url_for('notifications.index') }}" class="text-xs font-semibold" style="color: var(--sky-dark);">View all</a>
+        </div>
+        <div class="space-y-2">
+            {% for notification in recent_notifications %}
+            <a href="{{ notification.link or url_for('notifications.mark_read', notification_id=notification.id) }}" class="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-50">
+                <span class="mt-1 w-2 h-2 rounded-full {% if notification.is_read %}bg-slate-300{% else %}bg-amber-500{% endif %}"></span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-semibold text-slate-800">{{ notification.title }}</span>
+                    <span class="block text-xs text-slate-500 mt-0.5 truncate">{{ notification.message }}</span>
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- MAIN CONTENT -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 

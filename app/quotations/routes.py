@@ -17,6 +17,7 @@ from flask import (
 from app import db
 from app.models import Requirement, Quotation, Survey
 from app.auth.decorators import role_required
+from app.notifications.service import create_customer_notification
 
 from app.models import Payment, Project, Quotation  # Project aur Payment models import kar lein
 
@@ -168,6 +169,17 @@ def generate_quotation(survey_id):
     survey.status = 3
 
     db.session.add(q)
+    db.session.flush()
+    customer_id = survey.user_id if survey else None
+    if customer_id:
+        create_customer_notification(
+            customer_id,
+            'Quotation generated',
+            f'Quotation {q.quotation_number} is ready for your review.',
+            event_type='Quotation Generated',
+            category='quotation',
+            link=url_for('quotations.view_quotation', quotation_id=q.id),
+        )
     db.session.commit()
 
     flash(
@@ -248,6 +260,16 @@ def approve(quotation_id):
     q.contract_accepted = False
     q.contract_accepted_at = None
 
+    customer_id = q.survey.user_id if q.survey else (q.requirement.user_id if q.requirement else None)
+    if customer_id:
+        create_customer_notification(
+            customer_id,
+            'Quotation approved',
+            f'Quotation {q.quotation_number} has been approved successfully. Your installation agreement is available.',
+            event_type='Quotation Approved',
+            category='quotation',
+            link=url_for('quotations.view_quotation', quotation_id=q.id),
+        )
     db.session.commit()
 
     flash(

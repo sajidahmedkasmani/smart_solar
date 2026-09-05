@@ -252,10 +252,19 @@ class Notification(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
+    # Staff notifications use user_id; customer notifications use customer_id.
+    # Both are nullable so the customer and staff authentication tables can
+    # remain separate without forcing a customer id into users.id.
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
-        nullable=False
+        nullable=True
+    )
+    customer_id = db.Column(
+        db.Integer,
+        db.ForeignKey('customers.id'),
+        nullable=True,
+        index=True
     )
 
     title = db.Column(
@@ -270,8 +279,17 @@ class Notification(db.Model):
 
     is_read = db.Column(
         db.Boolean,
-        default=False
+        default=False,
+        nullable=False
     )
+
+    # Module 23 notification metadata. These fields remain optional so
+    # existing notifications created by older modules continue to work.
+    category = db.Column(db.String(40), default='general')
+    channel = db.Column(db.String(30), default='Dashboard')
+    event_type = db.Column(db.String(80), default='General')
+    link = db.Column(db.String(255), nullable=True)
+    read_at = db.Column(db.DateTime, nullable=True)
 
     created_at = db.Column(
         db.DateTime,
@@ -284,6 +302,10 @@ class Notification(db.Model):
             'notifications',
             lazy=True
         )
+    )
+    customer = db.relationship(
+        'Customer',
+        backref=db.backref('notifications', lazy=True)
     )
 
 
@@ -492,14 +514,102 @@ class Warranty(db.Model):
 class MaintenanceRequest(db.Model):
     __tablename__ = 'maintenance_requests'
     id = db.Column(db.Integer, primary_key=True)
+    # Customer accounts authenticate against customers.id. user_id remains as
+    # a nullable legacy/staff reference for older records.
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     customer_name = db.Column(db.String(120), nullable=False)
     service_type = db.Column(db.String(100), nullable=False)
     issue_description = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(30), default='Open')
+    status = db.Column(db.String(30), default='Request Submitted', nullable=False)
+    assigned_to = db.Column(db.String(120), nullable=True)
+    scheduled_visit = db.Column(db.DateTime, nullable=True)
+    resolution_notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    customer = db.relationship('Customer', backref=db.backref('maintenance_requests', lazy=True))
+    user = db.relationship('User', foreign_keys=[user_id])
 
+
+
+
+
+
+
+class Complaint(db.Model):
+    """Customer complaint tracking for Module 22."""
+    __tablename__ = 'complaints'
+
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(
+        db.Integer, db.ForeignKey('customers.id'), nullable=False, index=True
+    )
+    complaint_number = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    category = db.Column(db.String(60), nullable=False)
+    subject = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(30), nullable=False, default='Submitted')
+    admin_response = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    customer = db.relationship(
+        'Customer', backref=db.backref('complaints', lazy=True)
+    )
+
+class MaintenancePlan(db.Model):
+    """Annual maintenance plans offered to customers."""
+    __tablename__ = 'maintenance_plans'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False, unique=True)
+    description = db.Column(db.Text, nullable=False)
+    visits_per_year = db.Column(db.Integer, nullable=False, default=2)
+    includes_cleaning = db.Column(db.Boolean, default=False, nullable=False)
+    includes_performance_check = db.Column(db.Boolean, default=False, nullable=False)
+    includes_emergency_support = db.Column(db.Boolean, default=False, nullable=False)
+    includes_minor_repairs = db.Column(db.Boolean, default=False, nullable=False)
+    priority_visits = db.Column(db.Boolean, default=False, nullable=False)
+    price = db.Column(db.Float, nullable=False, default=0)
+    duration_months = db.Column(db.Integer, nullable=False, default=12)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    subscriptions = db.relationship(
+        'CustomerSubscription',
+        back_populates='plan',
+        lazy=True
+    )
+
+
+class CustomerSubscription(db.Model):
+    """Customer's annual maintenance contract/order."""
+    __tablename__ = 'customer_subscriptions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False, index=True)
+    plan_id = db.Column(db.Integer, db.ForeignKey('maintenance_plans.id'), nullable=False)
+    contract_number = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    status = db.Column(db.String(30), nullable=False, default='Pending Payment')
+    payment_status = db.Column(db.String(30), nullable=False, default='Pending')
+    payment_method = db.Column(db.String(50), nullable=True)
+    transaction_reference = db.Column(db.String(100), nullable=True)
+    amount = db.Column(db.Float, nullable=False, default=0)
+    start_date = db.Column(db.Date, nullable=True)
+    end_date = db.Column(db.Date, nullable=True)
+    renewed_from_id = db.Column(db.Integer, db.ForeignKey('customer_subscriptions.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    customer = db.relationship('Customer', backref='maintenance_subscriptions')
+    plan = db.relationship('MaintenancePlan', back_populates='subscriptions')
+    renewed_from = db.relationship(
+        'CustomerSubscription',
+        remote_side=[id],
+        uselist=False
+    )
 
 
 class SystemType(db.Model):
@@ -528,8 +638,8 @@ class SystemType(db.Model):
 class Project(db.Model):
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True)
-    quotation_id = db.Column(db.Integer, db.ForeignKey('quotation.id'), nullable=False)
-    customer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    quotation_id = db.Column(db.Integer, db.ForeignKey('quotations.id'), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     project_name = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(50), default='Pending Advance') 
     # Statuses: Pending Advance, Material Pending, In Installation, Completed

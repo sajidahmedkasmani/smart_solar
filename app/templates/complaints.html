@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Complaints{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-5 py-10">
+    <div class="flex items-end justify-between gap-5 flex-wrap mb-8">
+        <div>
+            <p class="text-sm md:text-base uppercase tracking-[0.22em] text-slate-400 font-bold">Customer Support</p>
+            <p class="text-slate-500 mt-2 max-w-2xl">
+                Tell us what went wrong and track your request until it is resolved.
+            </p>
+        </div>
+        <a href="{{ url_for('customers.dashboard') }}" class="btn-outline px-4 py-2 text-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+        </a>
+    </div>
+
+    <div class="grid lg:grid-cols-[0.85fr_1.15fr] gap-6">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-amber-50 text-amber-700">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-slate-900">Submit a Complaint</h2>
+                    <p class="text-xs text-slate-500">Tell us what went wrong.</p>
+                </div>
+            </div>
+
+            <form method="post" action="{{ url_for('complaints.submit') }}" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Complaint Category</label>
+                    <select name="category" required class="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white">
+                        <option value="">Select category</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Subject</label>
+                    <input name="subject" maxlength="150" required
+                           placeholder="Briefly describe the issue"
+                           class="w-full rounded-xl border border-slate-300 px-4 py-3">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Complaint Details</label>
+                    <textarea name="description" rows="6" minlength="10" required
+                              placeholder="Explain the issue, relevant dates, and any useful details..."
+                              class="w-full rounded-xl border border-slate-300 px-4 py-3 resize-y"></textarea>
+                </div>
+
+                <button type="submit" class="btn-solar w-full px-5 py-3">
+                    <i class="fa-solid fa-paper-plane me-2"></i> Submit Complaint
+                </button>
+            </form>
+        </section>
+
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">My Complaints</h2>
+                    <p class="text-sm text-slate-500">{{ complaints|length }} complaint(s)</p>
+                </div>
+            </div>
+
+            {% if complaints %}
+            <div class="space-y-4">
+                {% for complaint in complaints %}
+                <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div class="flex items-start justify-between gap-4 flex-wrap">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-mono text-xs font-bold text-slate-500">{{ complaint.complaint_number }}</span>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold
+                                    {% if complaint.status == 'Resolved' %}bg-emerald-50 text-emerald-700
+                                    {% elif complaint.status == 'Closed' %}bg-slate-100 text-slate-700
+                                    {% elif complaint.status == 'In Progress' %}bg-blue-50 text-blue-700
+                                    {% else %}bg-amber-50 text-amber-700{% endif %}">
+                                    {{ complaint.status }}
+                                </span>
+                            </div>
+                            <h3 class="font-bold text-lg text-slate-900 mt-2">{{ complaint.subject }}</h3>
+                            <p class="text-sm text-slate-500 mt-1">{{ complaint.category }} · {{ complaint.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+                        </div>
+                        <a href="{{ url_for('complaints.view', complaint_id=complaint.id) }}"
+                           class="btn-outline px-3 py-2 text-xs">View Details</a>
+                    </div>
+
+                    <p class="text-sm text-slate-600 mt-4 leading-6">
+                        {{ complaint.description[:220] }}{% if complaint.description|length > 220 %}…{% endif %}
+                    </p>
+
+                    {% if complaint.admin_response %}
+                    <div class="mt-4 rounded-xl bg-slate-50 border border-slate-200 p-4">
+                        <p class="text-xs uppercase tracking-wider font-bold text-slate-400">Support Response</p>
+                        <p class="text-sm text-slate-700 mt-1">{{ complaint.admin_response }}</p>
+                    </div>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center">
+                <i class="fa-regular fa-comments text-3xl text-slate-300"></i>
+                <h3 class="font-bold text-slate-800 mt-3">No complaints yet</h3>
+                <p class="text-sm text-slate-500 mt-1">Your submitted complaints will appear here.</p>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

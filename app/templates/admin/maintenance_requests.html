@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Maintenance Requests - SolarEase{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-5 py-10">
+  <div class="flex items-end justify-between gap-4 flex-wrap mb-7">
+    <div>
+      <p class="section-eyebrow">Support Operations</p>
+      <h1 class="font-display font-bold text-3xl">Maintenance Requests</h1>
+      <p class="text-sm mt-2" style="color:var(--ink-soft);">Review requests, assign technicians, schedule visits and track the Module 20 workflow.</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn-outline px-4 py-2 text-sm">← Dashboard</a>
+  </div>
+  <div class="card-panel overflow-x-auto">
+    <table class="table-solar">
+      <thead><tr><th>Ticket</th><th>Customer</th><th>Category</th><th>Details</th><th>Workflow</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for req in maintenance_requests %}
+      <tr>
+        <td class="font-bold">#MNT-{{ req.id }}<div class="text-xs mt-1" style="color:var(--ink-soft);">{{ req.created_at.strftime('%d %b %Y, %I:%M %p') if req.created_at else '' }}</div></td>
+        <td>{{ req.customer_name }}</td>
+        <td>{{ req.service_type }}</td>
+        <td class="max-w-xs text-sm">{{ req.issue_description }}</td>
+        <td>
+          <form action="{{ url_for('maintenance.update_status', request_id=req.id) }}" method="POST" class="space-y-2">
+            <select name="status" class="form-input text-xs">{% for st in maintenance_statuses %}<option value="{{ st }}" {% if req.status == st %}selected{% endif %}>{{ st }}</option>{% endfor %}</select>
+            <input name="assigned_to" class="form-input text-xs" placeholder="Assigned technician" value="{{ req.assigned_to or '' }}">
+            <input type="datetime-local" name="scheduled_visit" class="form-input text-xs" value="{{ req.scheduled_visit.strftime('%Y-%m-%dT%H:%M') if req.scheduled_visit else '' }}">
+            <textarea name="resolution_notes" class="form-input text-xs" rows="2" placeholder="Support / resolution notes">{{ req.resolution_notes or '' }}</textarea>
+        </td>
+        <td><button class="btn-solar px-3 py-2 text-xs" type="submit">Save Update</button></form></td>
+      </tr>
+      {% else %}<tr><td colspan="6" class="text-center py-12">No maintenance requests found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}My AMC Contracts - SolarEase{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-5 py-10">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+    <div><p class="text-xs uppercase tracking-widest" style="color:var(--gold-dark);">Customer Care</p><h1 class="font-display font-bold text-3xl">My AMC Contracts</h1><p class="mt-1" style="color:var(--ink-soft);">Track purchases, payment verification and annual contract validity.</p></div>
+    <a href="{{ url_for('maintenance.plans') }}" class="btn-solar px-5 py-2.5 text-sm"><i class="fa-solid fa-plus mr-2"></i>New AMC Plan</a>
+  </div>
+  {% if subscriptions %}
+  <div class="space-y-5">
+    {% for s in subscriptions %}
+    <article class="card-panel">
+      <div class="flex flex-col lg:flex-row lg:items-center gap-5">
+        <div class="flex-1">
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="text-xs font-semibold" style="color:var(--gold-dark);">{{ s.contract_number }}</span>
+            {% if s.status == 'Active' %}<span class="badge-pill badge-leaf">Active</span>
+            {% elif s.status == 'Expired' %}<span class="badge-pill badge-gold">Expired</span>
+            {% elif s.status == 'Payment Failed' %}<span class="badge-pill" style="background:#fee2e2;color:#991b1b;">Payment Failed</span>
+            {% else %}<span class="badge-pill badge-gold">{{ s.status }}</span>{% endif %}
+          </div>
+          <h2 class="font-display font-bold text-xl">{{ s.plan.name }}</h2>
+          <p class="text-sm mt-1" style="color:var(--ink-soft);">
+            {% if s.start_date %}{{ s.start_date.strftime('%d %b %Y') }} — {{ s.end_date.strftime('%d %b %Y') }}{% else %}Waiting for payment verification{% endif %}
+          </p>
+        </div>
+        <div class="text-left lg:text-right">
+          <div class="font-display font-bold text-xl">PKR {{ "{:,.0f}".format(s.amount) }}</div>
+          <div class="text-xs" style="color:var(--ink-soft);">{{ s.payment_status }}</div>
+        </div>
+        <div>
+          {% if s.status in ['Active', 'Expired'] %}
+          <a href="{{ url_for('maintenance.renew', subscription_id=s.id) }}" class="btn-outline px-4 py-2 text-sm"><i class="fa-solid fa-rotate mr-2"></i>Renew</a>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card-panel text-center py-16"><i class="fa-solid fa-file-contract text-4xl mb-4" style="color:var(--gold);"></i><h2 class="font-display font-bold text-xl">No AMC contract yet</h2><p class="mt-2 mb-6" style="color:var(--ink-soft);">Choose a maintenance plan to protect your solar investment.</p><a href="{{ url_for('maintenance.plans') }}" class="btn-solar px-6 py-3">View Plans</a></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}AMC Management - SolarEase{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-5 py-10">
+  <div class="mb-8"><p class="text-xs uppercase tracking-widest" style="color:var(--gold-dark);">Administration</p><h1 class="font-display font-bold text-3xl">Annual Maintenance Contract Management</h1><p class="mt-1" style="color:var(--ink-soft);">Manage plans and verify customer AMC orders.</p></div>
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-7 mb-10">
+    <div class="card-panel xl:col-span-1">
+      <h2 class="font-display font-bold text-xl mb-5">Create Plan</h2>
+      <form method="POST" action="{{ url_for('maintenance.create_plan') }}" class="space-y-4">
+        <div><label class="form-label">Plan name</label><input name="name" class="form-input" required></div>
+        <div><label class="form-label">Description</label><textarea name="description" class="form-input" rows="3" required></textarea></div>
+        <div class="grid grid-cols-2 gap-3"><div><label class="form-label">Visits / year</label><input type="number" min="1" name="visits_per_year" value="2" class="form-input" required></div><div><label class="form-label">Annual price</label><input type="number" min="0" step="0.01" name="price" class="form-input" required></div></div>
+        <div class="space-y-2 text-sm">
+          <label><input type="checkbox" name="includes_cleaning"> Panel cleaning</label>
+          <label class="block"><input type="checkbox" name="includes_performance_check"> Performance checking</label>
+          <label class="block"><input type="checkbox" name="includes_emergency_support"> Emergency support</label>
+          <label class="block"><input type="checkbox" name="includes_minor_repairs"> Minor repairs</label>
+          <label class="block"><input type="checkbox" name="priority_visits"> Priority visits</label>
+        </div>
+        <button class="btn-solar w-full py-3">Create Annual Plan</button>
+      </form>
+    </div>
+    <div class="card-panel xl:col-span-2">
+      <h2 class="font-display font-bold text-xl mb-5">Plans</h2>
+      <div class="overflow-x-auto"><table class="table-solar"><thead><tr><th>Plan</th><th>Price</th><th>Visits</th><th>Status</th><th></th></tr></thead><tbody>
+      {% for p in plans %}<tr><td><strong>{{ p.name }}</strong><div class="text-xs" style="color:var(--ink-soft);">{{ p.description }}</div></td><td>PKR {{ "{:,.0f}".format(p.price) }}</td><td>{{ p.visits_per_year }}</td><td>{% if p.active %}<span class="badge-pill badge-leaf">Active</span>{% else %}<span class="badge-pill badge-gold">Inactive</span>{% endif %}</td><td><form method="POST" action="{{ url_for('maintenance.toggle_plan', plan_id=p.id) }}"><button class="btn-outline px-3 py-1 text-xs">{{ 'Disable' if p.active else 'Enable' }}</button></form></td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+  </div>
+  <div class="card-panel">
+    <div class="flex items-center justify-between mb-5"><h2 class="font-display font-bold text-xl">Customer AMC Orders</h2><span class="text-sm" style="color:var(--ink-soft);">{{ subscriptions|length }} total</span></div>
+    <div class="overflow-x-auto"><table class="table-solar"><thead><tr><th>Contract</th><th>Customer</th><th>Plan</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody>
+    {% for s in subscriptions %}<tr><td><strong>{{ s.contract_number }}</strong></td><td>{{ s.customer.full_name }}<div class="text-xs">{{ s.customer.email }}</div></td><td>{{ s.plan.name }}</td><td>PKR {{ "{:,.0f}".format(s.amount) }}</td><td>{{ s.payment_method or '—' }}<div class="text-xs">{{ s.transaction_reference or 'No reference' }}</div></td><td>{{ s.status }}</td><td>{% if s.payment_status == 'Payment Verification Required' %}<div class="flex gap-2"><form method="POST" action="{{ url_for('maintenance.verify_subscription', subscription_id=s.id) }}"><button name="action" value="approve" class="btn-solar px-3 py-1 text-xs">Verify</button></form><form method="POST" action="{{ url_for('maintenance.verify_subscription', subscription_id=s.id) }}"><button name="action" value="reject" class="btn-outline px-3 py-1 text-xs">Reject</button></form></div>{% else %}—{% endif %}</td></tr>{% else %}<tr><td colspan="7" class="text-center py-10" style="color:var(--ink-soft);">No AMC orders yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+</div>
+{% endblock %}

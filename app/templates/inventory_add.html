@@ -1,0 +1,23 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Add Inventory - SolarEase{% endblock %}
+{% block page_heading %}Add Equipment{% endblock %}
+{% block dashboard_content %}
+<div class="space-y-6">
+  <div class="dashboard-dark-card">
+    <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+      <div><h3 class="font-bold text-slate-900">Add New Equipment</h3><p class="text-xs dashboard-muted-text mt-1">Add a new product to the inventory catalog.</p></div>
+      <a href="{{ url_for('inventory.stock') }}" class="dashboard-action" style="background:#e2e8f0;color:#334155"><i class="fa-solid fa-arrow-left"></i> Back to Stock</a>
+    </div>
+    <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <input name="item_name" class="dashboard-input md:col-span-2" placeholder="Product Name" required>
+      <input name="category" class="dashboard-input" placeholder="Category" required>
+      <input name="supplier" class="dashboard-input" placeholder="Supplier">
+      <input type="number" name="quantity" class="dashboard-input" min="0" placeholder="Quantity" required>
+      <input type="number" name="selling_price" class="dashboard-input" min="0" step="0.01" placeholder="Unit Price (PKR)" required>
+      <input name="brand" class="dashboard-input" placeholder="Brand">
+      <input name="model" class="dashboard-input" placeholder="Model">
+      <button class="dashboard-action justify-center md:col-span-2">Save Equipment</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

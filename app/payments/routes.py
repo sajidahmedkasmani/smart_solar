@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app import db
 from app.models import Payment, Quotation, Installation, Warranty, Survey, Requirement, Project
 from app.auth.decorators import role_required
+from app.notifications.service import create_customer_notification
 
 payments_bp = Blueprint('payments', __name__)
 
@@ -37,6 +38,16 @@ def history():
         )
         db.session.add(p)
         q.status = 'Payment Verification Required'
+        customer_id = q.survey.user_id if q.survey else (q.requirement.user_id if q.requirement else None)
+        if customer_id:
+            create_customer_notification(
+                customer_id,
+                'Payment submitted for verification',
+                f'Your payment of PKR {amount:,.0f} for {q.quotation_number} has been submitted for Finance verification.',
+                event_type='Payment Submitted',
+                category='payment',
+                link=url_for('payments.history'),
+            )
         db.session.commit()
         flash('Payment record submitted for Finance verification. Installation will be created after verification.', 'success')
     payments = (Payment.query.join(Quotation)
@@ -159,52 +170,38 @@ def finance_dashboard():
 @payments_bp.route('/verify-payment/<int:payment_id>', methods=['GET', 'POST'])
 @role_required('finance')
 def verify_payment(payment_id):
-    payment = Payment.query.get_or_404(payment_id)
-    
-    if request.method == 'GET':
-        return redirect(url_for('payments.finance_dashboard'))
-
-    action = request.form.get('action')
-
-    if action == 'verify':
-        payment.status = 'Paid'
-        project = payment.project
-        
-        # 1. Advance Payment Approve
-        if 'Advance' in payment.milestone_name:
-            project.status = 'Material Pending'
-            
-        # 2. 50% Pre-Installation Payment Approve
-        elif '50%' in payment.milestone_name or 'Pre-Installation' in payment.milestone_name:
-            # Status badge update karein
-            project.status = 'Installation Pending'
-            
-            # Final 20% Post-Installation Milestone Auto-Generate karein
-            existing_20 = Payment.query.filter_by(
-                project_id=project.id, 
-                milestone_name='20% Post-Installation Payment'
-            ).first()
-            
-            if not existing_20:
-                total_amount = project.quotation.final_amount if project.quotation else 0
-                payment_20 = Payment(
-                    project_id=project.id,
-                    milestone_name='20% Post-Installation Payment',
-                    amount=total_amount * 0.20,
-                    status='Pending'
-                )
-                db.session.add(payment_20)
-
-        # 3. Final 20% Payment Approve
-        elif '20%' in payment.milestone_name or 'Post-Installation' in payment.milestone_name:
-            project.status = 'Completed'
-
-        db.session.commit()
-        flash(f'Payment for {project.project_name} verified successfully!', 'success')
-
-    elif action == 'reject':
-        payment.status = 'Pending'
-        db.session.commit()
-        flash('Payment receipt rejected.', 'warning')
-
+    p = Payment.query.get_or_404(payment_id)
+    action = request.form.get('action', 'verify')
+    q = p.quotation
+    customer_id = q.survey.user_id if q.survey else (q.requirement.user_id if q.requirement else None)
+    if action == 'reject':
+        p.status = 'Failed'
+        q.status = 'Approved'
+        if customer_id:
+            create_customer_notification(
+                customer_id,
+                'Payment verification failed',
+                f'Payment for {q.quotation_number} was not verified. Please review the payment details and try again.',
+                event_type='Payment Verification',
+                category='payment',
+                link=url_for('payments.history'),
+            )
+        flash('Payment marked as failed.', 'warning')
+    else:
+        p.status = 'Verified'
+        paid_so_far = sum(pp.amount_paid for pp in q.payments if pp.status != 'Failed')
+        q.status = 'Fully Paid' if paid_so_far >= q.final_amount else 'Partially Paid'
+        if not q.installation:
+            db.session.add(Installation(quotation_id=q.id, capacity_kw=q.system_capacity_kw, status='Project Created'))
+        if customer_id:
+            create_customer_notification(
+                customer_id,
+                'Payment received',
+                f'Your payment for {q.quotation_number} has been verified successfully. Payment status: {q.status}.',
+                event_type='Payment Received',
+                category='payment',
+                link=url_for('payments.history'),
+            )
+        flash(f'Payment verified for {q.quotation_number}.', 'success')
+    db.session.commit()
     return redirect(url_for('payments.finance_dashboard'))

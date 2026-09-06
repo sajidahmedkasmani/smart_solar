@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-5 py-8">
+    <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+        <div>
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-400 font-bold">SolarEase Portal</p>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900">
+                {% block page_heading %}Dashboard{% endblock %}
+            </h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ url_for('customers.dashboard') }}" class="dashboard-action">
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% block dashboard_content %}{% endblock %}
+</div>
+{% endblock %}

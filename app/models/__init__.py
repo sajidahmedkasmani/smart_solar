@@ -1,13 +1,14 @@
 from .models import (
     User, Customer, UserRole, StaffRoleRequest, Requirement, SolarPackage, Survey,
     SurveyImage, Notification, Quotation, Payment, Installation, Inventory,
-    Warranty, MaintenanceRequest, SystemType,
-    Supplier, PurchaseOrder, ProjectAssignment, DamagedItem, Project  # <-- Added
+    Warranty, MaintenanceRequest, MaintenancePlan, CustomerSubscription, Complaint, SystemType,
+    Supplier, PurchaseOrder, ProjectAssignment, DamagedItem, Project
 )
 
 __all__ = [
-    'User', 'Customer', 'UserRole', 'StaffRoleRequest', 'Requirement', 'SolarPackage',
-    'Survey', 'SurveyImage', 'Notification', 'Quotation', 'Payment', 'Installation',
-    'Inventory', 'Warranty', 'MaintenanceRequest', 'SystemType',
-    'Supplier', 'PurchaseOrder', 'ProjectAssignment', 'DamagedItem', 'Project'  # <-- Added
+    "User", "Customer", "UserRole", "StaffRoleRequest", "Requirement", "SolarPackage",
+    "Survey", "SurveyImage", "Notification", "Quotation", "Payment", "Installation",
+    "Inventory", "Warranty", "MaintenanceRequest", "MaintenancePlan", "CustomerSubscription",
+    "Complaint", "SystemType", "Supplier", "PurchaseOrder", "ProjectAssignment",
+    "DamagedItem", "Project"
 ]

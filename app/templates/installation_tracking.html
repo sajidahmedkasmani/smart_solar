@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Installation Progress - SolarEase{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-5 py-10">
+    <h3 class="font-display font-bold text-2xl mb-8">
+        <i class="fa-solid fa-bars-progress mr-2" style="color: var(--gold-dark);"></i>Installation Progress Tracking
+    </h3>
+
+    {% if projects %}
+        {% for proj in projects %}
+        <div class="card-panel mb-6">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                <h4 class="font-display font-bold text-lg mb-0">Project #PRJ-{{ proj.id }} ({{ proj.capacity_kw }} kW System)</h4>
+                <span class="badge-pill badge-leaf">{{ proj.status }}</span>
+            </div>
+
+            <!-- Dynamic Progress Bar Calculation -->
+            {% set progress = 15 %}
+            {% if proj.status == 'Equipment Reserved' %}{% set progress = 35 %}{% endif %}
+            {% if proj.status == 'Panels Installed' %}{% set progress = 65 %}{% endif %}
+            {% if proj.status == 'Inverter & Wiring' %}{% set progress = 85 %}{% endif %}
+            {% if proj.status == 'Completed & Handover' %}{% set progress = 100 %}{% endif %}
+
+            <div class="progress-track mb-6">
+                <div class="progress-fill" style="width: {{ progress }}%;">{{ progress }}% Completed</div>
+            </div>
+
+            <!-- Visual Milestone Tracker -->
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-4 text-center pt-4 border-t" style="border-color: var(--line);">
+                <div>
+                    <i class="fa-solid fa-circle-check text-xl mb-2 block" style="color: var(--leaf);"></i>
+                    <small class="font-semibold text-xs">Survey Done</small>
+                </div>
+                <div>
+                    <i class="fa-solid fa-circle-check text-xl mb-2 block" style="color: var(--leaf);"></i>
+                    <small class="font-semibold text-xs">Advance Paid</small>
+                </div>
+                <div>
+                    <i class="fa-solid fa-boxes-stacked text-xl mb-2 block" style="color: {% if progress >= 35 %}var(--leaf){% else %}var(--line){% endif %};"></i>
+                    <small class="text-xs {% if progress >= 35 %}font-semibold{% else %}opacity-50{% endif %}">Equipment Reserved</small>
+                </div>
+                <div>
+                    <i class="fa-solid fa-solar-panel text-xl mb-2 block" style="color: {% if progress >= 65 %}var(--leaf){% else %}var(--line){% endif %};"></i>
+                    <small class="text-xs {% if progress >= 65 %}font-semibold{% else %}opacity-50{% endif %}">Panels Mounted</small>
+                </div>
+                <div>
+                    <i class="fa-solid fa-plug-circle-bolt text-xl mb-2 block" style="color: {% if progress >= 85 %}var(--leaf){% else %}var(--line){% endif %};"></i>
+                    <small class="text-xs {% if progress >= 85 %}font-semibold{% else %}opacity-50{% endif %}">Wiring &amp; Testing</small>
+                </div>
+                <div>
+                    <i class="fa-solid fa-house-circle-check text-xl mb-2 block" style="color: {% if progress >= 100 %}var(--leaf){% else %}var(--line){% endif %};"></i>
+                    <small class="text-xs {% if progress >= 100 %}font-semibold{% else %}opacity-50{% endif %}">Final Handover</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="rounded-xl p-6 text-sm" style="background: var(--sky-soft); color: var(--sky-dark); border: 1px solid rgba(29,110,140,.25);">
+            <i class="fa-solid fa-info-circle mr-2"></i> No active installation project found yet. Once your payment is recorded, your installation timeline will appear here.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}System Types - SolarEase{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-5 py-10">
+  <div class="mb-8">
+    <p class="text-xs uppercase tracking-[0.2em] text-slate-400 font-bold">Solar System Options</p>
+    <h1 class="text-3xl font-extrabold text-slate-900">Compare System Types</h1>
+  </div>
+  <div class="grid md:grid-cols-3 gap-5">
+    {% for item in types %}
+    <div class="dashboard-dark-card">
+      <h2 class="text-lg font-extrabold text-slate-900">{{ item.name }}</h2>
+      <p class="text-xs text-slate-500 mt-1">{{ item.tagline or '' }}</p>
+      <p class="text-sm text-slate-600 mt-4">{{ item.description or '' }}</p>
+      <dl class="mt-5 space-y-2 text-sm">
+        <div class="flex justify-between"><dt>Grid</dt><dd>{{ 'Yes' if item.has_grid else 'No' }}</dd></div>
+        <div class="flex justify-between"><dt>Battery</dt><dd>{{ 'Yes' if item.requires_battery else 'No' }}</dd></div>
+        <div class="flex justify-between"><dt>Backup</dt><dd>{{ 'Yes' if item.provides_backup else 'No' }}</dd></div>
+        <div class="flex justify-between"><dt>Net Metering</dt><dd>{{ 'Yes' if item.supports_net_metering else 'No' }}</dd></div>
+      </dl>
+    </div>
+    {% else %}
+    <p class="text-slate-500">No system types available.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

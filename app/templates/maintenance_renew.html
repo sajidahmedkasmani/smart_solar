@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Renew AMC - SolarEase{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-5 py-10">
+  <a href="{{ url_for('maintenance.my_contracts') }}" class="text-sm" style="color:var(--gold-dark);"><i class="fa-solid fa-arrow-left mr-2"></i>Back to contracts</a>
+  <h1 class="font-display font-bold text-3xl mt-3 mb-8">Renew {{ plan.name }}</h1>
+  <div class="card-panel">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div><p class="text-xs uppercase tracking-wider" style="color:var(--gold-dark);">Current contract</p><h2 class="font-display font-bold text-xl mt-1">{{ subscription.contract_number }}</h2><p class="text-sm mt-2" style="color:var(--ink-soft);">Renewal creates a new 12-month contract and keeps the previous contract history.</p></div>
+      <div><div class="text-sm" style="color:var(--ink-soft);">Renewal price</div><div class="font-display font-bold text-3xl">PKR {{ "{:,.0f}".format(plan.price) }}</div></div>
+    </div>
+    <div class="border-t my-7" style="border-color:var(--line);"></div>
+    <form method="POST">
+      <label class="form-label">Payment method</label>
+      <select name="payment_method" class="form-input mb-5" required><option value="">Select payment method</option><option>Card / Online Gateway</option><option>Bank Transfer</option></select>
+      <label class="form-label">Transaction / Reference (optional)</label>
+      <input name="transaction_reference" class="form-input mb-6" placeholder="Reference ID">
+      <button class="btn-solar px-7 py-3"><i class="fa-solid fa-rotate mr-2"></i>Submit Renewal</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

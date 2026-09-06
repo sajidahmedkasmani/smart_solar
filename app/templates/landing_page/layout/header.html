@@ -1,6 +1,6 @@
 <header class="app-navbar">
-    <div class="max-w-7xl mx-auto px-5 md:px-6 py-3 flex items-center justify-between gap-4">
-        <a href="{{ url_for('index') }}" class="flex items-center gap-2 shrink-0">
+    <div class="app-navbar-inner w-full px-5 md:px-8 lg:px-10 py-3 grid grid-cols-[minmax(210px,1fr)_auto_minmax(210px,1fr)] items-center gap-4">
+        <a href="{{ url_for('index') }}" class="flex items-center gap-2 shrink-0 justify-self-start">
             <div class="brand-mark"></div>
             <!-- <span class="font-display font-bold text-lg">Solar<span style="color: var(--gold-dark);">Ease</span></span> -->
             <span class="font-display font-bold text-lg">{{ APP_NAME }}</span>
@@ -11,7 +11,7 @@
         </button>
 
         {% set role = session.get('role') %}{% set roles = session.get('roles', [role]) %}
-        <div id="navLinks" class="hidden md:flex flex-1 flex-wrap items-center justify-center gap-x-6 gap-y-2">
+        <div id="navLinks" class="hidden md:flex min-w-0 flex-nowrap items-center justify-center gap-x-4 justify-self-center">
             {% if session.get('user_id') %}
             <a class="app-nav-link" href="{{ url_for(dashboard_for(role)) }}"><i class="fa-solid fa-house me-1"></i> My Dashboard</a>
             {% endif %}
@@ -48,13 +48,27 @@
             <a class="app-nav-link" href="{{ url_for('admin.users') }}"><i class="fa-solid fa-users-gear me-1"></i> Users</a>
             {% endif %}
 
-            {% if 'customer' in roles or 'admin' in roles %}
+            {% if 'customer' in roles %}
+            <a class="app-nav-link" href="{{ url_for('maintenance.my_contracts') }}"><i class="fa-solid fa-file-contract me-1"></i> My AMC</a>
             <a class="app-nav-link" href="{{ url_for('maintenance.maintenance') }}"><i class="fa-solid fa-screwdriver-wrench me-1"></i> Maintenance</a>
+            <a class="app-nav-link" href="{{ url_for('complaints.index') }}"><i class="fa-solid fa-comment-dots me-1"></i> Complaints</a>
+            <a class="app-nav-link" href="{{ url_for('maintenance.plans') }}"><i class="fa-solid fa-shield-heart me-1"></i> AMC Plans</a>
+            {% elif 'admin' in roles %}
+            <a class="app-nav-link" href="{{ url_for('maintenance.admin_plans') }}"><i class="fa-solid fa-shield-heart me-1"></i> AMC Management</a>
+            <a class="app-nav-link" href="{{ url_for('maintenance.maintenance') }}"><i class="fa-solid fa-screwdriver-wrench me-1"></i> Maintenance</a>
+            <a class="app-nav-link" href="{{ url_for('maintenance.admin_requests') }}"><i class="fa-solid fa-clipboard-check me-1"></i> Service Requests</a>
+            <a class="app-nav-link" href="{{ url_for('complaints.admin_index') }}"><i class="fa-solid fa-comments me-1"></i> Complaints</a>
             {% endif %}
         </div>
 
-        <div class="hidden md:flex items-center gap-2 shrink-0">
+        <div class="hidden md:flex items-center gap-3 shrink-0 justify-self-end">
             {% if session.get('user_id') %}
+                <a href="{{ url_for('notifications.index') }}" class="relative w-9 h-9 rounded-full flex items-center justify-center border" style="border-color: var(--line); color: var(--ink-soft);" title="Notifications">
+                    <i class="fa-regular fa-bell text-sm"></i>
+                    {% if notification_unread_count %}
+                    <span class="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center">{{ notification_unread_count if notification_unread_count < 100 else '99+' }}</span>
+                    {% endif %}
+                </a>
                 <span class="text-sm mr-1" style="color: var(--ink-soft);">Hi, {{ session.get('user_name') }}</span>
                 <a href="{{ url_for('auth.logout') }}" class="btn-danger-solar px-4 py-2 text-xs">Logout</a>
             {% else %}
@@ -96,6 +110,14 @@
         {% endif %}
         {% if 'customer' in roles or 'admin' in roles %}
         <a class="app-nav-link" href="{{ url_for('maintenance.maintenance') }}"><i class="fa-solid fa-screwdriver-wrench me-1"></i> Maintenance</a>
+        {% if 'customer' in roles %}
+        <a class="app-nav-link" href="{{ url_for('complaints.index') }}"><i class="fa-solid fa-comment-dots me-1"></i> Complaints</a>
+        <a class="app-nav-link" href="{{ url_for('maintenance.my_contracts') }}"><i class="fa-solid fa-file-contract me-1"></i> My AMC</a>
+        <a class="app-nav-link" href="{{ url_for('maintenance.plans') }}"><i class="fa-solid fa-shield-heart me-1"></i> AMC Plans</a>
+        {% elif 'admin' in roles %}
+        <a class="app-nav-link" href="{{ url_for('maintenance.admin_plans') }}"><i class="fa-solid fa-shield-heart me-1"></i> AMC Management</a>
+        <a class="app-nav-link" href="{{ url_for('complaints.admin_index') }}"><i class="fa-solid fa-comments me-1"></i> Complaints</a>
+        {% endif %}
         {% endif %}
 
         <div class="pt-3 border-t flex items-center gap-2" style="border-color: var(--line);">

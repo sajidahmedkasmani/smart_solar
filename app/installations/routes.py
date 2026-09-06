@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app import db
 from app.models import Installation, Quotation, Warranty
 from app.auth.decorators import role_required, session_roles
+from app.notifications.service import create_customer_notification
 
 installations_bp = Blueprint('installations', __name__)
 
@@ -28,6 +29,17 @@ def schedule(quote_id):
                             technician=request.form.get('technician', 'Not Assigned'), capacity_kw=q.system_capacity_kw,
                             address=request.form.get('address', ''), status='Scheduled')
         db.session.add(inst)
+        db.session.flush()
+        customer_id = q.survey.user_id if q.survey else (q.requirement.user_id if q.requirement else None)
+        if customer_id:
+            create_customer_notification(
+                customer_id,
+                'Installation date confirmed',
+                f'Your solar installation for {q.quotation_number} has been scheduled.',
+                event_type='Installation Scheduled',
+                category='installation',
+                link=url_for('installations.list_installations'),
+            )
         db.session.commit()
         flash('Installation scheduled!', 'success')
         return redirect(url_for('admin.dashboard'))
@@ -41,6 +53,7 @@ def update(installation_id):
     if 'technician' in session_roles() and 'admin' not in session_roles() and i.technician != session.get('user_name'):
         flash('You can only update installations assigned to you.', 'danger')
         return redirect(url_for('installations.technician_dashboard'))
+    old_status = i.status
     i.status = request.form.get('status', i.status)
     if 'admin' in session_roles():
         i.technician = request.form.get('technician', i.technician)
@@ -49,6 +62,17 @@ def update(installation_id):
     if i.status == 'Completed & Handover' and not Warranty.query.filter_by(serial_number=f'SE-PRJ-{i.id:05d}').first():
         db.session.add(Warranty(component_name='Solar Installation System', serial_number=f'SE-PRJ-{i.id:05d}',
                                 warranty_years=10, start_date=date.today().isoformat()))
+    q = i.quotation
+    customer_id = q.survey.user_id if q and q.survey else (q.requirement.user_id if q and q.requirement else None)
+    if customer_id and i.status != old_status:
+        create_customer_notification(
+            customer_id,
+            'Installation stage updated',
+            f'Your installation progress has moved to: {i.status}.',
+            event_type='Installation Stage Changed',
+            category='installation',
+            link=url_for('installations.list_installations'),
+        )
     db.session.commit()
     flash('Installation progress updated.', 'success')
     return redirect(url_for('installations.technician_dashboard') if 'technician' in session_roles() and 'admin' not in session_roles() else url_for('admin.dashboard'))

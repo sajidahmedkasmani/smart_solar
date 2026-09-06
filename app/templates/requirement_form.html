@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Solar Load Calculator - SolarEase{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-5 py-10">
+    <div class="card-panel">
+        <div class="section-eyebrow mb-2">Step 1 of 4</div>
+        <h3 class="font-display font-bold text-2xl mb-2"><i class="fa-solid fa-calculator mr-2" style="color: var(--gold-dark);"></i>Solar System Load Calculator</h3>
+        <p class="text-sm mb-6" style="color: var(--ink-soft);">Enter your monthly consumption details and appliances. We'll calculate your estimated required solar capacity (kW) using standard engineering formulas.</p>
+
+        <form action="{{ url_for('quotations.calculator') }}" method="POST">
+            <h5 class="font-display font-bold text-sm uppercase tracking-wide pb-2 mb-4 border-b" style="color: var(--gold-dark); border-color: var(--line);">
+                <i class="fa-solid fa-house mr-2"></i>1. Basic Property &amp; Consumption Details
+            </h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div>
+                    <label class="form-label">Property Type</label>
+                    <select name="property_type" class="form-input" required>
+                        <option value="Residential">Residential</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Agricultural">Agricultural</option>
+                        <option value="Industrial">Industrial</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">City / Location</label>
+                    <input type="text" name="city" class="form-input" placeholder="e.g. Karachi" required>
+                </div>
+                <div>
+                    <label class="form-label">Monthly Electricity Consumption (Units / kWh)</label>
+                    <input type="number" name="monthly_units" class="form-input" placeholder="e.g. 900" required>
+                </div>
+                <div>
+                    <label class="form-label">Average Monthly Bill (PKR)</label>
+                    <input type="number" name="bill" class="form-input" placeholder="e.g. 65000" required>
+                </div>
+                <div>
+                    <label class="form-label">Available Roof Area (sq. ft.)</label>
+                    <input type="number" name="roof_area" class="form-input" placeholder="e.g. 800" required>
+                </div>
+                <div>
+                    <label class="form-label">Preferred System Type</label>
+                    <select name="system_type" class="form-input">
+                        <option value="Hybrid">Hybrid (Grid + Battery Backup)</option>
+                        <option value="On-Grid">On-Grid (Grid Tie / Net Metering)</option>
+                        <option value="Off-Grid">Off-Grid (Standalone Battery)</option>
+                    </select>
+                </div>
+            </div>
+
+            <h5 class="font-display font-bold text-sm uppercase tracking-wide pb-2 mb-4 border-b" style="color: var(--gold-dark); border-color: var(--line);">
+                <i class="fa-solid fa-plug mr-2"></i>2. Appliance Count
+            </h5>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                <div>
+                    <label class="form-label">Fans</label>
+                    <input type="number" name="fans" class="form-input" value="4">
+                </div>
+                <div>
+                    <label class="form-label">Lights / Bulbs</label>
+                    <input type="number" name="lights" class="form-input" value="10">
+                </div>
+                <div>
+                    <label class="form-label">Air Conditioners (AC)</label>
+                    <input type="number" name="ac" class="form-input" value="1">
+                </div>
+                <div>
+                    <label class="form-label">Refrigerator</label>
+                    <input type="number" name="refrigerator" class="form-input" value="1">
+                </div>
+                <div>
+                    <label class="form-label">Water Pump</label>
+                    <input type="number" name="water_pump" class="form-input" value="1">
+                </div>
+                <div>
+                    <label class="form-label">TV / Computers</label>
+                    <input type="number" name="tv_computers" class="form-input" value="2">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-solar w-full py-3.5 text-sm">
+                <i class="fa-solid fa-calculator mr-2"></i>Calculate &amp; Save Requirement
+            </button>
+        </form>
+
+        {% if result %}
+        <div class="mt-8 rounded-2xl p-6" style="background: var(--amber-soft); border: 1px solid rgba(240,169,59,.4);">
+            <h4 class="font-display font-bold text-lg mb-3" style="color: var(--gold-dark);"><i class="fa-solid fa-circle-check mr-2"></i>Calculation Result</h4>
+            <div class="divider-line mb-4"></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                    <span class="text-xs" style="color: var(--ink-soft);">Daily Consumption</span>
+                    <h5 class="font-display font-bold mt-1">{{ result.daily_units if result.daily_units else '30' }} kWh</h5>
+                </div>
+                <div>
+                    <span class="text-xs" style="color: var(--ink-soft);">Required System</span>
+                    <h4 class="font-display font-bold text-xl mt-1" style="color: var(--gold-dark);">{{ result.kw if result.kw else result.recommended_kw }} kW</h4>
+                </div>
+                <div>
+                    <span class="text-xs" style="color: var(--ink-soft);">Est. Cost / Panels</span>
+                    <h5 class="font-display font-bold mt-1">{{ result.cost if result.cost else 'Calculated' }}</h5>
+                </div>
+                <div class="flex items-center justify-center">
+                    <a href="{{ url_for('surveys.index') }}" class="btn-solar px-4 py-2 text-xs">Book Survey Now</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

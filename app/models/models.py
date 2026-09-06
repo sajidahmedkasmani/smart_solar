@@ -635,11 +635,29 @@ class SystemType(db.Model):
 
 
 
+# class Project(db.Model):
+    # __tablename__ = 'projects'
+    # id = db.Column(db.Integer, primary_key=True)
+    # quotation_id = db.Column(db.Integer, db.ForeignKey('quotations.id'), nullable=False)
+    # customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
+    # project_name = db.Column(db.String(120), nullable=False)
+    # status = db.Column(db.String(50), default='Pending Advance') 
+    # # Statuses: Pending Advance, Material Pending, In Installation, Completed
+    # created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # quotation = db.relationship('Quotation', backref=db.backref('project', uselist=False))
+    # customer = db.relationship('Customer', backref='projects')
+
+
 class Project(db.Model):
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True)
     quotation_id = db.Column(db.Integer, db.ForeignKey('quotations.id'), nullable=False)
-    customer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
+    
+    # 1. Foreign Key Column Add Karein
+    technician_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) 
+
     project_name = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(50), default='Pending Advance') 
     # Statuses: Pending Advance, Material Pending, In Installation, Completed
@@ -647,6 +665,11 @@ class Project(db.Model):
 
     quotation = db.relationship('Quotation', backref=db.backref('project', uselist=False))
     customer = db.relationship('Customer', backref='projects')
+    
+    # 2. Technician Relationship Add Karein
+    technician = db.relationship('User', foreign_keys=[technician_id], backref='assigned_projects')
+
+
 
 class Payment(db.Model):
     __tablename__ = 'payments'

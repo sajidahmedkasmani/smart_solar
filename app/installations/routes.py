@@ -1,7 +1,7 @@
 from datetime import date
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app import db
-from app.models import Installation, Quotation, Warranty
+from app.models import Installation, Quotation, Warranty, Project
 from app.auth.decorators import role_required, session_roles
 from app.notifications.service import create_customer_notification
 
@@ -46,7 +46,7 @@ def schedule(quote_id):
     return render_template('installation_tracking.html', projects=[q.installation] if q.installation else [])
 
 
-@installations_bp.route('/update/<int:installation_id>', methods=['POST'])
+@installations_bp.route('/updates/<int:installation_id>', methods=['POST'])
 @role_required('admin', 'technician')
 def update(installation_id):
     i = Installation.query.get_or_404(installation_id)
@@ -81,9 +81,71 @@ def update(installation_id):
 @installations_bp.route('/technician')
 @role_required('technician')
 def technician_dashboard():
-    my_name = session.get('user_name')
-    my_projects = Installation.query.filter_by(technician=my_name).order_by(Installation.id.desc()).all()
+    # User ID get karein (Name ki jagah ID se filter karna safe aur standard hai)
+    uid = session.get('user_id') 
+    
+    # 1. Foreign Key (technician_id) se query karein
+    # my_projects = Installation.query.filter_by(technician_id=uid).order_by(Installation.id.desc()).all()
+    
+    # Installation ki jagah Project query karein
+    my_projects = Project.query.filter_by(technician_id=uid).order_by(Project.id.desc()).all()
+
+    # 2. Status check Logic
     in_progress = [p for p in my_projects if p.status != 'Completed & Handover']
     completed = [p for p in my_projects if p.status == 'Completed & Handover']
-    return render_template('admin/technician_dashboard.html', my_projects=my_projects, unassigned=[],
-                           in_progress=in_progress, completed=completed)
+    
+    return render_template(
+        'admin/technician_dashboard.html', 
+        my_projects=my_projects, 
+        unassigned=[],
+        in_progress=in_progress, 
+        completed=completed
+    )
+
+
+
+# @installations_bp.route('/update/<int:installation_id>', methods=['POST'])
+# @role_required('technician')
+# def tupdate(installation_id):
+#     # Foreign key ya ID se installation get karein
+#     installation = Installation.query.get_or_404(installation_id)
+    
+#     # Form data
+#     new_status = request.form.get('status')
+#     new_notes = request.form.get('notes')
+    
+#     if new_status:
+#         installation.status = new_status
+#     if new_notes is not None:
+#         installation.notes = new_notes
+        
+#     db.session.commit()
+#     flash('Installation status updated successfully!', 'success')
+    
+#     return redirect(url_for('installations.technician_dashboard'))
+
+
+@installations_bp.route('/update/<int:installation_id>', methods=['POST'])
+@role_required('technician')
+def tupdate(installation_id):
+    installation = Installation.query.get_or_404(installation_id)
+    
+    new_status = request.form.get('status')
+    new_notes = request.form.get('notes')
+    
+    if new_status:
+        installation.status = new_status
+        
+        # 1. Linked Project Status Sync
+        # Agar Installation Quotation/Project se linked hai toh Project status bhi sync karein
+        if hasattr(installation, 'quotation') and installation.quotation and hasattr(installation.quotation, 'project'):
+            if installation.quotation.project:
+                installation.quotation.project.status = new_status
+                
+    if new_notes is not None:
+        installation.notes = new_notes
+        
+    db.session.commit()
+    flash('Installation status updated successfully!', 'success')
+    
+    return redirect(url_for('installations.technician_dashboard'))

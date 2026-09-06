@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app import db
-from app.models import User, Customer, SolarPackage, SystemType, UserRole, StaffRoleRequest, Survey, Quotation, Installation, Inventory, MaintenanceRequest, Notification
+from app.models import User, Customer, SolarPackage, SystemType, UserRole, StaffRoleRequest, Survey, Quotation, Installation, Inventory, MaintenanceRequest, Project, Notification
 from app.auth.decorators import role_required
 from app.roles import ROLES, STAFF_ROLES, label_for, get_user_roles, sync_user_roles, dashboard_for
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -61,6 +61,8 @@ def dashboard():
     )
 
 
+# USERS (VIEW, CREATE)
+
 @admin_bp.route('/users')
 @role_required('admin')
 def users():
@@ -74,7 +76,6 @@ def users():
         label_for=label_for,
         user_roles={u.id: get_user_roles(u) for u in staff_users},
     )
-
 
 @admin_bp.route('/users/create', methods=['POST'])
 @role_required('admin')
@@ -98,7 +99,6 @@ def create_staff():
     flash(f'Staff account created for {email} with {len(selected)} role(s).', 'success')
     return redirect(url_for('admin.users'))
 
-
 @admin_bp.route('/users/assign', methods=['POST'])
 @role_required('admin')
 def request_role():
@@ -117,7 +117,6 @@ def request_role():
     flash(f'Access updated for {email}: {", ".join(label_for(r) for r in get_user_roles(user))}.', 'success')
     return redirect(url_for('admin.users'))
 
-
 @admin_bp.route('/users/role/<int:user_id>', methods=['POST'])
 @role_required('admin')
 def update_role(user_id):
@@ -135,6 +134,7 @@ def update_role(user_id):
     return redirect(url_for('admin.users'))
 
 
+# PACKAGES & SYSTEM-TYPES
 @admin_bp.route('/packages')
 @role_required('admin')
 def packages():
@@ -145,9 +145,6 @@ def packages():
         packages=packages
     )
 
-
-
-# 1. Admin Page: List & Add System Types
 @admin_bp.route('/system-types', methods=['GET', 'POST'])
 @role_required('admin')
 def system_types():
@@ -178,151 +175,11 @@ def system_types():
     return render_template('admin/admin_system-types.html', types=types)
 
 
-# 2. Customer Comparison View Page
-# @system_types_bp.route('/system-types')
-# def compare_systems():
-#     types = SystemType.query.all()
-#     return render_template('system_types_compare.html', types=types)
 
 
 
-# @admin_bp.route('/surveys')
-# @role_required('admin')
-# def surveys():
-#     unassigned = Survey.query.filter(Survey.engineer == 'Unassigned').order_by(Survey.id.desc()).all()
-#     my_name = session.get('user_name')
-#     my_surveys = Survey.query.filter_by(engineer=my_name).order_by(Survey.id.desc()).all()
-#     completed = [s for s in my_surveys if s.status in ('Survey Completed', 'Report Submitted')]
-#     return render_template('admin/admin_surveys.html', unassigned=unassigned, my_surveys=my_surveys, completed=completed,
-#                            engineers=User.query.join(UserRole, UserRole.user_id == User.id).filter(UserRole.role == 'engineer').all())
 
-
-
-# @admin_bp.route('/surveys')
-# @role_required('admin')
-# def surveys():
-#     unassigned = Survey.query.filter_by(engineer_id=None).all()
-#     # my_surveys = Survey.query.filter_by(engineer_id=current_user.id).all()
-#     completed = Survey.query.filter_by(status='Completed').all()
-    
-#     # Active Engineers load karein dropdown ke liye
-#     engineers = User.query.filter_by(role='engineer', status=1).all()
-
-#     return render_template(
-#         'admin/admin_surveys.html',
-#         unassigned=unassigned,
-#         # my_surveys=my_surveys,
-#         completed=completed,
-#         engineers=engineers
-#     )
-
-
-# @admin_bp.route('/surveys/<int:survey_id>/assign', methods=['POST'])
-# @role_required('admin')
-# def assign_survey(survey_id):
-#     survey = Survey.query.get_or_404(survey_id)
-    
-#     engineer_id = request.form.get('engineer_id', type=int)
-#     new_date = request.form.get('preferred_date')
-#     new_time = request.form.get('preferred_time')
-    
-#     engineer = User.query.get(engineer_id)
-#     if not engineer:
-#         flash('Invalid Engineer selected.', 'danger')
-#         return redirect(url_for('admin.surveys'))
-
-#     # Check if Admin modified date or time
-#     date_changed = (survey.preferred_date != new_date)
-#     time_changed = (survey.preferred_time != new_time)
-    
-#     survey.engineer_id = engineer_id
-    
-#     if date_changed or time_changed:
-#         # CASE A: Date/Time Changed -> Needs Customer Approval
-#         survey.preferred_date = new_date
-#         survey.preferred_time = new_time
-#         survey.status = 0  # Pending Approval
-#         survey.rescheduled_by_admin = True
-        
-#         db.session.commit()
-        
-#         # Email ONLY to Customer
-#         approval_link = url_for('surveys.approve_reschedule', survey_id=survey.id, _external=True)
-#         customer_email_body = f"""
-#         <h3>Hello {survey.customer_name},</h3>
-#         <p>Your survey request date/time has been modified by the admin.</p>
-#         <p><strong>New Schedule:</strong> {new_date} at {new_time}</p>
-#         <p>Please review and confirm if this schedule works for you:</p>
-#         <a href="{approval_link}" style="padding:10px 15px; background:purple; color:white; text-decoration:none; border-radius:5px;">Approve New Schedule</a>
-#         """
-#         send_survey_email(survey.customer.email, "Action Required: Survey Schedule Change", customer_email_body)
-        
-#         flash('Survey rescheduled! Sent approval request email to customer. Engineer will be notified upon acceptance.', 'warning')
-        
-#     else:
-#         # CASE B: No Schedule Change -> Immediate Assignment
-#         survey.status = 1  # Assigned
-#         survey.rescheduled_by_admin = False
-        
-#         db.session.commit()
-        
-#         # Email to Customer
-#         send_survey_email(
-#             survey.customer.email,
-#             "Survey Confirmed & Engineer Assigned",
-#             f"<h3>Survey Confirmed</h3><p>Engineer <strong>{engineer.name}</strong> has been assigned to your survey on {survey.preferred_date} ({survey.preferred_time}).</p>"
-#         )
-        
-#         # Email to Engineer
-#         send_survey_email(
-#             engineer.email,
-#             "New Survey Task Assigned",
-#             f"<h3>New Assignment</h3><p>You have been assigned to survey <strong>SUR-{survey.id}</strong> at {survey.address} on {survey.preferred_date} ({survey.preferred_time}).</p>"
-#         )
-        
-#         flash('Survey assigned successfully and notifications sent.', 'success')
-
-#     return redirect(url_for('admin.surveys'))
-
-# @admin_bp.route('/surveys/<int:survey_id>/assign', methods=['POST'])
-# @role_required('admin')
-# def assign_survey(survey_id):
-#     survey = Survey.query.get_or_404(survey_id)
-    
-#     engineer_id = request.form.get('engineer_id', type=int)
-#     new_date = request.form.get('preferred_date')
-#     new_time = request.form.get('preferred_time')
-    
-#     engineer = User.query.get(engineer_id)
-#     if not engineer:
-#         flash('Invalid Engineer selected.', 'danger')
-#         return redirect(url_for('admin.surveys'))
-
-#     # Check if Admin modified date or time
-#     date_changed = (survey.preferred_date != new_date)
-#     time_changed = (survey.preferred_time != new_time)
-    
-#     survey.engineer_id = engineer_id
-    
-#     if date_changed or time_changed:
-#         # CASE A: Schedule Modified -> Requires Customer Confirmation
-#         survey.preferred_date = new_date
-#         survey.preferred_time = new_time
-#         survey.status = 0  # Pending Approval
-#         survey.rescheduled_by_admin = True
-        
-#         db.session.commit()
-#         flash('Survey schedule updated. Pending customer approval.', 'warning')
-        
-#     else:
-#         # CASE B: Schedule Unchanged -> Direct Active Assignment
-#         survey.status = 1  # Assigned / Approved
-#         survey.rescheduled_by_admin = False
-        
-#         db.session.commit()
-#         flash('Engineer assigned successfully!', 'success')
-
-#     return redirect(url_for('admin.surveys'))
+# SURVEYS (VIEW, ASSIGN ENGINER & VIEW REPORT):-
 
 @admin_bp.route('/surveys')
 @role_required('admin')
@@ -576,3 +433,98 @@ def survey_report(survey_id):
         'admin/survey_report.html',
         survey=survey
     )
+
+
+# PROJECTS 
+@admin_bp.route('/projects')
+@role_required('admin')
+def projects_list():
+    projects = Project.query.order_by(Project.created_at.desc()).all()
+    # Sirf un users ko lao jinka role 'technician' hai
+    technicians = User.query.filter_by(role='technician').all() 
+    return render_template('admin/admin/projects.html', projects=projects, technicians=technicians)
+
+# @admin_bp.route('/projects/<int:id>/assign', methods=['POST'])
+# @role_required('admin')
+# def assign_project_technician(id):
+#     project = Project.query.get_or_404(id)
+#     technician_id = request.form.get('technician_id')
+
+#     if technician_id:
+#         project.technician_id = technician_id
+#         project.status = 'In Progress'
+#         db.session.commit()
+#         flash('Technician successfully assigned to the project!', 'success')
+
+#     return redirect(url_for('admin.projects_list'))
+
+
+# @admin_bp.route('/projects/<int:id>/assign', methods=['POST'])
+# @role_required('admin')
+# def assign_project_technician(id):
+#     project = Project.query.get_or_404(id)
+#     technician_id = request.form.get('technician_id')
+
+#     if technician_id:
+#         # 1. Project Table Update
+#         project.technician_id = technician_id
+#         project.status = 'In Progress'
+
+#         # 2. Check & Auto-Create Installation Record
+#         installation = Installation.query.filter_by(project_id=project.id).first()
+
+#         if not installation:
+#             installation = Installation(
+#                 project_id=project.id,
+#                 quotation_id=project.quotation_id,
+#                 technician_id=technician_id,
+#                 status='Project Created',
+#                 notes='Installation task auto-generated on technician assignment.'
+#             )
+#             db.session.add(installation)
+#         else:
+#             # Agar pehle se record majood hai toh sirf technician_id update kardein
+#             installation.technician_id = technician_id
+
+#         # 3. Commit Changes to Database
+#         db.session.commit()
+#         flash('Technician assigned and Installation process initiated successfully!', 'success')
+#     else:
+#         flash('Please select a valid technician.', 'danger')
+
+#     return redirect(url_for('admin.projects_list'))
+
+
+@admin_bp.route('/projects/<int:id>/assign', methods=['POST'])
+@role_required('admin')
+def assign_project_technician(id):
+    project = Project.query.get_or_404(id)
+    technician_id = request.form.get('technician_id')
+
+    if technician_id:
+        # 1. Project Table Update
+        project.technician_id = technician_id
+        project.status = 'In Progress'
+
+        # 2. Check & Auto-Create Installation Record using quotation_id
+        installation = Installation.query.filter_by(quotation_id=project.quotation_id).first()
+
+        if not installation:
+            installation = Installation(
+                quotation_id=project.quotation_id,
+                technician=technician_id,
+                status='Project Created',
+                notes='Installation task auto-generated on technician assignment.'
+            )
+            db.session.add(installation)
+        else:
+            # Agar pehle se Installation Record mojood hai toh technician_id update karein
+            installation.technician = technician_id
+
+        # 3. Commit Changes to Database
+        db.session.commit()
+        flash('Technician assigned and Installation process initiated successfully!', 'success')
+    else:
+        flash('Please select a valid technician.', 'danger')
+
+    return redirect(url_for('admin.projects_list'))

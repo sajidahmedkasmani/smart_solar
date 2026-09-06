@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 from app import db
-from app.models import Requirement, Survey, Quotation, Installation
+from app.models import Requirement, Survey, Quotation, Installation, Notification, Project, Payment
 from app.auth.decorators import role_required
 
 
@@ -24,8 +24,18 @@ def dashboard():
     quotation_ids = [q.id for q in quotations]
     projects = (Installation.query.filter(Installation.quotation_id.in_(quotation_ids)).order_by(Installation.id.desc()).all()
                 if quotation_ids else [])
-    return render_template('landing_page/customer/user_dashboard.html', latest_req=latest_req, latest_survey=latest_survey,
-                           quotations=quotations, projects=projects)
+
+
+    recent_notifications = (Notification.query
+                            .filter_by(user_id=uid)
+                            .order_by(Notification.created_at.desc(), Notification.id.desc())
+                            .limit(4).all())
+    return render_template('landing_page/customer/user_dash.html', latest_req=latest_req, latest_survey=latest_survey,
+                           quotations=quotations, projects=projects, recent_notifications=recent_notifications)
+
+
+    # return render_template('landing_page/customer/user_dashboard.html', latest_req=latest_req, latest_survey=latest_survey,
+    #                        quotations=quotations, projects=projects)
 
 
 

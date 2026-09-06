@@ -1,0 +1,84 @@
+{% extends 'admin/layout/admin_base.html' %}
+{% block title %}Manage Projects - Admin{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <div class="flex justify-between items-center pb-4 border-b border-gray-200">
+        <div>
+            <h3 class="font-bold text-2xl text-gray-800">Solar Projects Management</h3>
+            <p class="text-xs text-gray-500 mt-1">Assign technicians and track installation lifecycles.</p>
+        </div>
+    </div>
+
+    <!-- PROJECTS TABLE -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="p-4">Project Ref</th>
+                    <th class="p-4">Customer</th>
+                    <th class="p-4">System Size</th>
+                    <th class="p-4">Project Status</th>
+                    <th class="p-4">Assigned Technician</th>
+                    <th class="p-4 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for proj in projects %}
+                <tr class="hover:bg-gray-50/50">
+                    <td class="p-4 font-bold text-gray-800">
+                        #PRJ-{{ proj.id }}
+                        <span class="block text-[10px] text-gray-400 font-normal">Q Ref: {{ proj.quotation.quotation_number }}</span>
+                    </td>
+                    <td class="p-4">
+                        <strong class="text-gray-800 block">{{ proj.customer.full_name or proj.customer.username }}</strong>
+                        <span class="text-xs text-gray-500">{{ proj.customer.email }}</span>
+                    </td>
+                    <td class="p-4 font-medium text-gray-700">
+                        {{ proj.quotation.system_capacity_kw }} kW ({{ proj.quotation.system_type }})
+                    </td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold 
+                            {% if proj.status == 'In Progress' %}bg-sky-100 text-sky-800
+                            {% elif proj.status == 'Installation Completed' %}bg-emerald-100 text-emerald-800
+                            {% else %}bg-amber-100 text-amber-800{% endif %}">
+                            {{ proj.status }}
+                        </span>
+                    </td>
+                    <td class="p-4">
+                        {% if proj.technician %}
+                            <div class="flex items-center gap-2 text-gray-800 font-medium">
+                                <i class="fa-solid fa-user-gear text-amber-500"></i>
+                                {{ proj.technician.full_name or proj.technician.username }}
+                            </div>
+                        {% else %}
+                            <span class="text-xs text-rose-500 font-medium italic"><i class="fa-solid fa-triangle-exclamation"></i> Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4 text-right">
+                        <!-- ASSIGNMENT FORM / DROPDOWN -->
+                        <form action="{{ url_for('admin.assign_project_technician', id=proj.id) }}" method="POST" class="flex items-center justify-end gap-2">
+                            <select name="technician_id" class="text-xs rounded-xl border-gray-300 p-2 focus:ring-amber-500" required>
+                                <option value="" disabled selected>Select Tech...</option>
+                                {% for tech in technicians %}
+                                    <option value="{{ tech.id }}" {% if proj.technician_id == tech.id %}selected{% endif %}>
+                                        {{ tech.full_name or tech.username }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
+                                Assign
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="p-6 text-center text-gray-500 text-sm">No active projects found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

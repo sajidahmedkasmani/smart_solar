@@ -65,6 +65,7 @@ def create_app(config_class=Config):
     from app.notifications.routes import notifications_bp
     from app.admin.routes import admin_bp
     from app.api.routes import api_bp
+    from app.chatbot.routes import chatbot_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(customers_bp, url_prefix='/customer')
@@ -80,6 +81,7 @@ def create_app(config_class=Config):
     app.register_blueprint(notifications_bp, url_prefix='/notifications')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(chatbot_bp, url_prefix='/chatbot')
 
     @app.context_processor
     def inject_notification_state():
@@ -98,6 +100,20 @@ def create_app(config_class=Config):
         else:
             unread = Notification.query.filter_by(user_id=user_id, is_read=False).count()
         return {'notification_unread_count': unread}
+
+    @app.context_processor
+    def inject_chat_state():
+        """Expose the count of chat requests waiting for a sales rep."""
+        from app.models import ChatSession
+
+        roles = session.get('roles') or [session.get('role')]
+        if isinstance(roles, str):
+            roles = [roles]
+        if 'sales' in roles or 'admin' in roles:
+            pending_chat_count = ChatSession.query.filter_by(status='pending_sales').count()
+        else:
+            pending_chat_count = 0
+        return {'pending_chat_count': pending_chat_count}
 
     @app.route('/')
     def index():

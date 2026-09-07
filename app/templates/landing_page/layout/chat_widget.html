@@ -1,0 +1,195 @@
+<!-- ============================================================
+     SolarEase Chat Widget
+     - Bottom-right floating button, opens a Messenger-style chat panel.
+     - Logged-in customers: bot answers, and a request is raised to the
+       Sales team. Bot keeps answering until a sales rep accepts — after
+       that, only the sales rep talks (this widget just polls for it).
+     - Guests (not logged in): the AI assistant always answers, no
+       sales handoff happens.
+     ============================================================ -->
+<div id="solarChatRoot">
+  <button id="solarChatToggle" type="button" aria-label="Open chat"
+    style="position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;
+           background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff;border:none;
+           box-shadow:0 10px 30px rgba(126,34,206,.35);cursor:pointer;z-index:9998;
+           display:flex;align-items:center;justify-content:center;font-size:22px;">
+    <i class="fa-solid fa-comment-dots"></i>
+  </button>
+
+  <div id="solarChatPanel" style="display:none;position:fixed;right:22px;bottom:92px;width:340px;max-width:92vw;
+       height:460px;max-height:75vh;background:#fff;border-radius:20px;box-shadow:0 20px 55px rgba(15,23,42,.25);
+       overflow:hidden;z-index:9999;border:1px solid #eee;font-family:'Inter',sans-serif;display:flex;flex-direction:column;">
+
+    <div style="background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <p style="margin:0;font-weight:700;font-size:13px;">SolarEase Assistant</p>
+        <p id="solarChatStatusLabel" style="margin:2px 0 0;font-size:11px;opacity:.85;">Online</p>
+      </div>
+      <button id="solarChatClose" type="button" aria-label="Close chat"
+        style="background:transparent;border:none;color:#fff;font-size:16px;cursor:pointer;">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div id="solarChatBanner" style="display:none;background:#f3e8ff;color:#6b21a8;font-size:11px;
+         padding:8px 14px;font-weight:600;flex-shrink:0;"></div>
+
+    <div id="solarChatMessages" style="flex:1;overflow-y:auto;padding:14px;background:#f8fafc;display:flex;flex-direction:column;gap:10px;"></div>
+
+    <div id="solarChatTyping" style="display:none;padding:0 14px 6px;font-size:11px;color:#94a3b8;flex-shrink:0;">
+      SolarEase Assistant is typing...
+    </div>
+
+    <form id="solarChatForm" style="display:flex;gap:8px;padding:10px;border-top:1px solid #eee;flex-shrink:0;">
+      <input id="solarChatInput" type="text" placeholder="Type your message..." autocomplete="off"
+             style="flex:1;border:1px solid #e2e8f0;border-radius:999px;padding:9px 14px;font-size:13px;outline:none;">
+      <button type="submit" aria-label="Send"
+        style="background:#7e22ce;color:#fff;border:none;border-radius:999px;width:38px;height:38px;cursor:pointer;">
+        <i class="fa-solid fa-paper-plane" style="font-size:13px;"></i>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  const toggleBtn = document.getElementById('solarChatToggle');
+  const closeBtn = document.getElementById('solarChatClose');
+  const panel = document.getElementById('solarChatPanel');
+  const messagesBox = document.getElementById('solarChatMessages');
+  const form = document.getElementById('solarChatForm');
+  const input = document.getElementById('solarChatInput');
+  const typingIndicator = document.getElementById('solarChatTyping');
+  const banner = document.getElementById('solarChatBanner');
+  const statusLabel = document.getElementById('solarChatStatusLabel');
+
+  let initialized = false;
+  let afterId = 0;
+  let currentStatus = 'bot';
+  let pollTimer = null;
+
+  function bubble(m) {
+    const isUser = m.sender_type === 'user';
+    const wrap = document.createElement('div');
+    wrap.style.display = 'flex';
+    wrap.style.justifyContent = isUser ? 'flex-end' : 'flex-start';
+
+    const inner = document.createElement('div');
+    inner.style.maxWidth = '78%';
+    inner.style.padding = '9px 12px';
+    inner.style.borderRadius = '14px';
+    inner.style.fontSize = '13px';
+    inner.style.lineHeight = '1.4';
+    inner.style.whiteSpace = 'pre-line';
+    if (isUser) {
+      inner.style.background = '#7e22ce';
+      inner.style.color = '#fff';
+    } else if (m.sender_type === 'sales') {
+      inner.style.background = '#1e293b';
+      inner.style.color = '#fff';
+    } else {
+      inner.style.background = '#eef2f7';
+      inner.style.color = '#1e293b';
+    }
+    inner.textContent = m.message;
+    wrap.appendChild(inner);
+    return wrap;
+  }
+
+  function renderMessages(list) {
+    list.forEach(m => {
+      messagesBox.appendChild(bubble(m));
+      afterId = m.id;
+    });
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+
+  function applyStatus(status) {
+    currentStatus = status;
+    if (status === 'active') {
+      statusLabel.textContent = 'Sales representative connected';
+      banner.style.display = 'block';
+      banner.textContent = 'A sales representative has joined this chat and will respond to you shortly.';
+    } else if (status === 'pending_sales') {
+      statusLabel.textContent = 'Online — sales notified';
+      banner.style.display = 'block';
+      banner.textContent = 'Our sales team has been notified and will join shortly. Meanwhile, our assistant is here to help.';
+    } else {
+      statusLabel.textContent = 'Online';
+      banner.style.display = 'none';
+    }
+  }
+
+  async function initChat() {
+    try {
+      const res = await fetch('{{ url_for("chatbot.init") }}');
+      const data = await res.json();
+      renderMessages(data.messages || []);
+      applyStatus(data.status);
+      startPolling();
+    } catch (e) {
+      messagesBox.innerHTML = '<p style="font-size:12px;color:#94a3b8;">Chat is temporarily unavailable. Please try again shortly.</p>';
+    }
+  }
+
+  async function poll() {
+    try {
+      const res = await fetch(`{{ url_for("chatbot.poll") }}?after_id=${afterId}`);
+      const data = await res.json();
+      if (data.messages && data.messages.length) renderMessages(data.messages);
+      if (data.status !== currentStatus) applyStatus(data.status);
+    } catch (e) { /* ignore transient errors */ }
+  }
+
+  function startPolling() {
+    if (pollTimer) return;
+    pollTimer = setInterval(poll, 4000);
+  }
+
+  function openPanel() {
+    panel.style.display = 'flex';
+    toggleBtn.style.display = 'none';
+    if (!initialized) {
+      initialized = true;
+      initChat();
+    }
+  }
+
+  function closePanel() {
+    panel.style.display = 'none';
+    toggleBtn.style.display = 'flex';
+  }
+
+  toggleBtn.addEventListener('click', openPanel);
+  closeBtn.addEventListener('click', closePanel);
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    messagesBox.appendChild(bubble({ sender_type: 'user', message: text }));
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+
+    const showTyping = currentStatus !== 'active';
+    if (showTyping) typingIndicator.style.display = 'block';
+
+    try {
+      const res = await fetch('{{ url_for("chatbot.send") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      typingIndicator.style.display = 'none';
+      // Skip the first message in the response — it's an echo of what we already rendered.
+      const rest = (data.messages || []).slice(1);
+      renderMessages(rest);
+      if (data.messages && data.messages.length) afterId = data.messages[data.messages.length - 1].id;
+      applyStatus(data.status);
+    } catch (e) {
+      typingIndicator.style.display = 'none';
+    }
+  });
+})();
+</script>

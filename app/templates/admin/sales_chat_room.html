@@ -1,0 +1,123 @@
+{% extends 'admin/layout/admin_base.html' %}
+{% block title %}Chat CHAT-{{ chat.id }} - SolarEase{% endblock %}
+{% block page_heading %}Chat CHAT-{{ chat.id }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-4">
+
+  <div class="flex items-center justify-between gap-3 flex-wrap">
+    <div>
+      <p class="text-sm dashboard-muted-text">
+        Customer: <span class="font-bold dashboard-surface-text">{{ chat.customer.full_name if chat.customer else 'Website Visitor' }}</span>
+        {% if chat.customer %}· {{ chat.customer.email }}{% endif %}
+      </p>
+      <p class="text-xs dashboard-muted-text mt-1">
+        Status:
+        <span class="dashboard-pill">
+          {% if chat.status == 'pending_sales' %}Waiting for you to accept
+          {% elif chat.status == 'active' %}Active — you are handling this chat
+          {% else %}{{ chat.status }}{% endif %}
+        </span>
+      </p>
+    </div>
+    <a href="{{ url_for('sales.chat_inbox') }}" class="dashboard-action" style="background:#fff;color:#7e22ce;border:1px solid #e2e8f0;">
+      <i class="fa-solid fa-arrow-left"></i> Back to Live Chats
+    </a>
+  </div>
+
+  {% if chat.status == 'pending_sales' %}
+  <form method="post" action="{{ url_for('sales.chat_accept', chat_id=chat.id) }}">
+    <button type="submit" class="dashboard-action"><i class="fa-solid fa-headset"></i> Accept this chat</button>
+  </form>
+  <p class="text-xs dashboard-muted-text">
+    Accepting stops the AI assistant from replying to this customer — only you will talk to them from here.
+  </p>
+  {% endif %}
+
+  <div class="dashboard-dark-card">
+    <div id="chatThread" data-after-id="{{ messages[-1].id if messages else 0 }}"
+         class="space-y-3 max-h-[55vh] overflow-y-auto custom-scrollbar pr-1">
+      {% for m in messages %}
+      <div class="flex {{ 'justify-end' if m.sender_type == 'sales' else 'justify-start' }}">
+        <div class="max-w-[75%] rounded-2xl px-4 py-2.5 text-sm
+          {% if m.sender_type == 'sales' %}bg-purple-600 text-white
+          {% elif m.sender_type == 'bot' %}bg-slate-100 text-slate-700
+          {% else %}bg-slate-200 text-slate-900{% endif %}">
+          <p class="text-[10px] font-bold uppercase tracking-wide opacity-70 mb-1">
+            {{ m.sender_name or m.sender_type }}
+          </p>
+          <p class="whitespace-pre-line">{{ m.message }}</p>
+          <p class="text-[10px] opacity-60 mt-1 text-right">{{ m.created_at.strftime('%d %b, %H:%M') }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <form id="chatSendForm" method="post" action="{{ url_for('sales.chat_send', chat_id=chat.id) }}"
+          class="flex items-center gap-2 mt-4">
+      <input type="text" name="message" class="dashboard-input" placeholder="Type your reply..." autocomplete="off" required>
+      <button type="submit" class="dashboard-action"><i class="fa-solid fa-paper-plane"></i> Send</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  const thread = document.getElementById('chatThread');
+  const pollUrl = "{{ url_for('sales.chat_poll', chat_id=chat.id) }}";
+  thread.scrollTop = thread.scrollHeight;
+
+  function bubbleHtml(m) {
+    const align = m.sender_type === 'sales' ? 'justify-end' : 'justify-start';
+    const bubble = m.sender_type === 'sales'
+      ? 'bg-purple-600 text-white'
+      : (m.sender_type === 'bot' ? 'bg-slate-100 text-slate-700' : 'bg-slate-200 text-slate-900');
+    return `<div class="flex ${align}">
+      <div class="max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${bubble}">
+        <p class="text-[10px] font-bold uppercase tracking-wide opacity-70 mb-1">${m.sender_name || m.sender_type}</p>
+        <p class="whitespace-pre-line"></p>
+        <p class="text-[10px] opacity-60 mt-1 text-right">${m.created_at}</p>
+      </div>
+    </div>`;
+  }
+
+  function appendMessages(list) {
+    list.forEach(m => {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = bubbleHtml(m);
+      wrapper.querySelector('p.whitespace-pre-line').textContent = m.message;
+      thread.appendChild(wrapper.firstElementChild);
+      thread.dataset.afterId = m.id;
+    });
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  async function poll() {
+    try {
+      const afterId = thread.dataset.afterId || 0;
+      const res = await fetch(`${pollUrl}?after_id=${afterId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.messages && data.messages.length) appendMessages(data.messages);
+    } catch (e) { /* ignore transient errors */ }
+  }
+
+  setInterval(poll, 4000);
+
+  const form = document.getElementById('chatSendForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = form.querySelector('input[name="message"]');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    await fetch(form.action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `message=${encodeURIComponent(text)}`,
+    });
+    poll();
+  });
+})();
+</script>
+{% endblock %}

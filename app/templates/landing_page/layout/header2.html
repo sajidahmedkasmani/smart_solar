@@ -1,0 +1,96 @@
+<nav class="navbar" id="navbar">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="brand-mark"></div>
+            <span class="font-display font-bold text-lg">{{ APP_NAME }}</span>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-8">
+            {% if session.get('user_id') %}
+            <a href="{{ url_for(dashboard_for(session.get('role'))) }}" class="nav-link">My Dashboard</a>
+            {% endif %}
+            <a href="{{ url_for('about') }}" class="nav-link">About Us</a>
+            <a href="{{ url_for('contact') }}" class="nav-link">Contact Us</a>
+            <a href="{{ url_for('quotations.calculator') }}" class="nav-link">Load Calculator</a>
+            <a href="{{ url_for('surveys.index') }}" class="nav-link">Book Survey</a>
+            <a href="{{ url_for('packages') }}" class="nav-link">Packages</a>
+            {% if 'customer' in session.get('roles', [session.get('role')]) or session.get('user_id') %}
+            <a href="{{ url_for('maintenance.maintenance') }}" class="nav-link">Maintenance</a>
+            {% endif %}
+        </div>
+
+        <!-- Buttons / Profile Dropdown Section -->
+        <div class="flex items-center gap-3">
+            <div class="hidden md:flex items-center gap-3">
+            {% if session.get('user_id') %}
+                <!-- Integrated Tailwind Profile Dropdown -->
+                <div class="relative inline-block text-left">
+                    <button type="button" id="profile-menu-button" 
+                        class="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500 text-white font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 shadow-sm transition-transform active:scale-95">
+                        {{ session.get('user_name', 'U')[:1].upper() }}
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="profile-dropdown" 
+                        class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50 transition ease-out duration-100 transform opacity-0 scale-95">
+                        
+                        <div class="px-4 py-3">
+                            <p class="text-xs text-gray-500">Signed in as</p>
+                            <p class="text-sm font-medium text-gray-900 truncate">
+                                {{ session.get('user_name', 'User') }}
+                            </p>
+                        </div>
+
+                        <div class="py-1">
+                            <a href="{{ url_for(dashboard_for(session.get('role'))) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                My Dashboard
+                            </a>
+                        </div>
+
+                        <div class="py-1">
+                            <a href="{{ url_for('auth.logout') }}" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="w-4 h-4 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn-outline px-4 py-2 text-xs md:text-sm">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn-solar px-4 py-2 text-xs md:text-sm">Register</a>
+            {% endif %}
+            </div>
+
+            <button id="navToggleHome" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center border" style="border-color: var(--line);">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="navLinksHomeMobile" class="hidden md:hidden border-t px-6 py-4 flex flex-col gap-3" style="border-color: var(--line); background: var(--paper);">
+        {% if session.get('user_id') %}
+        <a href="{{ url_for(dashboard_for(session.get('role'))) }}" class="nav-link">My Dashboard</a>
+        {% endif %}
+        <a href="{{ url_for('quotations.calculator') }}" class="nav-link">Load Calculator</a>
+        <a href="{{ url_for('surveys.index') }}" class="nav-link">Book Survey</a>
+        <a href="{{ url_for('sales.packages') }}" class="nav-link">Packages</a>
+        {% if 'customer' in session.get('roles', [session.get('role')]) or session.get('user_id') %}
+        <a href="{{ url_for('maintenance.maintenance') }}" class="nav-link">Maintenance</a>
+        {% endif %}
+        <div class="pt-3 border-t flex items-center gap-3" style="border-color: var(--line);">
+        {% if session.get('user_id') %}
+            <a href="{{ url_for(dashboard_for(session.get('role'))) }}" class="btn-outline px-4 py-2 text-xs">Hi, {{ session.get('user_name') }}</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn-solar px-4 py-2 text-xs">Logout</a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-outline px-4 py-2 text-xs">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="btn-solar px-4 py-2 text-xs">Register</a>
+        {% endif %}
+        </div>
+    </div>
+</nav>

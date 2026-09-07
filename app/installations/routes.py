@@ -17,7 +17,7 @@ def list_installations():
                 .outerjoin(Quotation.requirement)
                 .filter(db.or_(Quotation.survey.has(user_id=uid), Quotation.requirement.has(user_id=uid)))
                 .order_by(Installation.id.desc()).all())
-    return render_template('installation_tracking.html', projects=projects)
+    return render_template('landing_page/customer/installation_tracking.html', projects=projects)
 
 
 @installations_bp.route('/schedule/<int:quote_id>', methods=['GET', 'POST'])

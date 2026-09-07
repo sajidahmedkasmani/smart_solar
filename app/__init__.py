@@ -109,6 +109,27 @@ def create_app(config_class=Config):
             ).limit(3).all()
         )
 
+    @app.route('/about')
+    def about():
+        from app.models import SolarPackage
+        return __import__('flask').render_template('landing_page/about.html')
+
+    @app.route('/contact')
+    def contact():
+        from app.models import SolarPackage
+        return __import__('flask').render_template('landing_page/contact-us.html')
+
+
+    @app.route('/packages')
+    def packages():
+        from app.models import SolarPackage
+        return __import__('flask').render_template(
+            'landing_page/packages.html',
+            packages=SolarPackage.query.order_by(
+                SolarPackage.id.desc()
+            ).all()
+        )
+
     # Database setup + legacy schema upgrades + seed data
     with app.app_context():
         db.create_all()

@@ -1,0 +1,54 @@
+{% extends 'landing_page/layout/master.html' %}
+
+{% block web_title %}Packages{% endblock %}
+
+{% block landing_content %}
+
+    <section id="packages" class="py-24" style="background:var(--panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-14">
+          <span class="reveal font-mono text-xs uppercase tracking-widest" style="color:var(--sky-dark);">Packages</span>
+          <h2 class="reveal font-display font-bold mt-2" style="font-size:2.2rem;">
+            Pick a system that fits your needs
+          </h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+          
+
+          {% for pkg in packages %}
+            <div class="reveal price-card">
+              <span class="font-mono text-xs uppercase" style="color:var(--ink-soft);">{{ pkg.system_type }}</span>
+              <h3 class="font-display font-bold text-xl mt-1 mb-1">{{ pkg.name }}</h3>
+              <div class="font-display font-bold text-3xl my-4">Rs {{ "{:,}".format(pkg.price) if pkg.price else 'N/A' }}</div>
+              <ul class="text-sm space-y-2 mb-8" style="color:var(--ink-soft);">
+                <li><i class="fa-solid fa-check me-2" style="color:var(--leaf);"></i>{{ pkg.panels_info }} panels</li>
+                <li><i class="fa-solid fa-check me-2" style="color:var(--leaf);"></i>{{ pkg.inverter_info }} inverter</li>
+                <li><i class="fa-solid fa-check me-2" style="color:var(--leaf);"></i>{{ pkg.warranty_years }}-year performance warranty</li>
+              </ul>
+              {% if session.get('user_id') %}
+                  <!-- <a href="{{ url_for('surveys.index', package_id=pkg.id) }}" class="btn btn-success w-100 fw-bold py-2.5 text-white rounded-3 shadow" style="background-color: #12A566; border: none;">
+                      Select & Book Survey
+                  </a> -->
+                  <a href="{{ url_for('surveys.index', package_id=pkg.id) }}" class="btn-outline w-full text-center py-3 block">
+                    Select & Book Survey
+                  </a>
+              {% else %}
+                  <!-- <a href="{{ url_for('auth.login') }}" class="btn btn-outline-success w-100 fw-bold py-2.5 rounded-3">
+                      Login to Book
+                  </a> -->
+                  <a href="{{ url_for('auth.login') }}" class="btn-outline w-full text-center py-3 block">
+                    Login to Book
+                  </a>
+              {% endif %}
+              <!-- <a href="#lead" class="btn-outline w-full text-center py-3 block">Choose Starter</a> -->
+            </div>
+          {% else %}
+            <span class="text-center text-muted py-3">No users found.</span>
+          {% endfor %}
+
+
+        </div>
+      </div>
+    </section>
+
+{% endblock %}

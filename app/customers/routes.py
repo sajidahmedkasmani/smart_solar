@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 from app import db
-from app.models import Requirement, Survey, Quotation, Installation, Notification, Project, Payment
+from app.models import Requirement, Survey, Quotation, Installation, Notification, Project, Payment, Customer
 from app.auth.decorators import role_required
 
 
@@ -178,3 +178,53 @@ def make_payment(payment_id):
         flash('Payment receipt uploaded successfully! Finance team is verifying it.', 'success')
 
     return redirect(url_for('customers.view_projects'))
+
+
+
+
+# Profile Customer
+from werkzeug.security import check_password_hash, generate_password_hash
+
+@customers_bp.route('/profile')
+@role_required('customer')
+def profile():
+    uid = session.get('user_id')
+    user = Customer.query.get_or_404(uid)  # Ya User model agar single user table hai
+    return render_template('landing_page/customer/profile.html', user=user)
+
+@customers_bp.route('/profile/update', methods=['POST'])
+@role_required('customer')
+def update_profile():
+    uid = session.get('user_id')
+    user = Customer.query.get_or_404(uid)
+
+    user.full_name = request.form.get('full_name')
+    user.phone = request.form.get('phone')
+    user.address = request.form.get('address')
+
+    db.session.commit()
+    flash('Profile updated successfully!', 'success')
+    return redirect(url_for('customers.profile'))
+
+@customers_bp.route('/profile/change-password', methods=['POST'])
+@role_required('customer')
+def change_password():
+    uid = session.get('user_id')
+    user = Customer.query.get_or_404(uid)
+
+    current_pw = request.form.get('current_password')
+    new_pw = request.form.get('new_password')
+    confirm_pw = request.form.get('confirm_password')
+
+    if not check_password_hash(user.password, current_pw):
+        flash('Current password is incorrect.', 'danger')
+        return redirect(url_for('customers.profile'))
+
+    if new_pw != confirm_pw:
+        flash('New passwords do not match.', 'danger')
+        return redirect(url_for('customers.profile'))
+
+    user.password = generate_password_hash(new_pw)
+    db.session.commit()
+    flash('Password updated successfully!', 'success')
+    return redirect(url_for('customers.profile'))

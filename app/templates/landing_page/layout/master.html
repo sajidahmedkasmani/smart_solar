@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block web_title %}{% endblock %} — {{ APP_TITLE }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing/style.css') }}">
+    
+  </head>
+
+  <body class="min-h-screen flex flex-col">
+    <!-- ============ NAVBAR WITH FIXED BUTTONS ============ -->
+        {% include 'landing_page/layout/header.html' %}
+    <!-- ============ NAVBAR WITH FIXED BUTTONS ============ -->
+
+
+    <!-- ============ MAIN CONTENT ============ -->
+        <main class="flex-grow">
+
+        {% block landing_content %}{% endblock %}
+        </main> 
+    <!-- ============ MAIN CONTENT ============ -->
+    
+
+    <!-- ============ FOOTER ============ -->
+        {% include 'landing_page/layout/footer2.html' %}
+    <!-- ============ FOOTER ============ -->
+
+    <script>
+    // mobile nav toggle
+    const navToggleHome = document.getElementById('navToggleHome');
+    const navLinksHomeMobile = document.getElementById('navLinksHomeMobile');
+    if (navToggleHome) {
+      navToggleHome.addEventListener('click', () => navLinksHomeMobile.classList.toggle('hidden'));
+    }
+
+    // navbar background on scroll
+    const nav = document.getElementById('navbar');
+    const toTop = document.getElementById('toTop');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+      toTop.classList.toggle('show', window.scrollY > 500);
+    });
+    toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+    // scroll reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:.15});
+    revealEls.forEach(el => io.observe(el));
+
+    // counters
+    const counters = document.querySelectorAll('.counter');
+    const counterIO = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting){
+          const el = e.target;
+          const target = parseFloat(el.dataset.target);
+          const suffix = el.dataset.suffix || '';
+          const decimals = parseInt(el.dataset.decimal || '0');
+          let cur = 0;
+          const step = target / 60;
+          const tick = () => {
+            cur += step;
+            if(cur >= target){ el.textContent = target.toFixed(decimals) + suffix; return; }
+            el.textContent = cur.toFixed(decimals) + suffix;
+            requestAnimationFrame(tick);
+          };
+          tick();
+          counterIO.unobserve(el);
+        }
+      });
+    }, {threshold:.5});
+    counters.forEach(c => counterIO.observe(c));
+
+    // step progress line animation
+    const stepsRow = document.getElementById('stepsRow');
+    const stepFill = document.getElementById('stepFill');
+    const stepDots = document.querySelectorAll('.step-dot');
+    const stepsIO = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting){
+          stepFill.style.width = '100%';
+          let i = 0;
+          const activateNext = () => {
+            if(i < stepDots.length){ stepDots[i].classList.add('active'); i++; setTimeout(activateNext, 350); }
+          };
+          activateNext();
+          stepsIO.unobserve(e.target);
+        }
+      });
+    }, {threshold:.4});
+    stepsIO.observe(stepsRow);
+
+    // savings calculator
+    const billSlider = document.getElementById('billSlider');
+    function updateCalc(){
+      const bill = parseInt(billSlider.value);
+      document.getElementById('billVal').textContent = bill.toLocaleString();
+      const savingsPct = 0.85; // solar typically offsets ~85% of bill
+      const monthlySavings = Math.round(bill * savingsPct);
+      const systemKw = Math.max(3, Math.round((bill / 6000) * 10) / 10);
+      const approxCost = systemKw * 300000;
+      const payback = (approxCost / (monthlySavings*12)).toFixed(1);
+      const savings25 = monthlySavings * 12 * 25;
+      document.getElementById('calcSystem').textContent = systemKw.toFixed(1) + ' kW';
+      document.getElementById('calcSavings').textContent = 'Rs ' + monthlySavings.toLocaleString();
+      document.getElementById('calcPayback').textContent = '~' + payback + ' yrs';
+      document.getElementById('calc25').textContent = 'Rs ' + (savings25/1000000).toFixed(1) + 'M';
+    }
+    billSlider.addEventListener('input', updateCalc);
+    updateCalc();
+
+    // testimonial carousel
+    const track = document.getElementById('testiTrack');
+    const dots = document.querySelectorAll('.dot-nav');
+    let testiIndex = 0;
+    function showTesti(i){
+      testiIndex = i;
+      track.style.transform = `translateX(-${i*100}%)`;
+      dots.forEach((d,idx) => d.classList.toggle('active', idx===i));
+    }
+    dots.forEach(d => d.addEventListener('click', () => showTesti(parseInt(d.dataset.i))));
+    setInterval(() => showTesti((testiIndex+1) % dots.length), 5000);
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+    const profileButton = document.getElementById('profile-menu-button');
+    const profileDropdown = document.getElementById('profile-dropdown');
+
+    if (profileButton && profileDropdown) {
+        profileButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = profileDropdown.classList.contains('hidden');
+            
+            if (isHidden) {
+                profileDropdown.classList.remove('hidden');
+                setTimeout(() => {
+                    profileDropdown.classList.remove('opacity-0', 'scale-95');
+                    profileDropdown.classList.add('opacity-100', 'scale-100');
+                }, 10);
+            } else {
+                closeDropdown();
+            }
+        });
+
+        window.addEventListener('click', () => {
+            closeDropdown();
+        });
+    }
+
+    function closeDropdown() {
+        if (profileDropdown && !profileDropdown.classList.contains('hidden')) {
+            profileDropdown.classList.remove('opacity-100', 'scale-100');
+            profileDropdown.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                profileDropdown.classList.add('hidden');
+            }, 100);
+        }
+    }
+});
+    </script>
+  </body>
+</html>

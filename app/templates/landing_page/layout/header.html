@@ -12,53 +12,28 @@
 
         {% set role = session.get('role') %}{% set roles = session.get('roles', [role]) %}
         <div id="navLinks" class="hidden md:flex min-w-0 flex-nowrap items-center justify-center gap-x-4 justify-self-center">
-            {% if session.get('user_id') %}
+            <!-- {% if session.get('user_id') %}
             <a class="app-nav-link" href="{{ url_for(dashboard_for(role)) }}"><i class="fa-solid fa-house me-1"></i> My Dashboard</a>
-            {% endif %}
+            {% endif %} -->
 
-            {% if not session.get('user_id') or (roles|length == 1 and 'customer' in roles) %}
+            <a href="{{ url_for('about') }}" class="app-nav-link">About Us</a>
+            <a href="{{ url_for('contact') }}" class="app-nav-link">Contact Us</a>
+
             <a class="app-nav-link" href="{{ url_for('quotations.calculator') }}"><i class="fa-solid fa-calculator me-1"></i> Load Calculator</a>
             <a class="app-nav-link" href="{{ url_for('surveys.index') }}"><i class="fa-solid fa-calendar-check me-1"></i> Book Survey</a>
-            <a class="app-nav-link" href="{{ url_for('sales.packages') }}"><i class="fa-solid fa-box me-1"></i> Packages</a>
-            {% endif %}
+            <a class="app-nav-link" href="{{ url_for('packages') }}"><i class="fa-solid fa-box me-1"></i> Packages</a>
 
-            {% if 'sales' in roles or 'admin' in roles %}
-            <a class="app-nav-link" href="{{ url_for('sales.packages') }}"><i class="fa-solid fa-box me-1"></i> Packages</a>
-            {% endif %}
 
-            {% if 'engineer' in roles or 'admin' in roles %}
-            <a class="app-nav-link" href="{{ url_for('surveys.engineer_dashboard') }}"><i class="fa-solid fa-clipboard-list me-1"></i> Survey Requests</a>
-            {% endif %}
 
-            {% if 'technician' in roles or 'admin' in roles %}
-            <a class="app-nav-link" href="{{ url_for('installations.technician_dashboard') }}"><i class="fa-solid fa-bars-progress me-1"></i> My Installations</a>
-            {% endif %}
-
-            {% if 'inventory_manager' in roles or 'admin' in roles %}
-            <a class="app-nav-link" href="{{ url_for('inventory.stock') }}"><i class="fa-solid fa-box-open me-1"></i> Inventory</a>
-            <a class="app-nav-link" href="{{ url_for('inventory.add_item') }}"><i class="fa-solid fa-plus me-1"></i> Add Equipment</a>
-            {% endif %}
-
-            {% if 'finance' in roles or 'admin' in roles %}
-            <a class="app-nav-link" href="{{ url_for('payments.finance_dashboard') }}"><i class="fa-solid fa-sack-dollar me-1"></i> Payments</a>
-            {% endif %}
-
-            {% if 'admin' in roles %}
-            <a class="app-nav-link" href="{{ url_for('inventory.stock') }}"><i class="fa-solid fa-box-open me-1"></i> Inventory</a>
-            <a class="app-nav-link" href="{{ url_for('admin.users') }}"><i class="fa-solid fa-users-gear me-1"></i> Users</a>
-            {% endif %}
-
-            {% if 'customer' in roles %}
+            <!-- {% if 'customer' in roles %}
             <a class="app-nav-link" href="{{ url_for('maintenance.my_contracts') }}"><i class="fa-solid fa-file-contract me-1"></i> My AMC</a>
             <a class="app-nav-link" href="{{ url_for('maintenance.maintenance') }}"><i class="fa-solid fa-screwdriver-wrench me-1"></i> Maintenance</a>
             <a class="app-nav-link" href="{{ url_for('complaints.index') }}"><i class="fa-solid fa-comment-dots me-1"></i> Complaints</a>
             <a class="app-nav-link" href="{{ url_for('maintenance.plans') }}"><i class="fa-solid fa-shield-heart me-1"></i> AMC Plans</a>
-            {% elif 'admin' in roles %}
-            <a class="app-nav-link" href="{{ url_for('maintenance.admin_plans') }}"><i class="fa-solid fa-shield-heart me-1"></i> AMC Management</a>
-            <a class="app-nav-link" href="{{ url_for('maintenance.maintenance') }}"><i class="fa-solid fa-screwdriver-wrench me-1"></i> Maintenance</a>
-            <a class="app-nav-link" href="{{ url_for('maintenance.admin_requests') }}"><i class="fa-solid fa-clipboard-check me-1"></i> Service Requests</a>
-            <a class="app-nav-link" href="{{ url_for('complaints.admin_index') }}"><i class="fa-solid fa-comments me-1"></i> Complaints</a>
-            {% endif %}
+            {% endif %} -->
+
+
+            
         </div>
 
         <div class="hidden md:flex items-center gap-3 shrink-0 justify-self-end">
@@ -69,8 +44,44 @@
                     <span class="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center">{{ notification_unread_count if notification_unread_count < 100 else '99+' }}</span>
                     {% endif %}
                 </a>
-                <span class="text-sm mr-1" style="color: var(--ink-soft);">Hi, {{ session.get('user_name') }}</span>
-                <a href="{{ url_for('auth.logout') }}" class="btn-danger-solar px-4 py-2 text-xs">Logout</a>
+                <!-- <span class="text-sm mr-1" style="color: var(--ink-soft);">Hi, {{ session.get('user_name') }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn-danger-solar px-4 py-2 text-xs">Logout</a> -->
+                <div class="relative inline-block text-left">
+                    <button type="button" id="profile-menu-button" 
+                        class="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500 text-white font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 shadow-sm transition-transform active:scale-95">
+                        {{ session.get('user_name', 'U')[:1].upper() }}
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="profile-dropdown" 
+                        class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50 transition ease-out duration-100 transform opacity-0 scale-95">
+                        
+                        <div class="px-4 py-3">
+                            <p class="text-xs text-gray-500">Signed in as</p>
+                            <p class="text-sm font-medium text-gray-900 truncate">
+                                {{ session.get('user_name', 'User') }}
+                            </p>
+                        </div>
+
+                        <div class="py-1">
+                            <a href="{{ url_for(dashboard_for(session.get('role'))) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                My Dashboard
+                            </a>
+                        </div>
+
+                        <div class="py-1">
+                            <a href="{{ url_for('auth.logout') }}" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="w-4 h-4 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
             {% else %}
                 <a href="{{ url_for('auth.login') }}" class="btn-outline px-4 py-2 text-xs">Login</a>
                 <a href="{{ url_for('auth.register') }}" class="btn-solar px-4 py-2 text-xs">Register</a>
@@ -80,9 +91,9 @@
 
     <!-- Mobile menu -->
     <div id="navLinksMobile" class="hidden md:hidden border-t px-5 py-4 flex flex-col gap-3" style="border-color: var(--line); background: var(--paper);">
-        {% if session.get('user_id') %}
+        <!-- {% if session.get('user_id') %}
         <a class="app-nav-link" href="{{ url_for(dashboard_for(role)) }}"><i class="fa-solid fa-house me-1"></i> My Dashboard</a>
-        {% endif %}
+        {% endif %} -->
         {% if not session.get('user_id') or (roles|length == 1 and 'customer' in roles) %}
         <a class="app-nav-link" href="{{ url_for('quotations.calculator') }}"><i class="fa-solid fa-calculator me-1"></i> Load Calculator</a>
         <a class="app-nav-link" href="{{ url_for('surveys.index') }}"><i class="fa-solid fa-calendar-check me-1"></i> Book Survey</a>

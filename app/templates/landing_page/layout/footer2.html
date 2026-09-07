@@ -1,0 +1,22 @@
+<footer class="py-12" style="background:var(--ink); color:rgba(255,255,255,.7);">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-2">
+          <div class="brand-mark"></div>
+          <span class="font-display font-bold text-white">SolarEase</span>
+        </div>
+        <div class="flex flex-wrap justify-center gap-6 text-sm">
+          <a href="{{ url_for('quotations.calculator') }}" class="hover:text-white">Load Calculator</a>
+          <a href="{{ url_for('surveys.index') }}" class="hover:text-white">Book Survey</a>
+          <a href="{{ url_for('sales.packages') }}" class="hover:text-white">Packages</a>
+        </div>
+        <div class="flex gap-4 text-lg">
+          <i class="fa-brands fa-facebook hover:text-white cursor-pointer"></i>
+          <i class="fa-brands fa-instagram hover:text-white cursor-pointer"></i>
+          <i class="fa-brands fa-whatsapp hover:text-white cursor-pointer"></i>
+        </div>
+      </div>
+      <div class="text-center text-xs mt-8" style="color:rgba(255,255,255,.4);">
+        © 2026 SolarEase. FlaskAPI Project by Sajid Ahmed Kasmani & Team.</div>
+    </footer>
+
+    <button id="toTop"><i class="fa-solid fa-arrow-up"></i></button>

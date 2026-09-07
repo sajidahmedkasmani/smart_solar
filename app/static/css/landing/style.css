@@ -1,0 +1,118 @@
+/* // style.css */
+
+    :root{
+      --ink:#142033; --ink-soft:#4A5670; --paper:#F7F5EF; --panel:#FFFFFF;
+      --line:#E4E0D3; --gold:#F0A93B; --gold-dark:#C9821F; --sky:#1D6E8C; --sky-dark:#124B60;
+      --leaf:#3E7D53; --amber-soft:#FBEBD2; --sky-soft:#E4EEF2;
+      --font-display:'Space Grotesk',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+    }
+    *{box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font-body); background:var(--paper); color:var(--ink); overflow-x:hidden;}
+    .font-display{font-family:var(--font-display); letter-spacing:-0.01em;}
+    .font-mono{font-family:var(--font-mono);}
+
+    /* ---------- reveal on scroll ---------- */
+    .reveal{opacity:0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease;}
+    .reveal.in{opacity:1; transform:none;}
+    .reveal-delay-1{transition-delay:.1s;} .reveal-delay-2{transition-delay:.2s;} .reveal-delay-3{transition-delay:.3s;} .reveal-delay-4{transition-delay:.4s;}
+
+    /* ---------- nav ---------- */
+    .navbar{ position:fixed; top:0; left:0; right:0; z-index:100; transition: all .3s ease; padding: 18px 0; }
+    .navbar.scrolled{ background:rgba(247,245,239,.92); backdrop-filter: blur(10px); box-shadow:0 4px 20px rgba(20,32,51,.06); padding: 12px 0; }
+    .brand-mark{ width:36px;height:36px;border-radius:10px; background: conic-gradient(from -90deg, var(--gold), var(--gold-dark), var(--gold)); position:relative; }
+    .brand-mark::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--ink);}
+    .nav-link{ position:relative; color: var(--ink-soft); font-weight:500; font-size:.92rem; }
+    .nav-link::after{ content:""; position:absolute; left:0; bottom:-4px; width:0; height:2px; background:var(--gold); transition:width .25s ease; }
+    .nav-link:hover{ color:var(--ink); }
+    .nav-link:hover::after{ width:100%; }
+
+    /* ---------- buttons ---------- */
+    .btn-solar{ background:var(--gold); color:var(--ink); font-weight:700; border-radius:10px; transition: all .25s ease; position:relative; overflow:hidden; }
+    .btn-solar:hover{ background:var(--gold-dark); color:#fff; transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(240,169,59,.55); }
+    .btn-outline{ border:1.5px solid var(--line); color:var(--ink); border-radius:10px; font-weight:600; transition: all .25s ease; }
+    .btn-outline:hover{ border-color: var(--ink); background:var(--ink); color:#fff; transform: translateY(-2px); }
+
+    /* ---------- hero sun scene ---------- */
+    .hero-wrap{ position:relative; overflow:hidden; }
+    .sun-orb{
+      width:260px;height:260px;border-radius:50%;
+      background: radial-gradient(circle at 35% 30%, #FFE4A8, var(--gold) 55%, var(--gold-dark) 100%);
+      box-shadow: 0 0 90px 20px rgba(240,169,59,.45);
+      animation: floatSun 6s ease-in-out infinite;
+      position:relative; z-index:2;
+    }
+    @keyframes floatSun{ 0%,100%{ transform: translateY(0px);} 50%{ transform: translateY(-18px);} }
+    .ray{
+      position:absolute; inset:-70px; border-radius:50%;
+      border: 1.5px dashed rgba(240,169,59,.35);
+      animation: spin 34s linear infinite;
+    }
+    .ray.r2{ inset:-120px; border-color: rgba(29,110,140,.22); animation-duration: 50s; animation-direction: reverse; }
+    .ray.r3{ inset:-170px; border-color: rgba(240,169,59,.14); animation-duration: 70s; }
+    @keyframes spin{ from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
+    .panel-chip{
+      position:absolute; width:52px; height:34px; border-radius:5px;
+      background: rgba(20,32,51,.85); border:1px solid rgba(240,169,59,.5);
+      box-shadow: 0 8px 20px rgba(20,32,51,.25);
+      animation: driftChip 5s ease-in-out infinite;
+    }
+    @keyframes driftChip{ 0%,100%{ transform: translateY(0) rotate(var(--rot,0deg));} 50%{ transform: translateY(-12px) rotate(var(--rot,0deg));} }
+
+    /* ---------- counters ---------- */
+    .counter{ font-family:var(--font-display); font-weight:700; }
+
+    /* ---------- feature cards ---------- */
+    .feature-card{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:26px; transition: all .3s ease; }
+    .feature-card:hover{ transform: translateY(-6px); box-shadow: 0 20px 40px -16px rgba(20,32,51,.18); border-color: var(--gold); }
+    .feature-ico{ width:48px;height:48px;border-radius:12px; display:flex;align-items:center;justify-content:center; font-size:1.2rem; margin-bottom:16px;}
+
+    /* ---------- steps ---------- */
+    .step-line{ position:absolute; top:26px; left:0; right:0; height:2px; background: var(--line); z-index:0; }
+    .step-line-fill{ position:absolute; top:26px; left:0; height:2px; background: var(--gold); z-index:1; width:0%; transition: width 1.4s ease; }
+    .step-dot{ width:52px;height:52px;border-radius:50%; background:#fff; border:2px solid var(--line); display:flex;align-items:center;justify-content:center; font-family:var(--font-display); font-weight:700; position:relative; z-index:2; transition: all .4s ease; }
+    .step-dot.active{ border-color: var(--gold); background: var(--gold); color:var(--ink); box-shadow: 0 0 0 6px rgba(240,169,59,.18); }
+
+    /* ---------- pricing cards ---------- */
+    .price-card{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:30px; transition: all .35s ease; position:relative; }
+    .price-card:hover{ transform: translateY(-8px); box-shadow: 0 24px 48px -18px rgba(20,32,51,.2); }
+    .price-card.hi{ border:2px solid var(--gold); }
+    .price-card.hi::before{ content:"Most Popular"; position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:var(--gold); color:var(--ink); font-size:.72rem; font-weight:700; padding:5px 14px; border-radius:99px; font-family:var(--font-mono); letter-spacing:.05em; }
+
+    /* ---------- calculator ---------- */
+    .calc-panel{ background:var(--ink); color:#fff; border-radius:20px; padding:40px; position:relative; overflow:hidden; }
+    .calc-panel::before{ content:""; position:absolute; width:420px;height:420px; border-radius:50%; background: radial-gradient(circle, rgba(240,169,59,.25), transparent 65%); top:-160px; right:-160px; }
+    input[type=range]{ -webkit-appearance:none; height:6px; border-radius:99px; background: rgba(255,255,255,.18); }
+    input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:20px;height:20px;border-radius:50%; background:var(--gold); cursor:pointer; box-shadow:0 0 0 5px rgba(240,169,59,.25); }
+
+    /* ---------- testimonials ---------- */
+    .testi-track{ display:flex; transition: transform .6s cubic-bezier(.65,0,.35,1); }
+    .testi-card{ min-width:100%; padding: 0 6px; }
+    .dot-nav{ width:9px;height:9px;border-radius:50%; background: var(--line); cursor:pointer; transition: all .25s ease; }
+    .dot-nav.active{ background: var(--gold); width:26px; border-radius:99px; }
+
+    /* ---------- cta band ---------- */
+    .cta-band{ background: linear-gradient(120deg, var(--ink), #1c2c4a 60%, var(--ink)); position:relative; overflow:hidden; border-radius:24px; }
+    .cta-band::after{ content:""; position:absolute; inset:0; background: radial-gradient(circle at 80% 20%, rgba(240,169,59,.28), transparent 55%); animation: pulseGlow 5s ease-in-out infinite; }
+    @keyframes pulseGlow{ 0%,100%{opacity:.7;} 50%{opacity:1;} }
+
+    /* ---------- back to top ---------- */
+    #toTop{ position:fixed; bottom:26px; right:26px; width:46px;height:46px;border-radius:50%; background:var(--ink); color:#fff; display:flex;align-items:center;justify-content:center; opacity:0; pointer-events:none; transition: all .3s ease; z-index:90; }
+    #toTop.show{ opacity:1; pointer-events:auto; }
+    #toTop:hover{ background: var(--gold-dark); transform: translateY(-3px); }
+
+    ::selection{ background: var(--amber-soft); }
+    .shadow-soft{ box-shadow: 0 10px 30px -12px rgba(20,32,51,.15); }
+
+
+
+
+    .app-nav-link{
+  position:relative; color: var(--ink-soft); font-weight:500; font-size:.78rem;
+  padding: 6px 1px; text-decoration:none; white-space:nowrap;
+}
+.app-nav-link::after{ content:""; position:absolute; left:0; bottom:0; width:0; height:2px; background:var(--gold); transition:width .25s ease; }
+.app-nav-link:hover{ color:var(--ink); }
+.app-nav-link:hover::after{ width:100%; }
+.app-nav-link.active{ color: var(--ink); font-weight:700; }
+.app-nav-link.active::after{ width:100%; }

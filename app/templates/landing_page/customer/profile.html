@@ -1,0 +1,104 @@
+{% extends 'landing_page/customer/layout/base_customer.html' %}
+
+{% block title %}Profile Settings{% endblock %}
+
+{% block header_title %}Manage Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-2 py-4 space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-800">Profile Settings</h1>
+        <p class="text-xs text-slate-500 mt-1">Manage your account details and security settings.</p>
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 text-xs rounded-xl font-medium {{ 'bg-emerald-100 text-emerald-800' if category == 'success' else 'bg-rose-100 text-rose-800' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- SIDE NAVIGATION / USER CARD -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center space-y-3 self-start">
+            <div class="w-20 h-20 bg-amber-500 text-white font-extrabold text-2xl rounded-full flex items-center justify-center mx-auto shadow-md shadow-amber-200">
+                {{ user.full_name[0]|upper if user.full_name else 'C' }}
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-800 text-base">{{ user.full_name or user.username }}</h3>
+                <p class="text-xs text-slate-400 mt-0.5">{{ user.email }}</p>
+            </div>
+            <span class="inline-block px-3 py-1 bg-amber-100 text-amber-700 text-[11px] font-semibold rounded-full">
+                Customer Account
+            </span>
+        </div>
+
+        <!-- FORM TABS / SETTINGS SECTION -->
+        <div class="md:col-span-2 space-y-6">
+            <!-- PERSONAL INFORMATION -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">Personal Information</h3>
+                
+                <form action="{{ url_for('customers.update_profile') }}" method="POST" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name</label>
+                            <input type="text" name="full_name" value="{{ user.full_name or '' }}" required class="w-full text-xs rounded-xl border-slate-200 p-3 focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number</label>
+                            <input type="text" name="phone" value="{{ user.phone or '' }}" placeholder="+92 300 1234567" class="w-full text-xs rounded-xl border-slate-200 p-3 focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email Address</label>
+                        <input type="email" value="{{ user.email }}" disabled class="w-full text-xs rounded-xl border-slate-100 bg-slate-50 text-slate-400 p-3 cursor-not-allowed">
+                        <span class="text-[10px] text-slate-400 mt-1 block">Email address cannot be changed directly.</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Installation Address</label>
+                        <textarea name="address" rows="2" placeholder="Enter installation address..." class="w-full text-xs rounded-xl border-slate-200 p-3 focus:ring-amber-500 focus:border-amber-500">{{ user.address or '' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="py-2.5 px-5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl transition shadow-md shadow-amber-100">
+                        Save Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- CHANGE PASSWORD -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-bold text-slate-800 text-base border-b border-slate-100 pb-3">Change Password</h3>
+
+                <form action="{{ url_for('customers.change_password') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Current Password</label>
+                        <input type="password" name="current_password" required placeholder="••••••••" class="w-full text-xs rounded-xl border-slate-200 p-3 focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">New Password</label>
+                            <input type="password" name="new_password" required placeholder="••••••••" class="w-full text-xs rounded-xl border-slate-200 p-3 focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Confirm New Password</label>
+                            <input type="password" name="confirm_password" required placeholder="••••••••" class="w-full text-xs rounded-xl border-slate-200 p-3 focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="py-2.5 px-5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition">
+                        Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

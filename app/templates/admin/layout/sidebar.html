@@ -29,6 +29,7 @@
               <li><a href="{{ url_for('admin.system_types') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-layer-group text-slate-400"></i> System Types</a></li>
               
               <li><a href="{{ url_for('admin.surveys') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-helmet-safety text-slate-400"></i> Surveys</a></li>
+              <li><a href="{{ url_for('sales.chat_inbox') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-comments text-slate-400"></i> Live Chats{% if pending_chat_count %} <span class="ml-auto bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ pending_chat_count }}</span>{% endif %}</a></li>
 
               {% endif %}
 

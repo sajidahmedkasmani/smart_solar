@@ -684,3 +684,56 @@ class Payment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     project = db.relationship('Project', backref='payments')
+
+# =========================================================
+# Live Chatbot / Sales Handoff (Chat Widget) Models
+# =========================================================
+class ChatSession(db.Model):
+    """One ongoing chat thread — either a guest visitor or a logged-in customer.
+
+    status values:
+      'bot'           -> only the AI assistant replies (fresh / guest chat)
+      'pending_sales' -> a logged-in customer has messaged; sales team notified,
+                         AI assistant still replies until a sales rep accepts
+      'active'        -> a sales rep accepted; AI assistant stops replying,
+                         only that sales rep talks to the customer from here
+      'closed'        -> conversation archived / ended
+    """
+    __tablename__ = 'chat_sessions'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Set when the visitor is a logged-in customer (Customer.id).
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=True, index=True)
+
+    # Set when the visitor is NOT logged in (random token stored in their browser session).
+    guest_token = db.Column(db.String(64), nullable=True, index=True)
+
+    status = db.Column(db.String(20), default='bot', nullable=False)
+
+    # Sales rep (User.id) who accepted this chat request.
+    assigned_sales_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    customer = db.relationship('Customer', backref=db.backref('chat_sessions', lazy=True))
+    assigned_sales = db.relationship('User', foreign_keys=[assigned_sales_id])
+
+
+class ChatMessage(db.Model):
+    """A single message inside a ChatSession."""
+    __tablename__ = 'chat_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('chat_sessions.id'), nullable=False, index=True)
+
+    # sender_type: 'user' (customer/guest visitor), 'bot' (AI assistant), 'sales' (sales rep)
+    sender_type = db.Column(db.String(10), nullable=False)
+    sender_name = db.Column(db.String(120), default='')
+    message = db.Column(db.Text, nullable=False)
+
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    session = db.relationship('ChatSession', backref=db.backref('messages', lazy=True, order_by='ChatMessage.id'))

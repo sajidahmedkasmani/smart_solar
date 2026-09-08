@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from datetime import datetime
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from app import db
-from app.models import SolarPackage, Requirement, Survey, Quotation, Notification
+from app.models import SolarPackage, Requirement, Survey, Quotation, Notification, ChatSession, ChatMessage
 from app.auth.decorators import role_required
 
 
@@ -119,3 +121,93 @@ def share_quotation_to_customer(quotation_id):
     db.session.commit()
     flash(f'Quotation {quotation.quotation_number} shared to customer.', 'success')
     return redirect(url_for('sales.dashboard'))
+
+# =========================================================
+# Live Chat — sales handoff (chat widget on the customer site)
+# =========================================================
+def _chat_serialize(msg):
+    return {
+        'id': msg.id,
+        'sender_type': msg.sender_type,
+        'sender_name': msg.sender_name,
+        'message': msg.message,
+        'created_at': msg.created_at.strftime('%d %b, %H:%M'),
+    }
+
+
+@sales_bp.route('/chats')
+@role_required('sales')
+def chat_inbox():
+    """List chat requests waiting for a sales rep, plus this rep's active chats."""
+    pending = (ChatSession.query
+               .filter_by(status='pending_sales')
+               .order_by(ChatSession.id.desc())
+               .all())
+    my_active = (ChatSession.query
+                 .filter_by(status='active', assigned_sales_id=session.get('user_id'))
+                 .order_by(ChatSession.id.desc())
+                 .all())
+    return render_template('admin/sales_chat_inbox.html', pending=pending, my_active=my_active)
+
+
+@sales_bp.route('/chats/<int:chat_id>/accept', methods=['POST'])
+@role_required('sales')
+def chat_accept(chat_id):
+    """Accept a customer's chat request. From here the bot stops answering them."""
+    chat = ChatSession.query.get_or_404(chat_id)
+    if chat.status == 'pending_sales':
+        chat.status = 'active'
+        chat.assigned_sales_id = session.get('user_id')
+        chat.updated_at = datetime.utcnow()
+        db.session.add(ChatMessage(
+            session_id=chat.id,
+            sender_type='sales',
+            sender_name=session.get('user_name', 'Sales Representative'),
+            message=f"{session.get('user_name', 'A sales representative')} has joined the chat and will assist you from here.",
+        ))
+        db.session.commit()
+        flash('Chat request accepted — you are now talking to this customer.', 'success')
+    else:
+        flash('This chat has already been picked up.', 'warning')
+    return redirect(url_for('sales.chat_room', chat_id=chat.id))
+
+
+@sales_bp.route('/chats/<int:chat_id>')
+@role_required('sales')
+def chat_room(chat_id):
+    chat = ChatSession.query.get_or_404(chat_id)
+    messages = ChatMessage.query.filter_by(session_id=chat.id).order_by(ChatMessage.id.asc()).all()
+    return render_template('admin/sales_chat_room.html', chat=chat, messages=messages)
+
+
+@sales_bp.route('/chats/<int:chat_id>/send', methods=['POST'])
+@role_required('sales')
+def chat_send(chat_id):
+    chat = ChatSession.query.get_or_404(chat_id)
+    text = (request.form.get('message') or '').strip()
+    if text:
+        if chat.status != 'active':
+            chat.status = 'active'
+            chat.assigned_sales_id = session.get('user_id')
+        db.session.add(ChatMessage(
+            session_id=chat.id,
+            sender_type='sales',
+            sender_name=session.get('user_name', 'Sales Representative'),
+            message=text,
+        ))
+        chat.updated_at = datetime.utcnow()
+        db.session.commit()
+    return redirect(url_for('sales.chat_room', chat_id=chat.id))
+
+
+@sales_bp.route('/chats/<int:chat_id>/poll')
+@role_required('sales')
+def chat_poll(chat_id):
+    chat = ChatSession.query.get_or_404(chat_id)
+    after_id = request.args.get('after_id', 0, type=int)
+    msgs = (ChatMessage.query
+            .filter_by(session_id=chat.id)
+            .filter(ChatMessage.id > after_id)
+            .order_by(ChatMessage.id.asc())
+            .all())
+    return jsonify({'status': chat.status, 'messages': [_chat_serialize(m) for m in msgs]})

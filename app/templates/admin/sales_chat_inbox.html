@@ -1,0 +1,80 @@
+{% extends 'admin/layout/admin_base.html' %}
+{% block title %}Live Chats - SolarEase{% endblock %}
+{% block page_heading %}Live Chats{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+
+  <div class="dashboard-dark-card">
+    <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+      <h3 class="font-bold text-slate-900">Waiting for a Sales Rep <span class="dashboard-pill">{{ pending|length }} pending</span></h3>
+    </div>
+    {% if pending %}
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Chat</th>
+            <th>Customer</th>
+            <th>Last activity</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for chat in pending %}
+          <tr>
+            <td>CHAT-{{ chat.id }}</td>
+            <td>{{ chat.customer.full_name if chat.customer else 'Website Visitor' }}</td>
+            <td>{{ chat.updated_at.strftime('%d %b, %H:%M') if chat.updated_at else '' }}</td>
+            <td>
+              <form method="post" action="{{ url_for('sales.chat_accept', chat_id=chat.id) }}">
+                <button type="submit" class="dashboard-action"><i class="fa-solid fa-headset"></i> Accept</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-sm dashboard-muted-text">No customers are waiting right now.</p>
+    {% endif %}
+  </div>
+
+  <div class="dashboard-dark-card">
+    <h3 class="font-bold text-slate-900 mb-3">Your Active Chats</h3>
+    {% if my_active %}
+    <div class="dashboard-table-wrap">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Chat</th>
+            <th>Customer</th>
+            <th>Last activity</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for chat in my_active %}
+          <tr>
+            <td>CHAT-{{ chat.id }}</td>
+            <td>{{ chat.customer.full_name if chat.customer else 'Website Visitor' }}</td>
+            <td>{{ chat.updated_at.strftime('%d %b, %H:%M') if chat.updated_at else '' }}</td>
+            <td><a href="{{ url_for('sales.chat_room', chat_id=chat.id) }}" class="dashboard-action"><i class="fa-solid fa-message"></i> Open</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-sm dashboard-muted-text">You don't have any active chats yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+  // Refresh the inbox periodically so new chat requests show up without a manual reload.
+  setTimeout(() => window.location.reload(), 20000);
+</script>
+{% endblock %}

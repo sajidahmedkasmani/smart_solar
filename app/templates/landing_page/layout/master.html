@@ -132,40 +132,44 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-    const profileButton = document.getElementById('profile-menu-button');
-    const profileDropdown = document.getElementById('profile-dropdown');
+      const profileButton = document.getElementById('profile-menu-button');
+      const profileDropdown = document.getElementById('profile-dropdown');
 
-    if (profileButton && profileDropdown) {
-        profileButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isHidden = profileDropdown.classList.contains('hidden');
-            
-            if (isHidden) {
-                profileDropdown.classList.remove('hidden');
-                setTimeout(() => {
-                    profileDropdown.classList.remove('opacity-0', 'scale-95');
-                    profileDropdown.classList.add('opacity-100', 'scale-100');
-                }, 10);
-            } else {
-                closeDropdown();
-            }
-        });
+      if (profileButton && profileDropdown) {
+          profileButton.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const isHidden = profileDropdown.classList.contains('hidden');
+              
+              if (isHidden) {
+                  profileDropdown.classList.remove('hidden');
+                  setTimeout(() => {
+                      profileDropdown.classList.remove('opacity-0', 'scale-95');
+                      profileDropdown.classList.add('opacity-100', 'scale-100');
+                  }, 10);
+              } else {
+                  closeDropdown();
+              }
+          });
 
-        window.addEventListener('click', () => {
-            closeDropdown();
-        });
-    }
+          window.addEventListener('click', () => {
+              closeDropdown();
+          });
+      }
 
-    function closeDropdown() {
-        if (profileDropdown && !profileDropdown.classList.contains('hidden')) {
-            profileDropdown.classList.remove('opacity-100', 'scale-100');
-            profileDropdown.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => {
-                profileDropdown.classList.add('hidden');
-            }, 100);
-        }
-    }
-});
+      function closeDropdown() {
+          if (profileDropdown && !profileDropdown.classList.contains('hidden')) {
+              profileDropdown.classList.remove('opacity-100', 'scale-100');
+              profileDropdown.classList.add('opacity-0', 'scale-95');
+              setTimeout(() => {
+                  profileDropdown.classList.add('hidden');
+              }, 100);
+          }
+      }
+  });
     </script>
+
+    <!-- ============ LIVE CHAT WIDGET ============ -->
+    {% include 'landing_page/layout/chat_widget.html' %}
+
   </body>
 </html>

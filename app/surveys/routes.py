@@ -20,7 +20,8 @@ from app.models import (
     User,
     UserRole,
     Notification,
-    SurveyImage
+    SurveyImage,
+    Quotation
 )
 from app.auth.decorators import role_required
 from app.utils.email import send_survey_email
@@ -351,7 +352,7 @@ def start_survey(survey_id):
     '/engineer/complete/<int:survey_id>',
     methods=['POST']
 )
-# @role_required('engineer')
+@role_required('engineer')
 # def complete_survey(survey_id):
 
 #     survey = Survey.query.get_or_404(
@@ -490,294 +491,445 @@ def start_survey(survey_id):
 #     )
 
 
+# def complete_survey(survey_id):
+
+#     survey = Survey.query.get_or_404(
+#         survey_id
+#     )
+
+#     # Check assigned engineer
+#     if survey.engineer_id != session.get('user_id'):
+#         flash(
+#             'You are not assigned to this survey.',
+#             'danger'
+#         )
+
+#         return redirect(
+#             url_for('surveys.engineer_dashboard')
+#         )
+
+#     # Survey must be in progress
+#     if survey.status != STATUS_IN_PROGRESS:
+#         flash(
+#             'Start the survey before completing it.',
+#             'warning'
+#         )
+
+#         return redirect(
+#             url_for('surveys.engineer_dashboard')
+#         )
+
+#     try:
+
+#         # -----------------------------------------
+#         # SAVE SURVEY REPORT DATA
+#         # -----------------------------------------
+
+#         try:
+#             survey.roof_area = float(
+#                 request.form.get(
+#                     'roof_area',
+#                     0
+#                 ) or 0
+#             )
+#         except ValueError:
+#             survey.roof_area = 0
+
+#         try:
+#             survey.recommended_kw = float(
+#                 request.form.get(
+#                     'recommended_kw',
+#                     0
+#                 ) or 0
+#             )
+#         except ValueError:
+#             survey.recommended_kw = 0
+
+#         survey.roof_direction = request.form.get(
+#             'roof_direction',
+#             'Not recorded'
+#         )
+
+#         survey.shading = request.form.get(
+#             'shading',
+#             'Not recorded'
+#         )
+
+#         survey.report_notes = request.form.get(
+#             'report_notes',
+#             ''
+#         )
+
+#         # -----------------------------------------
+#         # MARK SURVEY COMPLETED
+#         # -----------------------------------------
+
+#         survey.status = STATUS_COMPLETED
+
+#         survey.completed_at = datetime.now()
+
+#         # -----------------------------------------
+#         # AUTOMATICALLY GENERATE QUOTATION
+#         # -----------------------------------------
+
+#         quotation = generate_quotation(
+#             survey
+#         )
+
+#         # -----------------------------------------
+#         # UPLOAD SURVEY IMAGES
+#         # -----------------------------------------
+
+#         upload_folder = os.path.join(
+#             current_app.static_folder,
+#             'uploads',
+#             'surveys'
+#         )
+
+#         os.makedirs(
+#             upload_folder,
+#             exist_ok=True
+#         )
+
+#         files = request.files.getlist(
+#             'survey_images'
+#         )
+
+#         for file in files:
+
+#             if not file or not file.filename:
+#                 continue
+
+#             filename = secure_filename(
+#                 file.filename
+#             )
+
+#             unique_name = (
+#                 f'{survey.id}_'
+#                 f'{int(datetime.now().timestamp())}_'
+#                 f'{filename}'
+#             )
+
+#             file.save(
+#                 os.path.join(
+#                     upload_folder,
+#                     unique_name
+#                 )
+#             )
+
+#             image = SurveyImage(
+#                 survey_id=survey.id,
+#                 filename=unique_name,
+#                 image_type=request.form.get(
+#                     'image_type',
+#                     'site'
+#                 )
+#             )
+
+#             db.session.add(
+#                 image
+#             )
+
+#         # -----------------------------------------
+#         # CUSTOMER NOTIFICATION
+#         # -----------------------------------------
+
+#         notify_user(
+#             survey.user_id,
+#             'Survey Completed',
+#             f'Site survey SUR-{survey.id} has been completed.'
+#         )
+
+#         # -----------------------------------------
+#         # ADMIN / SALES NOTIFICATION
+#         # -----------------------------------------
+
+#         notify_admins(
+#             'Quotation Ready for Review',
+#             f'Quotation {quotation.quotation_number} '
+#             f'for SUR-{survey.id} is ready for sales review.'
+#         )
+
+#         # -----------------------------------------
+#         # SAVE EVERYTHING
+#         # -----------------------------------------
+
+#         db.session.commit()
+
+#         flash(
+#             'Survey completed and quotation generated successfully.',
+#             'success'
+#         )
+
+#     except Exception as e:
+
+#         db.session.rollback()
+
+#         current_app.logger.exception(
+#             'Error completing survey'
+#         )
+
+#         flash(
+#             f'Error completing survey: {str(e)}',
+#             'danger'
+#         )
+
+#     return redirect(
+#         url_for(
+#             'surveys.engineer_dashboard'
+#         )
+#     )
+
+
+# def generate_quotation(survey):
+#     """
+#     Automatically generate a quotation after survey completion.
+#     """
+
+#     # Prevent duplicate quotation
+#     existing_quotation = Quotation.query.filter_by(
+#         survey_id=survey.id
+#     ).first()
+
+#     if existing_quotation:
+#         return existing_quotation
+
+#     # Get requirement
+#     requirement = Requirement.query.get(
+#         survey.requirement_id
+#     )
+
+#     if not requirement:
+#         raise ValueError(
+#             'Requirement not found for this survey.'
+#         )
+
+#     # System capacity
+#     system_capacity = survey.recommended_kw or 0
+
+#     if system_capacity <= 0:
+#         raise ValueError(
+#             'Recommended system capacity is required to generate quotation.'
+#         )
+
+#     # --------------------------------------------------
+#     # QUOTATION CALCULATION
+#     # --------------------------------------------------
+
+#     # Example base rates
+#     equipment_rate_per_kw = 180000
+#     installation_rate_per_kw = 25000
+#     transport_rate_per_kw = 5000
+
+#     equipment_cost = (
+#         system_capacity * equipment_rate_per_kw
+#     )
+
+#     installation_cost = (
+#         system_capacity * installation_rate_per_kw
+#     )
+
+#     transport_cost = (
+#         system_capacity * transport_rate_per_kw
+#     )
+
+#     # Tax
+#     subtotal = (
+#         equipment_cost
+#         + installation_cost
+#         + transport_cost
+#     )
+
+#     tax = subtotal * 0.18
+
+#     discount = 0
+
+#     final_amount = (
+#         subtotal
+#         + tax
+#         - discount
+#     )
+
+#     # --------------------------------------------------
+#     # QUOTATION NUMBER
+#     # --------------------------------------------------
+
+#     quotation_number = (
+#         f'QUO-{datetime.now().strftime("%Y%m%d")}-'
+#         f'{survey.id:04d}'
+#     )
+
+#     # --------------------------------------------------
+#     # SYSTEM TYPE
+#     # --------------------------------------------------
+
+#     system_type = getattr(
+#         requirement,
+#         'system_type',
+#         None
+#     )
+
+#     if not system_type:
+#         system_type = 'Hybrid'
+
+#     # --------------------------------------------------
+#     # CREATE QUOTATION
+#     # --------------------------------------------------
+
+#     quotation = Quotation(
+#         survey_id=survey.id,
+#         requirement_id=survey.requirement_id,
+#         quotation_number=quotation_number,
+#         system_capacity_kw=system_capacity,
+#         system_type=system_type,
+#         equipment_cost=equipment_cost,
+#         installation_cost=installation_cost,
+#         transport_cost=transport_cost,
+#         tax=tax,
+#         discount=discount,
+#         final_amount=final_amount,
+#         payment_terms=(
+#             '30% advance, 50% before installation, '
+#             '20% after completion'
+#         ),
+#         warranty_terms=(
+#             '10 years equipment warranty'
+#         ),
+#         status='Pending Sales Review',
+#         customer_comment=''
+#     )
+
+#     db.session.add(quotation)
+
+#     return quotation
+
+
+
 def complete_survey(survey_id):
+    survey = Survey.query.get_or_404(survey_id)
 
-    survey = Survey.query.get_or_404(
-        survey_id
-    )
+    # 1. Check assigned engineer (Session ya Current User Check)
+    user_id = session.get('user_id') or getattr(current_user, 'id', None)
+    if survey.engineer_id != user_id:
+        flash('You are not assigned to this survey.', 'danger')
+        return redirect(url_for('surveys.engineer_dashboard'))
 
-    # Check assigned engineer
-    if survey.engineer_id != session.get('user_id'):
-        flash(
-            'You are not assigned to this survey.',
-            'danger'
-        )
-
-        return redirect(
-            url_for('surveys.engineer_dashboard')
-        )
-
-    # Survey must be in progress
+    # 2. Survey status check
     if survey.status != STATUS_IN_PROGRESS:
-        flash(
-            'Start the survey before completing it.',
-            'warning'
-        )
+        flash('Start the survey before completing it.', 'warning')
+        return redirect(url_for('surveys.engineer_dashboard'))
 
-        return redirect(
-            url_for('surveys.engineer_dashboard')
-        )
+    # 3. Input Validation (Form Submit check)
+    recommended_kw = request.form.get('recommended_kw', 0)
+    try:
+        recommended_kw = float(recommended_kw)
+    except ValueError:
+        recommended_kw = 0.0
+
+    if recommended_kw <= 0:
+        flash('Please enter a valid Recommended System kW (greater than 0).', 'danger')
+        return redirect(url_for('surveys.engineer_dashboard'))
 
     try:
-
-        # -----------------------------------------
-        # SAVE SURVEY REPORT DATA
-        # -----------------------------------------
-
+        # Save Survey Data
         try:
-            survey.roof_area = float(
-                request.form.get(
-                    'roof_area',
-                    0
-                ) or 0
-            )
+            survey.roof_area = float(request.form.get('roof_area', 0) or 0)
         except ValueError:
-            survey.roof_area = 0
+            survey.roof_area = 0.0
 
-        try:
-            survey.recommended_kw = float(
-                request.form.get(
-                    'recommended_kw',
-                    0
-                ) or 0
-            )
-        except ValueError:
-            survey.recommended_kw = 0
+        survey.recommended_kw = recommended_kw
+        survey.roof_direction = request.form.get('roof_direction', 'Not recorded')
+        survey.shading = request.form.get('shading', 'Not recorded')
+        survey.report_notes = request.form.get('report_notes', '')
 
-        survey.roof_direction = request.form.get(
-            'roof_direction',
-            'Not recorded'
-        )
-
-        survey.shading = request.form.get(
-            'shading',
-            'Not recorded'
-        )
-
-        survey.report_notes = request.form.get(
-            'report_notes',
-            ''
-        )
-
-        # -----------------------------------------
-        # MARK SURVEY COMPLETED
-        # -----------------------------------------
-
+        # Mark Completed
         survey.status = STATUS_COMPLETED
-
         survey.completed_at = datetime.now()
 
-        # -----------------------------------------
-        # AUTOMATICALLY GENERATE QUOTATION
-        # -----------------------------------------
+        # Handle Image Uploads BEFORE generation/commit
+        upload_folder = os.path.join(current_app.static_folder, 'uploads', 'surveys')
+        os.makedirs(upload_folder, exist_ok=True)
 
-        quotation = generate_quotation(
-            survey
-        )
-
-        # -----------------------------------------
-        # UPLOAD SURVEY IMAGES
-        # -----------------------------------------
-
-        upload_folder = os.path.join(
-            current_app.static_folder,
-            'uploads',
-            'surveys'
-        )
-
-        os.makedirs(
-            upload_folder,
-            exist_ok=True
-        )
-
-        files = request.files.getlist(
-            'survey_images'
-        )
-
+        files = request.files.getlist('survey_images')
         for file in files:
-
             if not file or not file.filename:
                 continue
 
-            filename = secure_filename(
-                file.filename
-            )
-
-            unique_name = (
-                f'{survey.id}_'
-                f'{int(datetime.now().timestamp())}_'
-                f'{filename}'
-            )
-
-            file.save(
-                os.path.join(
-                    upload_folder,
-                    unique_name
-                )
-            )
+            filename = secure_filename(file.filename)
+            unique_name = f"{survey.id}_{int(datetime.now().timestamp())}_{filename}"
+            file.save(os.path.join(upload_folder, unique_name))
 
             image = SurveyImage(
                 survey_id=survey.id,
                 filename=unique_name,
-                image_type=request.form.get(
-                    'image_type',
-                    'site'
-                )
+                image_type=request.form.get('image_type', 'site')
             )
+            db.session.add(image)
 
-            db.session.add(
-                image
-            )
+        # Generate Quotation
+        quotation = generate_quotation(survey)
 
-        # -----------------------------------------
-        # CUSTOMER NOTIFICATION
-        # -----------------------------------------
-
+        # Notifications
         notify_user(
             survey.user_id,
             'Survey Completed',
             f'Site survey SUR-{survey.id} has been completed.'
         )
 
-        # -----------------------------------------
-        # ADMIN / SALES NOTIFICATION
-        # -----------------------------------------
-
         notify_admins(
             'Quotation Ready for Review',
-            f'Quotation {quotation.quotation_number} '
-            f'for SUR-{survey.id} is ready for sales review.'
+            f'Quotation {quotation.quotation_number} for SUR-{survey.id} is ready for sales review.'
         )
 
-        # -----------------------------------------
-        # SAVE EVERYTHING
-        # -----------------------------------------
-
+        # Commit All DB Changes Together
         db.session.commit()
 
-        flash(
-            'Survey completed and quotation generated successfully.',
-            'success'
-        )
+        flash('Survey completed and quotation generated successfully.', 'success')
 
     except Exception as e:
-
         db.session.rollback()
+        current_app.logger.exception('Error completing survey')
+        flash(f'Error completing survey: {str(e)}', 'danger')
 
-        current_app.logger.exception(
-            'Error completing survey'
-        )
-
-        flash(
-            f'Error completing survey: {str(e)}',
-            'danger'
-        )
-
-    return redirect(
-        url_for(
-            'surveys.engineer_dashboard'
-        )
-    )
+    return redirect(url_for('surveys.engineer_dashboard'))
 
 
 def generate_quotation(survey):
-    """
-    Automatically generate a quotation after survey completion.
-    """
+    """ Automatically generate a quotation after survey completion. """
 
-    # Prevent duplicate quotation
-    existing_quotation = Quotation.query.filter_by(
-        survey_id=survey.id
-    ).first()
-
+    existing_quotation = Quotation.query.filter_by(survey_id=survey.id).first()
     if existing_quotation:
         return existing_quotation
 
     # Get requirement
-    requirement = Requirement.query.get(
-        survey.requirement_id
-    )
+    requirement = None
+    if getattr(survey, 'requirement_id', None):
+        requirement = Requirement.query.get(survey.requirement_id)
 
-    if not requirement:
-        raise ValueError(
-            'Requirement not found for this survey.'
-        )
-
-    # System capacity
-    system_capacity = survey.recommended_kw or 0
-
+    system_capacity = survey.recommended_kw or 0.0
     if system_capacity <= 0:
-        raise ValueError(
-            'Recommended system capacity is required to generate quotation.'
-        )
+        raise ValueError('Recommended system capacity is required to generate quotation.')
 
-    # --------------------------------------------------
-    # QUOTATION CALCULATION
-    # --------------------------------------------------
-
-    # Example base rates
+    # Calculations
     equipment_rate_per_kw = 180000
     installation_rate_per_kw = 25000
     transport_rate_per_kw = 5000
 
-    equipment_cost = (
-        system_capacity * equipment_rate_per_kw
-    )
+    equipment_cost = system_capacity * equipment_rate_per_kw
+    installation_cost = system_capacity * installation_rate_per_kw
+    transport_cost = system_capacity * transport_rate_per_kw
 
-    installation_cost = (
-        system_capacity * installation_rate_per_kw
-    )
-
-    transport_cost = (
-        system_capacity * transport_rate_per_kw
-    )
-
-    # Tax
-    subtotal = (
-        equipment_cost
-        + installation_cost
-        + transport_cost
-    )
-
+    subtotal = equipment_cost + installation_cost + transport_cost
     tax = subtotal * 0.18
-
     discount = 0
+    final_amount = subtotal + tax - discount
 
-    final_amount = (
-        subtotal
-        + tax
-        - discount
-    )
-
-    # --------------------------------------------------
-    # QUOTATION NUMBER
-    # --------------------------------------------------
-
-    quotation_number = (
-        f'QUO-{datetime.now().strftime("%Y%m%d")}-'
-        f'{survey.id:04d}'
-    )
-
-    # --------------------------------------------------
-    # SYSTEM TYPE
-    # --------------------------------------------------
-
-    system_type = getattr(
-        requirement,
-        'system_type',
-        None
-    )
-
-    if not system_type:
-        system_type = 'Hybrid'
-
-    # --------------------------------------------------
-    # CREATE QUOTATION
-    # --------------------------------------------------
+    quotation_number = f'QUO-{datetime.now().strftime("%Y%m%d")}-{survey.id:04d}'
+    system_type = getattr(requirement, 'system_type', 'Hybrid') if requirement else 'Hybrid'
 
     quotation = Quotation(
         survey_id=survey.id,
-        requirement_id=survey.requirement_id,
+        requirement_id=survey.requirement_id if hasattr(survey, 'requirement_id') else None,
         quotation_number=quotation_number,
         system_capacity_kw=system_capacity,
         system_type=system_type,
@@ -787,19 +939,13 @@ def generate_quotation(survey):
         tax=tax,
         discount=discount,
         final_amount=final_amount,
-        payment_terms=(
-            '30% advance, 50% before installation, '
-            '20% after completion'
-        ),
-        warranty_terms=(
-            '10 years equipment warranty'
-        ),
+        payment_terms='30% advance, 50% before installation, 20% after completion',
+        warranty_terms='10 years equipment warranty',
         status='Pending Sales Review',
         customer_comment=''
     )
 
     db.session.add(quotation)
-
     return quotation
 
 

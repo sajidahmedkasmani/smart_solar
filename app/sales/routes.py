@@ -40,7 +40,7 @@ def dashboard():
     rejected_quotations = [q for q in quotations if q.status == 'Rejected']
     total_leads = len(leads_surveys) + len(leads_requirements)
     conversion_rate = round((len(approved_quotations) / len(quotations) * 100), 1) if quotations else 0
-    return render_template('sales_dashboard.html', leads_surveys=leads_surveys, leads_requirements=leads_requirements,
+    return render_template('admin/sales_dashboard.html', leads_surveys=leads_surveys, leads_requirements=leads_requirements,
                            quotations=quotations, pending_quotations=pending_quotations,
                            approved_quotations=approved_quotations, rejected_quotations=rejected_quotations,
                            total_leads=total_leads, conversion_rate=conversion_rate)
@@ -59,4 +59,53 @@ def apply_discount(quotation_id):
     q.final_amount = subtotal - q.discount
     db.session.commit()
     flash(f'Discount of PKR {q.discount:,.0f} applied to {q.quotation_number}.', 'success')
+    return redirect(url_for('sales.dashboard'))
+
+
+
+@sales_bp.route('/quotation/update/<int:quotation_id>', methods=['POST'])
+def update_quotation_details(quotation_id):
+    quotation = Quotation.query.get_or_404(quotation_id)
+    
+    # Form data read
+    quotation.system_capacity_kw = float(request.form.get('system_capacity_kw', quotation.system_capacity_kw))
+    quotation.system_type = request.form.get('system_type', quotation.system_type)
+    quotation.equipment_cost = float(request.form.get('equipment_cost', quotation.equipment_cost))
+    quotation.installation_cost = float(request.form.get('installation_cost', quotation.installation_cost))
+    quotation.discount = float(request.form.get('discount', 0))
+    quotation.tax = float(request.form.get('tax', quotation.tax))
+    
+    # Recalculate Final Amount
+    subtotal = quotation.equipment_cost + quotation.installation_cost + quotation.transport_cost
+    quotation.final_amount = subtotal + quotation.tax - quotation.discount
+    
+    action = request.form.get('action')
+    if action == 'save_and_share':
+        quotation.status = 'Sent to Customer'
+        notify_user(
+            quotation.survey.user_id,
+            'Quotation Ready',
+            f'Your customized quotation {quotation.quotation_number} is ready for review.'
+        )
+        flash('Quotation updated and shared with customer successfully!', 'success')
+    else:
+        flash('Quotation details updated successfully.', 'success')
+        
+    db.session.commit()
+    return redirect(url_for('sales.dashboard'))
+
+
+@sales_bp.route('/quotation/share/<int:quotation_id>', methods=['POST'])
+def share_quotation_to_customer(quotation_id):
+    quotation = Quotation.query.get_or_404(quotation_id)
+    quotation.status = 'Sent to Customer'
+    
+    notify_user(
+        quotation.survey.user_id,
+        'Quotation Ready',
+        f'Your customized quotation {quotation.quotation_number} is ready for review.'
+    )
+    
+    db.session.commit()
+    flash(f'Quotation {quotation.quotation_number} shared to customer.', 'success')
     return redirect(url_for('sales.dashboard'))

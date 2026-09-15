@@ -719,7 +719,7 @@ def accept_contract(quotation_id):
     if not project:
         project = Project(
             quotation_id=q.id,
-            customer_id=q.survey.user_id if q.survey else current_user.id,
+            customer_id=q.survey.user_id if q.survey else session.get('user_id'),  # FIX: current_user tha jo undefined tha, session se le rahe hain jaisa baaki file mein hota hai
             project_name=f"Solar System - {q.quotation_number}",
             status='Pending Advance'
         )
@@ -737,13 +737,14 @@ def accept_contract(quotation_id):
             status='Pending'
         )
         db.session.add(advance_payment)
+        db.session.flush()  # FIX: advance_payment.id ko commit se pehle generate karne ke liye (redirect mein id chahiye hota hai)
 
     db.session.commit()
 
     flash('Installation agreement accepted! Project initialized. Please submit your 30% advance payment to proceed.', 'success')
     
     # Redirect customer directly to Payment Upload Page
-    return redirect(url_for('customer.make_payment', payment_id=advance_payment.id))
+    return redirect(url_for('customers.make_payment', payment_id=advance_payment.id))
 
 
 # =========================================================

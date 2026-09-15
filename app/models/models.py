@@ -37,6 +37,11 @@ class Customer(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.Integer, default=1, nullable=False)
 
+    # Email verification (form signups only; Google sign-ups are pre-verified)
+    is_email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    verification_token = db.Column(db.String(64), nullable=True, index=True)
+    verification_token_expires_at = db.Column(db.DateTime, nullable=True)
+
 
 class UserRole(db.Model):
     __tablename__ = 'user_roles'

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Account — {{ APP_TITLE }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --ink:#142033; --ink-soft:#4A5670; --paper:#F7F5EF; --panel:#FFFFFF;
+      --line:#E4E0D3; --gold:#F0A93B; --gold-dark:#C9821F; --sky:#1D6E8C;
+      --font-display:'Space Grotesk',sans-serif; --font-body:'Inter',sans-serif;
+    }
+    body { font-family: var(--font-body); background: var(--paper); color: var(--ink); }
+    .font-display { font-family: var(--font-display); }
+    .brand-mark { width:36px; height:36px; border-radius:10px; background: conic-gradient(from -90deg, var(--gold), var(--gold-dark), var(--gold)); position:relative; }
+    .brand-mark::after { content:""; position:absolute; inset:7px; border-radius:50%; background:var(--ink); }
+    .btn-solar { background:var(--gold); color:var(--ink); font-weight:700; border-radius:10px; transition: all .25s ease; }
+    .btn-solar:hover { background:var(--gold-dark); color:#fff; transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(240,169,59,.55); }
+    .btn-ghost { background:transparent; color:var(--sky); font-weight:700; border-radius:10px; border:1px solid var(--line); transition: all .2s ease; }
+    .btn-ghost:hover { background:#f1f5f9; }
+    .auth-card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 10px 30px -12px rgba(20,32,51,.1); }
+    .envelope-icon { width:72px; height:72px; border-radius:50%; background:#FEF3E2; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+
+  <div class="max-w-md w-full space-y-5">
+    <div class="text-center">
+      <a href="/" class="inline-flex items-center gap-2 mb-2">
+        <div class="brand-mark"></div>
+        <span class="font-display font-bold text-xl">{{ APP_NAME }}</span>
+      </a>
+    </div>
+
+    <div class="auth-card p-8 text-center">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="mb-4 text-xs p-3 rounded-lg border text-left {% if category == 'danger' %}bg-red-50 text-red-700 border-red-200{% elif category == 'warning' %}bg-amber-50 text-amber-700 border-amber-200{% else %}bg-green-50 text-green-700 border-green-200{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="envelope-icon mb-5">
+        <i class="fa-solid fa-envelope-circle-check text-2xl" style="color:var(--gold-dark);"></i>
+      </div>
+
+      <h2 class="font-display font-bold text-2xl text-slate-900 mb-2">Verify your account</h2>
+      <p class="text-sm text-slate-600 leading-relaxed">
+        We've sent a verification link to
+        {% if email %}<span class="font-semibold text-slate-800">{{ email }}</span>{% else %}your email address{% endif %}.
+        Open your inbox and click <span class="font-semibold">“Verify My Account”</span> to activate your account.
+      </p>
+
+      <p class="text-xs text-slate-400 mt-4">The link expires in 24 hours. Didn't get it? Check your spam folder or resend below.</p>
+
+      <form action="{{ url_for('auth.resend_verification') }}" method="POST" class="mt-6 space-y-3">
+        <input type="hidden" name="email" value="{{ email }}">
+        <button type="submit" class="btn-solar w-full py-3 text-sm">Resend Verification Email</button>
+      </form>
+
+      <a href="{{ url_for('auth.login') }}" class="btn-ghost w-full inline-block py-3 text-sm mt-3">Back to Login</a>
+    </div>
+  </div>
+</body>
+</html>

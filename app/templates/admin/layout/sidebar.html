@@ -12,49 +12,53 @@
             <p class="text-[11px] font-semibold text-slate-500 mb-3 tracking-wider uppercase">Menu</p>
             <ul class="space-y-1.5 text-xs font-medium">
               {% set roles = session.get('roles', [session.get('role','customer')]) %}
+              {# Single, consistent active-link style used for every item below so the highlight color/state never drifts between sections. #}
+              {% set base_link = 'flex items-center gap-3 px-3.5 py-2 rounded-xl transition' %}
+              {% set active_link = base_link ~ ' bg-purple-600/20 text-white ring-1 ring-purple-500/30' %}
+              {% set inactive_link = base_link ~ ' hover:text-white hover:bg-white/5' %}
 
-              <li><a href="{{ url_for('index') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-house text-slate-400"></i> Home</a></li>
+              <li><a href="{{ url_for('index') }}" class="{{ active_link if request.endpoint == 'index' else inactive_link }}"><i class="fa-solid fa-house text-slate-400"></i> Home</a></li>
 
               {# Staff/Admin dashboard only: customer-facing pages intentionally do NOT appear here. #}
               {% if 'admin' in roles %}
               <li class="pt-2"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Administration</p></li>
-              <li><a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-user-shield text-purple-400"></i> Admin Dashboard</a></li>
-              <li><a href="{{ url_for('admin.users') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-users-gear text-slate-400"></i> Users & Access</a></li>
+              <li><a href="{{ url_for('admin.dashboard') }}" class="{{ active_link if request.endpoint == 'admin.dashboard' else inactive_link }}"><i class="fa-solid fa-user-shield text-purple-400"></i> Admin Dashboard</a></li>
+              <li><a href="{{ url_for('admin.users') }}" class="{{ active_link if request.endpoint == 'admin.users' else inactive_link }}"><i class="fa-solid fa-users-gear text-slate-400"></i> Users & Access</a></li>
               {% endif %}
 
               {% if 'sales' in roles or 'admin' in roles %}
               <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Sales</p></li>
-              <li><a href="{{ url_for('sales.dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-handshake text-slate-400"></i> Sales Dashboard</a></li>
-              <li><a href="{{ url_for('admin.packages') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-solar-panel text-slate-400"></i> Solar Packages</a></li>
-              <li><a href="{{ url_for('admin.system_types') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-layer-group text-slate-400"></i> System Types</a></li>
-              
-              <li><a href="{{ url_for('admin.surveys') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-helmet-safety text-slate-400"></i> Surveys</a></li>
-              <li><a href="{{ url_for('sales.chat_inbox') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-comments text-slate-400"></i> Live Chats{% if pending_chat_count %} <span class="ml-auto bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ pending_chat_count }}</span>{% endif %}</a></li>
+              <li><a href="{{ url_for('sales.dashboard') }}" class="{{ active_link if request.endpoint == 'sales.dashboard' else inactive_link }}"><i class="fa-solid fa-handshake text-slate-400"></i> Sales Dashboard</a></li>
+              <li><a href="{{ url_for('admin.packages') }}" class="{{ active_link if request.endpoint == 'admin.packages' else inactive_link }}"><i class="fa-solid fa-solar-panel text-slate-400"></i> Solar Packages</a></li>
+              <li><a href="{{ url_for('admin.system_types') }}" class="{{ active_link if request.endpoint == 'admin.system_types' else inactive_link }}"><i class="fa-solid fa-layer-group text-slate-400"></i> System Types</a></li>
+
+              <li><a href="{{ url_for('admin.surveys') }}" class="{{ active_link if request.endpoint == 'admin.surveys' else inactive_link }}"><i class="fa-solid fa-helmet-safety text-slate-400"></i> Surveys</a></li>
+              <li><a href="{{ url_for('sales.chat_inbox') }}" class="{{ active_link if request.endpoint == 'sales.chat_inbox' else inactive_link }}"><i class="fa-solid fa-comments text-slate-400"></i> Live Chats{% if pending_chat_count %} <span class="ml-auto bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ pending_chat_count }}</span>{% endif %}</a></li>
 
               {% endif %}
 
               {% if 'engineer' in roles or 'admin' in roles %}
               <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Engineering</p></li>
-              <li><a href="{{ url_for('surveys.engineer_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-helmet-safety text-slate-400"></i> Survey & Technical Work</a></li>
+              <li><a href="{{ url_for('surveys.engineer_dashboard') }}" class="{{ active_link if request.endpoint == 'surveys.engineer_dashboard' else inactive_link }}"><i class="fa-solid fa-helmet-safety text-slate-400"></i> Survey & Technical Work</a></li>
               {% endif %}
 
               {% if 'technician' in roles or 'admin' in roles %}
               <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Installation</p></li>
-              <li><a href="{{ url_for('installations.technician_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-screwdriver-wrench text-slate-400"></i> Technician Work</a></li>
+              <li><a href="{{ url_for('installations.technician_dashboard') }}" class="{{ active_link if request.endpoint == 'installations.technician_dashboard' else inactive_link }}"><i class="fa-solid fa-screwdriver-wrench text-slate-400"></i> Technician Work</a></li>
               {% endif %}
 
               {% if 'inventory_manager' in roles or 'admin' in roles %}
               <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Inventory</p></li>
-              <li><a href="{{ url_for('inventory.stock') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-warehouse text-slate-400"></i> Stock Management</a></li>
-              <li><a href="{{ url_for('inventory.add_item') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-plus text-slate-400"></i> Add Equipment</a></li>
+              <li><a href="{{ url_for('inventory.stock') }}" class="{{ active_link if request.endpoint == 'inventory.stock' else inactive_link }}"><i class="fa-solid fa-warehouse text-slate-400"></i> Stock Management</a></li>
+              <li><a href="{{ url_for('inventory.add_item') }}" class="{{ active_link if request.endpoint == 'inventory.add_item' else inactive_link }}"><i class="fa-solid fa-plus text-slate-400"></i> Add Equipment</a></li>
               {% endif %}
 
               {% if 'finance' in roles or 'admin' in roles %}
               <li class="pt-3"><p class="text-[11px] font-semibold text-slate-500 mb-2 tracking-wider uppercase">Finance</p></li>
-              <li><a href="{{ url_for('payments.finance_dashboard') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-sack-dollar text-slate-400"></i> Finance Dashboard</a></li>
+              <li><a href="{{ url_for('payments.finance_dashboard') }}" class="{{ active_link if request.endpoint == 'payments.finance_dashboard' else inactive_link }}"><i class="fa-solid fa-sack-dollar text-slate-400"></i> Finance Dashboard</a></li>
               {% endif %}
 
-              <li class="pt-3"><a href="{{ url_for('auth.logout') }}" class="flex items-center gap-3 hover:text-white px-3.5 py-2 transition"><i class="fa-solid fa-right-from-bracket text-slate-400"></i> Logout</a></li>
+              <li class="pt-3"><a href="{{ url_for('auth.logout') }}" class="{{ inactive_link }}"><i class="fa-solid fa-right-from-bracket text-slate-400"></i> Logout</a></li>
             </ul>
           </div>
         </div>

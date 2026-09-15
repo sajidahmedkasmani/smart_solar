@@ -6,7 +6,7 @@
 
 # app/utils/__init__.py
 
-from .email import send_survey_email
+from .email import send_survey_email, send_verification_email
 from .helpers import unique_username  # <-- Add this line
 
-__all__ = ['send_survey_email', 'unique_username']
+__all__ = ['send_survey_email', 'send_verification_email', 'unique_username']

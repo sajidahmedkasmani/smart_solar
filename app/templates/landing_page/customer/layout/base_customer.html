@@ -54,6 +54,27 @@
 
                     <!-- MAIN BODY PAGE -->
                         <main class="flex-1 overflow-y-auto p-8 bg-[#fcfbf7]">
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                <div id="flashToastStack" class="space-y-2 mb-5">
+                                    {% for category, message in messages %}
+                                    <div class="flash-toast flex items-start gap-3 text-sm p-3.5 rounded-xl border shadow-sm {% if category == 'danger' %}bg-red-50 text-red-700 border-red-200{% elif category == 'warning' %}bg-amber-50 text-amber-700 border-amber-200{% else %}bg-emerald-50 text-emerald-700 border-emerald-200{% endif %}">
+                                        <i class="fa-solid {% if category == 'danger' %}fa-circle-exclamation{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %} mt-0.5"></i>
+                                        <span>{{ message }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <script>
+                                    setTimeout(function () {
+                                        document.querySelectorAll('.flash-toast').forEach(function (el) {
+                                            el.style.transition = 'opacity .4s ease';
+                                            el.style.opacity = '0';
+                                            setTimeout(function () { el.remove(); }, 400);
+                                        });
+                                    }, 5000);
+                                </script>
+                                {% endif %}
+                            {% endwith %}
                             {% block content %}{% endblock %}
                         </main>
                     <!-- MAIN BODY PAGE -->
